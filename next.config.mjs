@@ -86,6 +86,28 @@ const nextConfig = {
       bodySizeLimit: "1024mb",
     },
   },
+  // Add webpack configuration to handle Node.js modules
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Exclude Node.js modules from client-side bundle
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        net: false,
+        tls: false,
+        fs: false,
+        crypto: false,
+        stream: false,
+        url: false,
+        zlib: false,
+        http: false,
+        https: false,
+        assert: false,
+        os: false,
+        path: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default pwaConfig(nextConfig);

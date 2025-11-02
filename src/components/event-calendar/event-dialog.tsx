@@ -63,7 +63,7 @@ export function EventDialog({
   const [endTime, setEndTime] = useState(`${DefaultEndHour}:00`)
   const [allDay, setAllDay] = useState(false)
   const [location, setLocation] = useState("")
-  const [color, setColor] = useState<EventColor>("sky")
+  const [color, setColor] = useState<EventColor>("SKY")
   const [error, setError] = useState<string | null>(null)
   const [startDateOpen, setStartDateOpen] = useState(false)
   const [endDateOpen, setEndDateOpen] = useState(false)
@@ -103,7 +103,7 @@ export function EventDialog({
     setEndTime(`${DefaultEndHour}:00`)
     setAllDay(false)
     setLocation("")
-    setColor("sky")
+    setColor("SKY")
     setError(null)
   }
 
@@ -194,37 +194,37 @@ export function EventDialog({
     borderClass: string
   }> = [
       {
-        value: "sky",
+        value: "SKY",
         label: "Sky",
         bgClass: "bg-sky-400 data-[state=checked]:bg-sky-400",
         borderClass: "border-sky-400 data-[state=checked]:border-sky-400",
       },
       {
-        value: "amber",
+        value: "AMBER",
         label: "Amber",
         bgClass: "bg-amber-400 data-[state=checked]:bg-amber-400",
         borderClass: "border-amber-400 data-[state=checked]:border-amber-400",
       },
       {
-        value: "violet",
+        value: "VIOLET",
         label: "Violet",
         bgClass: "bg-violet-400 data-[state=checked]:bg-violet-400",
         borderClass: "border-violet-400 data-[state=checked]:border-violet-400",
       },
       {
-        value: "rose",
+        value: "ROSE",
         label: "Rose",
         bgClass: "bg-rose-400 data-[state=checked]:bg-rose-400",
         borderClass: "border-rose-400 data-[state=checked]:border-rose-400",
       },
       {
-        value: "emerald",
+        value: "EMERALD",
         label: "Emerald",
         bgClass: "bg-emerald-400 data-[state=checked]:bg-emerald-400",
         borderClass: "border-emerald-400 data-[state=checked]:border-emerald-400",
       },
       {
-        value: "orange",
+        value: "ORANGE",
         label: "Orange",
         bgClass: "bg-orange-400 data-[state=checked]:bg-orange-400",
         borderClass: "border-orange-400 data-[state=checked]:border-orange-400",

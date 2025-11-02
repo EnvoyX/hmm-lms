@@ -108,6 +108,21 @@ export const notificationsRouter = createTRPCRouter({
         failed: results.filter((r) => !r.success).length,
       };
     }),
+  
+  getSubscriptions: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.pushSubscription.findMany({
+      where: {
+        userId: ctx.session.user.id,
+      },
+      select: {
+        id: true,
+        endpoint: true,
+        p256dh: true,
+        auth: true,
+        createdAt: true,
+      },
+    });
+  }),
 
   // Send to course members
   sendToCourse: protectedProcedure

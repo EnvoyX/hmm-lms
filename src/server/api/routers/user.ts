@@ -1,9 +1,12 @@
 import { TRPCError } from "@trpc/server";
+import bcrypt from "bcrypt";
+
 import {
   createTRPCRouter,
   adminProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
+
 import {
   userIdSchema,
   updateUserRoleSchema,
@@ -11,6 +14,7 @@ import {
   deleteUserSchema,
   getUsersSchema,
 } from "~/lib/schema/user";
+
 import { editProfileSchema } from '~/lib/schema/profile';
 
 export const userRouter = createTRPCRouter({
@@ -204,14 +208,54 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { session, db } = ctx;
 
+      // Validate user exists
+      const existingUser = await db.user.findUnique({
+        where: { id: session.user.id },
+      });
+
+      if (!existingUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found.",
+        });
+      }
+
+      // Prepare update data
+      const updateData: {
+        name: string;
+        position?: string | null;
+        image?: string | null;
+        password?: string;
+      } = {
+        name: input.name,
+        position: input.position && input.position.trim() !== "" ? input.position : null,
+        image: input.image && input.image.trim() !== "" ? input.image : null,
+      };
+
+      // Handle password change if newPassword is provided
+      if (input.newPassword && input.newPassword.trim().length > 0) {
+        // Verify current password
+        const isPasswordValid = await bcrypt.compare(
+          input.currentPassword ?? "",
+          existingUser.password
+        );
+
+        if (!isPasswordValid) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Current password is incorrect.",
+          });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(input.newPassword, 10);
+        updateData.password = hashedPassword;
+      }
+
+      // Update user
       const updatedUser = await db.user.update({
         where: { id: session.user.id },
-        data: {
-          name: input.name,
-          faculty: input.faculty ?? null,
-          program: input.program ?? null,
-          image: input.image ?? null,
-        },
+        data: updateData,
         select: {
           id: true,
           name: true,

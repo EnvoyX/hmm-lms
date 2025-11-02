@@ -1,18 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
-import { ProfileAvatar } from './profile-avatar';
-import { editProfileSchema, type EditProfileInput } from '~/lib/schema/profile';
-import { Loader2, Save, X } from "lucide-react";
-import { toast } from 'sonner';
-import { api } from '~/trpc/react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "~/components/ui/form";
+import { ProfileAvatar } from "./profile-avatar";
+import { editProfileSchema, type EditProfileInput } from "~/lib/schema/profile";
+import { Loader2, Save, X, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "~/trpc/react";
+import { Separator } from "~/components/ui/separator";
 
 type User = {
   id: string;
@@ -35,21 +44,27 @@ interface EditProfileDialogProps {
   onUpdate: () => void;
 }
 
-export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfileDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function EditProfileDialog({
+  isOpen,
+  onClose,
+  user,
+  onUpdate,
+}: EditProfileDialogProps) {
+  const utils = api.useUtils();
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const updateProfileMutation = api.user.updateProfile.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      await utils.user.getCurrentUser.invalidate();
       toast.success("Profile updated successfully!");
       onUpdate();
-      onClose();
-      form.reset();
+      handleClose();
     },
     onError: (error) => {
+      console.error("Update error:", error);
       toast.error(error.message || "Failed to update profile. Please try again.");
-    },
-    onSettled: () => {
-      setIsLoading(false);
     },
   });
 
@@ -57,31 +72,58 @@ export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfi
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
       name: user.name,
-      faculty: user.faculty ?? "",
-      program: user.program ?? "",
+      position: user.position ?? "",
       image: user.image ?? "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
+    mode: "onChange",
   });
 
-  const onSubmit = async (data: EditProfileInput) => {
-    setIsLoading(true);
-    updateProfileMutation.mutate(data);
+  useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        name: user.name,
+        position: user.position ?? "",
+        image: user.image ?? "",
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    }
+  }, [isOpen, user]);
+
+  const onSubmit = (data: EditProfileInput) => {
+    updateProfileMutation.mutate({
+      name: data.name,
+      position: data.position ?? undefined,
+      image: data.image ?? undefined,
+      currentPassword: data.currentPassword ?? undefined,
+      newPassword: data.newPassword ?? undefined,
+    });
   };
 
   const handleImageChange = (image: string) => {
-    form.setValue("image", image);
+    form.setValue("image", image, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   const handleClose = () => {
-    if (!isLoading) {
+    if (!updateProfileMutation.isPending) {
       form.reset();
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
       onClose();
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
@@ -89,22 +131,23 @@ export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfi
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Profile Picture */}
-            <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-y-2">
               <ProfileAvatar
-                src={form.watch("image")}
-                name={form.watch("name")}
+                src={form.watch("image") ?? user.image ?? undefined}
+                name={user.name}
                 size="xl"
                 editable
                 onImageChange={handleImageChange}
-                className="animate-in zoom-in-95 duration-300"
               />
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-sm text-muted-foreground">
                 Click on the avatar to change your profile picture
               </p>
             </div>
 
-            {/* Form Fields */}
+            {/* Basic Information Section */}
             <div className="space-y-4">
+              <h3 className="text-lg font-medium">Basic Information</h3>
+
               <FormField
                 control={form.control}
                 name="name"
@@ -113,54 +156,113 @@ export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfi
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
                       <Input
-                        {...field}
                         placeholder="Enter your full name"
-                        autoFocus
-                        disabled={isLoading}
+                        {...field}
+                        disabled={updateProfileMutation.isPending}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="position"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Position</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Student, Teaching Assistant, Lecturer"
+                        {...field}
+                        disabled={updateProfileMutation.isPending}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Your role or position in the organization
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
               {/* Read-only fields */}
-              <div className="space-y-4 opacity-60">
+              <div>
+                <Label>Email</Label>
+                <Input value={user.email} disabled className="bg-muted" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Email cannot be changed
+                </p>
+              </div>
+
+              {user.nim && (
                 <div>
-                  <Label>Email</Label>
-                  <Input value={user.email} disabled className="bg-muted" />
-                  <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
+                  <Label>NIM</Label>
+                  <Input value={user.nim} disabled className="bg-muted" />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    NIM cannot be changed
+                  </p>
                 </div>
+              )}
 
-                {user.nim && (
-                  <div>
-                    <Label>NIM</Label>
-                    <Input value={user.nim} disabled className="bg-muted" />
-                    <p className="text-xs text-muted-foreground mt-1">NIM cannot be changed</p>
-                  </div>
-                )}
+              {user.faculty && (
+                <div>
+                  <Label>Faculty</Label>
+                  <Input value={user.faculty} disabled className="bg-muted" />
+                </div>
+              )}
 
-                {user.position && (
-                  <div>
-                    <Label>Position</Label>
-                    <Input value={user.position} disabled className="bg-muted" />
-                    <p className="text-xs text-muted-foreground mt-1">Position cannot be changed</p>
-                  </div>
-                )}
+              {user.program && (
+                <div>
+                  <Label>Program</Label>
+                  <Input value={user.program} disabled className="bg-muted" />
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Password Change Section */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium">Change Password</h3>
+                <p className="text-sm text-muted-foreground">
+                  Leave blank if you don't want to change your password
+                </p>
               </div>
 
               <FormField
                 control={form.control}
-                name="faculty"
+                name="currentPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Faculty</FormLabel>
+                    <FormLabel>Current Password</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter your faculty"
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showCurrentPassword ? "text" : "password"}
+                          placeholder="Enter your current password"
+                          {...field}
+                          disabled={updateProfileMutation.isPending}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() =>
+                            setShowCurrentPassword(!showCurrentPassword)
+                          }
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {showCurrentPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -169,16 +271,74 @@ export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfi
 
               <FormField
                 control={form.control}
-                name="program"
+                name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Program</FormLabel>
+                    <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter your program"
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="Enter your new password"
+                          {...field}
+                          disabled={updateProfileMutation.isPending}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Must be at least 8 characters with uppercase, lowercase,
+                      and numbers
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your new password"
+                          {...field}
+                          disabled={updateProfileMutation.isPending}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          disabled={updateProfileMutation.isPending}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -187,26 +347,26 @@ export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfi
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex justify-end space-x-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleClose}
-                className="flex-1 transition-all duration-200 hover:scale-[1.02]"
-                disabled={isLoading}
+                disabled={updateProfileMutation.isPending}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="mr-2 h-4 w-4" />
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="flex-1 transition-all duration-200 hover:scale-[1.02]"
-                disabled={isLoading}
+                disabled={
+                  updateProfileMutation.isPending || !form.formState.isDirty
+                }
               >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {updateProfileMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="mr-2 h-4 w-4" />
                 )}
                 Save Changes
               </Button>

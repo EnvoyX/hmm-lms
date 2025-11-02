@@ -1,3 +1,5 @@
+"use server";
+
 import webpush, { type PushSubscription } from "web-push";
 import { env } from "~/env";
 

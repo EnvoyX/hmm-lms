@@ -35,6 +35,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "types/next-auth.d.ts"
-, "next.config.mjs"  ],
+, "next.config.mjs", "prisma/seeds/main.ts"  ],
   "exclude": ["node_modules", "sw.js", "public/workbox-*.js", "public/worker-*.js", "scripts/**/*", "worker/index.js"]
 }

@@ -5,10 +5,11 @@ import { signUpSchema } from "~/lib/schema/auth";
 
 import {
   createTRPCRouter,
-  // protectedProcedure,
+  protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import z from 'zod';
 
 export const authRouter = createTRPCRouter({
   signUp: publicProcedure.input(signUpSchema).mutation(async ({ input }) => {
@@ -51,4 +52,41 @@ export const authRouter = createTRPCRouter({
       userId: newUser.id,
     };
   }),
+
+   resetPasswordByAdmin: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Optional: ensure only admins can use this
+      if (ctx.session.user.role !== "SUPERADMIN") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not allowed" });
+      }
+
+      const user = await db.user.findUnique({
+        where: { id: input.userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found.",
+        });
+      }
+
+      const newPassword = 'TempPass123';
+      const hashedPassword = await hashPassword(newPassword);
+
+      await db.user.update({
+        where: { id: input.userId },
+        data: { password: hashedPassword },
+      });
+
+      return {
+        success: true,
+        newPassword, // show this once to the admin
+      };
+    }),
 });

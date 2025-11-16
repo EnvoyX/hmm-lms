@@ -92,6 +92,16 @@ export default function EditUserDialog({
 
   if (!user) return null;
 
+  const resetPassword = api.auth.resetPasswordByAdmin.useMutation({
+    onSuccess: (data) => {
+      // Show the new password so the admin can copy it
+      toast.success(`Password reset. New password: ${data.newPassword}`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -162,9 +172,22 @@ export default function EditUserDialog({
             Cancel
           </Button>
           <Button
-            onClick={handleSave}
-            disabled={updateUser.isPending}
+            variant="outline"
+            type="button"
+            disabled={resetPassword.isPending || !user}
+            onClick={() => {
+              if (!user) return;
+              const ok = window.confirm(
+                `Reset password for ${user.name}? The user will lose their current password.`,
+              );
+              if (!ok) return;
+              resetPassword.mutate({ userId: user.id });
+            }}
           >
+            Reset password
+          </Button>
+
+          <Button onClick={handleSave} disabled={updateUser.isPending}>
             Save Changes
           </Button>
         </DialogFooter>

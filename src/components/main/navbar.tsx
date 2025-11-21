@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import SearchCMDK, { type TabsType } from './cmdk-search';
-import { Banknote, Briefcase, Calendar, Footprints, GraduationCap, Home, Megaphone, Settings, Tally5 } from 'lucide-react';
+import { Banknote, Briefcase, Calendar, Footprints, GraduationCap, Home, Megaphone, Settings, Tally5, Phone } from 'lucide-react';
 import { auth } from '~/server/auth';
 import ThemeSwitch from '../theme-switch';
 import { getAnnoucements, getCourses, getScholarships, getTryouts, getUserEvents } from '~/server/action';
@@ -42,6 +42,7 @@ const sidebarTabs: {
         { label: 'Events', href: '/events', icon: Footprints, tooltip: 'Events', dev: false },
         { label: 'Announcements', href: '/announcements', icon: Megaphone, tooltip: 'Announcements', dev: false },
         { label: "M-Opportunity", href: "/loker", icon: Briefcase, tooltip: "M-Opportunity", dev: true },
+        { label: "Hotline", href: "/hotline", icon: Phone, tooltip: "Hotline", dev: false },
       ],
     },
     {

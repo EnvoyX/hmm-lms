@@ -167,14 +167,14 @@ const LongAnswerQuestion: React.FC<QuestionComponentProps> = ({ question, form, 
 
 const MultipleChoiceQuestion: React.FC<QuestionComponentProps> = ({ question, form, fieldName }) => {
   const settings = question.settings as MultipleChoiceSettings;
-  const [otherValue, setOtherValue] = React.useState('');
+  const isOtherSelected = settings.options?.find(opt => opt.value === form.watch(fieldName)) === undefined;
 
   return (
     <FormField
       control={form.control}
       name={fieldName}
       render={({ field }) => (
-        <RadioGroup onValueChange={field.onChange} value={field.value as string} className="space-y-3">
+        <RadioGroup onValueChange={field.onChange} value={isOtherSelected ? '__other__' : field.value as string} className="space-y-3">
           {settings?.options?.map((option) => (
             <Label
               key={option.id}
@@ -192,14 +192,11 @@ const MultipleChoiceQuestion: React.FC<QuestionComponentProps> = ({ question, fo
             >
               <RadioGroupItem value="__other__" id={`${fieldName}-other`} />
               <span className="ml-3">Other:</span>
-              {field.value === '__other__' && (
+              {(field.value === '__other__' || isOtherSelected) && (
                 <Input
                   placeholder="Please specify..."
-                  value={otherValue}
-                  onChange={(e) => {
-                    setOtherValue(e.target.value);
-                    // You might want to store this `otherValue` in the form state as well
-                  }}
+                  value={isOtherSelected ? field.value as string : ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   className="ml-2 mt-2 sm:mt-0 sm:ml-2 flex-1 min-w-[200px]"
                   onClick={(e) => e.preventDefault()} // Prevents label from re-triggering radio click
                 />
@@ -214,7 +211,6 @@ const MultipleChoiceQuestion: React.FC<QuestionComponentProps> = ({ question, fo
 
 const MultipleSelectQuestion: React.FC<QuestionComponentProps> = ({ question, form, fieldName }) => {
   const settings = question.settings as MultipleSelectSettings;
-  const [otherValue, setOtherValue] = React.useState('');
 
   return (
     <FormField
@@ -222,14 +218,42 @@ const MultipleSelectQuestion: React.FC<QuestionComponentProps> = ({ question, fo
       name={fieldName}
       render={({ field }) => {
         const selectedValues = Array.isArray(field.value) ? (field.value as string[]) : [];
+        const predefinedOptions = settings?.options?.map(o => o.value) ?? [];
+        const otherValue = selectedValues.find(v => !predefinedOptions.includes(v));
+        const isOtherChecked = otherValue !== undefined;
 
-        const handleChange = (optionValue: string, checked: boolean) => {
+        const handleOptionChange = (optionValue: string, checked: boolean) => {
           let newValues = [...selectedValues];
           if (checked) {
             newValues.push(optionValue);
           } else {
             newValues = newValues.filter((v) => v !== optionValue);
           }
+          field.onChange(newValues);
+        };
+
+        const handleOtherCheckedChange = (checked: boolean) => {
+          let newValues = [...selectedValues];
+          // First, remove any existing other value
+          if (otherValue) {
+            newValues = newValues.filter(v => v !== otherValue);
+          }
+          // If checking, add a placeholder to be filled by the input
+          if (checked) {
+            newValues.push(''); // Add an empty string as a placeholder
+          }
+          field.onChange(newValues);
+        };
+
+        const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const newOtherValue = e.target.value;
+          let newValues = [...selectedValues];
+          // Remove the old other value
+          if (otherValue !== undefined) {
+            newValues = newValues.filter(v => v !== otherValue);
+          }
+          // Add the new one
+          newValues.push(newOtherValue);
           field.onChange(newValues);
         };
 
@@ -244,7 +268,7 @@ const MultipleSelectQuestion: React.FC<QuestionComponentProps> = ({ question, fo
                 <Checkbox
                   id={`${fieldName}-${option.id}`}
                   checked={selectedValues.includes(option.value)}
-                  onCheckedChange={(checked) => handleChange(option.value, !!checked)}
+                  onCheckedChange={(checked) => handleOptionChange(option.value, !!checked)}
                 />
                 <span className="ml-3 flex-1">{option.text}</span>
               </Label>
@@ -256,18 +280,15 @@ const MultipleSelectQuestion: React.FC<QuestionComponentProps> = ({ question, fo
               >
                 <Checkbox
                   id={`${fieldName}-other`}
-                  checked={selectedValues.includes('__other__')}
-                  onCheckedChange={(checked) => {
-                    handleChange('__other__', !!checked);
-                    if (!checked) setOtherValue('');
-                  }}
+                  checked={isOtherChecked}
+                  onCheckedChange={handleOtherCheckedChange}
                 />
                 <span className="ml-3">Other:</span>
-                {selectedValues.includes('__other__') && (
+                {isOtherChecked && (
                   <Input
                     placeholder="Please specify..."
-                    value={otherValue}
-                    onChange={(e) => setOtherValue(e.target.value)}
+                    value={otherValue ?? ''}
+                    onChange={handleOtherInputChange}
                     className="ml-2 mt-2 sm:mt-0 sm:ml-2 flex-1 min-w-[200px]"
                   />
                 )}
@@ -362,9 +383,7 @@ const NameSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName 
               aria-expanded={open}
               className="w-full justify-between"
             >
-              {field.value
-                ? users.find(user => user.id === field.value)?.name
-                : "Select a person..."}
+              {(field.value as string) ?? "Select a person..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -381,14 +400,14 @@ const NameSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName 
                   <CommandItem
                     key={user.id}
                     onSelect={() => {
-                      field.onChange(user.id);
+                      field.onChange(user.name);
                       setOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        field.value === user.id ? "opacity-100" : "opacity-0"
+                        field.value === user.name ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <div>
@@ -425,9 +444,7 @@ const NimSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName }
               aria-expanded={open}
               className="w-full justify-between"
             >
-              {field.value
-                ? users.find(user => user.id === field.value)?.nim
-                : "Select a NIM..."}
+              {(field.value as string) ?? "Select a NIM..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -444,14 +461,14 @@ const NimSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName }
                   <CommandItem
                     key={user.id}
                     onSelect={() => {
-                      field.onChange(user.id);
+                      field.onChange(user.nim);
                       setOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        field.value === user.id ? "opacity-100" : "opacity-0"
+                        field.value === user.nim ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <div>
@@ -611,9 +628,7 @@ const CourseSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldNam
               aria-expanded={open}
               className="w-full justify-between"
             >
-              {field.value
-                ? courses.find(course => course.id === field.value)?.title
-                : "Select a course..."}
+              {(field.value as string) ?? "Select a course..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -630,14 +645,14 @@ const CourseSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldNam
                   <CommandItem
                     key={course.id}
                     onSelect={() => {
-                      field.onChange(course.id);
+                      field.onChange(course.title);
                       setOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        field.value === course.id ? "opacity-100" : "opacity-0"
+                        field.value === course.title ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <div>
@@ -674,9 +689,7 @@ const EventSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName
               aria-expanded={open}
               className="w-full justify-between"
             >
-              {field.value
-                ? events.find(event => event.id === field.value)?.title
-                : "Select an event..."}
+              {(field.value as string) ?? "Select an event..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -693,14 +706,14 @@ const EventSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName
                   <CommandItem
                     key={event.id}
                     onSelect={() => {
-                      field.onChange(event.id);
+                      field.onChange(event.title);
                       setOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        field.value === event.id ? "opacity-100" : "opacity-0"
+                        field.value === event.title ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <div>

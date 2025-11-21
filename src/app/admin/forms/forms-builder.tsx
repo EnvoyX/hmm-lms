@@ -13,7 +13,6 @@ import { api } from "~/trpc/react";
 import {
   formBuilderSchema,
   type FormBuilderSchema,
-  type FormQuestionType,
 } from "~/lib/types/forms"; // Using the types file we created
 
 import { Button } from "~/components/ui/button";
@@ -23,11 +22,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { Badge } from "~/components/ui/badge";
-import { Plus, Trash2, GripVertical, Settings } from "lucide-react";
+import { Plus, Trash2, GripVertical } from "lucide-react";
 
 import { QuestionBuilderItem } from "./question-builder"; // The new sub-component
 import { Switch } from "~/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 // Helper to create a default empty question
 const createDefaultQuestion = (order: number): FormBuilderSchema['questions'][number] => ({
@@ -47,7 +47,7 @@ const createDefaultQuestion = (order: number): FormBuilderSchema['questions'][nu
 });
 
 interface FormsBuilderProps {
-  initialData?: FormBuilderSchema;
+  initialData?: FormBuilderSchema & { id:  string};
   mode: 'create' | 'edit';
 }
 
@@ -73,6 +73,7 @@ export function FormsBuilder({ initialData, mode }: FormsBuilderProps) {
         : {
           title: "",
           description: "",
+          type: "NORMAL",
           isPublished: false,
           isActive: true,
           allowMultipleSubmissions: false,
@@ -83,7 +84,7 @@ export function FormsBuilder({ initialData, mode }: FormsBuilderProps) {
         },
   });
 
-  const { fields, append, remove, move } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "questions",
   });
@@ -134,6 +135,7 @@ export function FormsBuilder({ initialData, mode }: FormsBuilderProps) {
         const newForm = await createFormMutation.mutateAsync({
           title: data.title,
           description: data.description,
+          type: data.type,
         });
 
         // 2. Create each question associated with the new form ID
@@ -169,6 +171,23 @@ export function FormsBuilder({ initialData, mode }: FormsBuilderProps) {
             )} />
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem><FormLabel>Description (Optional)</FormLabel><FormControl><Textarea placeholder="Provide details about your form..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="type" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Form Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a form type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="NORMAL">Normal</SelectItem>
+                    <SelectItem value="HOTLINE">Hotline</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )} />
           </CardContent>
         </Card>

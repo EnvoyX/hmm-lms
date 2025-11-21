@@ -72,6 +72,12 @@ export const DateTimeSettingsSchema = z.object({
 });
 export type DateTimeSettings = z.infer<typeof DateTimeSettingsSchema>;
 
+export const TimeSettingsSchema = z.object({
+  minTime: z.string().optional(),
+  maxTime: z.string().optional(),
+});
+export type TimeSettings = z.infer<typeof TimeSettingsSchema>;
+
 const NoSettingsSchema = z.null().optional();
 
 // --- 4. MASTER SCHEMAS FOR FRONTEND STATE MANAGEMENT ---
@@ -91,49 +97,27 @@ export const QuestionSchema = z.discriminatedUnion('type', [
   baseQuestionSchema.extend({ type: z.literal('FILE_UPLOAD'), settings: FileUploadSettingsSchema.optional() }),
   baseQuestionSchema.extend({ type: z.literal('RATING'), settings: RatingSettingsSchema }),
   baseQuestionSchema.extend({ type: z.literal('DATE'), settings: DateTimeSettingsSchema.optional() }),
-  baseQuestionSchema.extend({ type: z.literal('TIME'), settings: NoSettingsSchema }),
+  baseQuestionSchema.extend({ type: z.literal('TIME'), settings: TimeSettingsSchema.optional() }),
   baseQuestionSchema.extend({ type: z.literal('NAME_SELECT'), settings: NoSettingsSchema }),
   baseQuestionSchema.extend({ type: z.literal('NIM_SELECT'), settings: NoSettingsSchema }),
   baseQuestionSchema.extend({ type: z.literal('COURSE_SELECT'), settings: NoSettingsSchema }),
   baseQuestionSchema.extend({ type: z.literal('EVENT_SELECT'), settings: NoSettingsSchema }),
 ]);
-export type QuestionSchema = z.infer<typeof QuestionSchema>;
 
-// This schema is for the frontend builder's form state. It is NOT used directly in the `update` tRPC procedure.
-export const formBuilderSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(1, 'Form title is required'),
+export const createFormSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
+  type: z.enum(['NORMAL', 'HOTLINE']).default('NORMAL'),
   isPublished: z.boolean().default(false),
   isActive: z.boolean().default(true),
   allowMultipleSubmissions: z.boolean().default(false),
   requireAuth: z.boolean().default(true),
   showProgressBar: z.boolean().default(true),
   collectEmail: z.boolean().default(true),
-  questions: z.array(QuestionSchema),
-});
-export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;
-
-// --- 5. SCHEMAS FOR TRPC ROUTER ENDPOINTS (SYNCED WITH ROUTER LOGIC) ---
-
-// For the `form.create` procedure
-export const createFormSchema = formBuilderSchema.pick({
-    title: true,
-    description: true,
 });
 
-// For the `form.update` procedure. NOTE: It does not include `questions`.
-export const updateFormSchema = formBuilderSchema.pick({
-    title: true,
-    description: true,
-    isPublished: true,
-    isActive: true,
-    allowMultipleSubmissions: true,
-    requireAuth: true,
-    showProgressBar: true,
-    collectEmail: true,
-  }).extend({
-    id: z.string(), // ID is required for an update
+export const updateFormSchema = createFormSchema.partial().extend({
+  id: z.string(),
 });
 
 // For the `form.createQuestion` procedure
@@ -166,3 +150,8 @@ export const submitFormSchema = z.object({
   formId: z.string(),
   answers: z.array(submitAnswerSchema),
 });
+
+export const formBuilderSchema = createFormSchema.extend({
+  questions: z.array(QuestionSchema),
+});
+export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;

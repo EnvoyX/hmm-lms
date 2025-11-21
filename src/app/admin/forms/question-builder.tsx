@@ -32,12 +32,11 @@ export function QuestionBuilderItem({ form, questionIndex }: QuestionBuilderItem
 
   const handleTypeChange = (newType: FormQuestionType) => {
     form.setValue(`questions.${questionIndex}.type`, newType);
-    // You can add logic here to reset settings when type changes
-    // For example, if changing to SHORT_ANSWER, clear options
+
+    // Reset settings based on question type
     if (newType === 'SHORT_ANSWER' || newType === 'LONG_ANSWER') {
       form.setValue(`questions.${questionIndex}.settings`, { placeholder: '' });
-    }
-    if (newType === 'MULTIPLE_CHOICE' || newType === 'MULTIPLE_SELECT') {
+    } else if (newType === 'MULTIPLE_CHOICE' || newType === 'MULTIPLE_SELECT') {
       form.setValue(`questions.${questionIndex}.settings`, {
         options: [
           { id: crypto.randomUUID(), text: "", value: "option_1" },
@@ -45,6 +44,16 @@ export function QuestionBuilderItem({ form, questionIndex }: QuestionBuilderItem
         ],
         allowOther: false
       });
+    } else if (newType === 'RATING') {
+      form.setValue(`questions.${questionIndex}.settings`, { scale: 5, icon: 'star' });
+    } else if (newType === 'FILE_UPLOAD') {
+      form.setValue(`questions.${questionIndex}.settings`, { maxFiles: 1 });
+    } else if (newType === 'DATE' || newType === 'TIME') {
+      form.setValue(`questions.${questionIndex}.settings`, {});
+    } else {
+      // For NAME_SELECT, NIM_SELECT, COURSE_SELECT, EVENT_SELECT
+      // These types expect null settings
+      form.setValue(`questions.${questionIndex}.settings`, null);
     }
   };
 
@@ -124,9 +133,29 @@ function MultipleChoiceEditor({ form, questionIndex }: QuestionBuilderItemProps)
           </Button>
         </div>
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={addOption}>
-        <Plus className="w-4 h-4 mr-2" /> Add Option
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button type="button" variant="outline" size="sm" onClick={addOption}>
+          <Plus className="w-4 h-4 mr-2" /> Add Option
+        </Button>
+
+        <FormField
+          control={form.control}
+          name={`questions.${questionIndex}.settings.allowOther`}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-2 space-y-0">
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel className="text-sm font-normal">
+                Add "Other" option
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-// import { z } from "zod";
 import { hashPassword } from "~/lib/utils";
 import { signUpSchema } from "~/lib/schema/auth";
 
@@ -86,7 +85,7 @@ export const authRouter = createTRPCRouter({
 
       return {
         success: true,
-        newPassword, // show this once to the admin
+        newPassword, 
       };
     }),
 });

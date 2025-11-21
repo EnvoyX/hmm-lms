@@ -13,6 +13,7 @@ import {
   updateQuestionSchema,
   submitFormSchema,
 } from "~/lib/types/forms";
+import { FormType } from "@prisma/client";
 
 export const formRouter = createTRPCRouter({
   // Form management
@@ -142,6 +143,49 @@ export const formRouter = createTRPCRouter({
 
       const forms = await ctx.db.form.findMany({
         where: { createdBy: ctx.session.user.id },
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: { updatedAt: "desc" },
+        include: {
+          _count: {
+            select: {
+              questions: true,
+              submissions: true,
+            },
+          },
+        },
+      });
+
+      let nextCursor: string | undefined = undefined;
+      if (forms.length > limit) {
+        const nextItem = forms.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        forms,
+        nextCursor,
+      };
+    }),
+
+
+
+  getHotlineForms: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor } = input;
+
+      const forms = await ctx.db.form.findMany({
+        where: {
+          type: "HOTLINE",
+          isActive: true,
+          isPublished: true,
+        },
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { updatedAt: "desc" },

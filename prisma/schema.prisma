@@ -124,6 +124,11 @@ enum FormQuestionType {
   EVENT_SELECT
 }
 
+enum FormType {
+  NORMAL
+  HOTLINE
+}
+
 // Core LMS course models
 model Course {
   id              String              @id @default(cuid())
@@ -560,6 +565,7 @@ model Form {
   updatedAt   DateTime @updatedAt
   createdBy   String
   creator     User     @relation(fields: [createdBy], references: [id])
+  type        FormType @default(NORMAL)
 
   // Form settings
   allowMultipleSubmissions Boolean @default(false)

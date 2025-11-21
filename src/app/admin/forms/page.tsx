@@ -190,7 +190,7 @@ export default function FormsPage() {
               {filteredForms.map((form) => {
                 const formActions = {
                   onEdit: () => router.push(`/admin/forms/edit/${form.id}`),
-                  onPreview: () => router.push(`/forms/${form.id}`),
+                  onPreview: () => router.push(`/admin/forms/preview/${form.id}`),
                   onShare: () => handleShareForm(form.id),
                   onDuplicate: () => handleDuplicateForm(form.id),
                   onDelete: () => handleDeleteForm(form.id, form.title),
@@ -385,17 +385,16 @@ const FormDropdownMenu: React.FC<{ actions: Omit<FormComponentProps, 'form'> }> 
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuItem onClick={actions.onEdit}><Edit className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
-      <DropdownMenuItem onClick={actions.onDuplicate}>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); actions.onEdit(); }}><Edit className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); actions.onDuplicate(); }}>
         <Copy className="w-4 h-4 mr-2" /> Duplicate
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={actions.onPreview}><Eye className="w-4 h-4 mr-2" /> Preview</DropdownMenuItem>
-      <DropdownMenuItem onClick={actions.onShare}><Share className="w-4 h-4 mr-2" /> Share</DropdownMenuItem>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); actions.onPreview(); }}><Eye className="w-4 h-4 mr-2" /> Preview</DropdownMenuItem>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); actions.onShare(); }}><Share className="w-4 h-4 mr-2" /> Share</DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={actions.onViewResponses}><BarChart3 className="w-4 h-4 mr-2" /> View Responses</DropdownMenuItem>
-      <DropdownMenuItem onClick={actions.onDuplicate}><Copy className="w-4 h-4 mr-2" /> Duplicate</DropdownMenuItem>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); actions.onViewResponses(); }}><BarChart3 className="w-4 h-4 mr-2" /> View Responses</DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={actions.onDelete} className="text-destructive focus:text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); actions.onDelete(); }} className="text-destructive focus:text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 );

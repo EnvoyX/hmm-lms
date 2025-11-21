@@ -5,11 +5,13 @@ import { api } from "~/trpc/react";
 import { FormSubmitClient } from "~/app/(with-sidebar)/forms/forms-submit-client";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
-export default function AdminFormPreviewPage({ params }: { params: { id: string } }) {
+export default function AdminFormPreviewPage() {
   const router = useRouter();
-  const { data: form, isLoading, error } = api.form.getById.useQuery({ id: params.id });
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { data: form, isLoading, error } = api.form.getById.useQuery({ id: id! });
 
   if (isLoading) {
     return (

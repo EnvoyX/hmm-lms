@@ -96,10 +96,10 @@ export default function ScholarshipSettings({ scholarship }: ScholarshipSettings
     onFilesAdded: (files) => {
       // Mark the promise as explicitly ignored with 'void'
       void (async () => {
-        if (files.length === 0) return;
         setIsUploading(true);
         try {
-          const file = files[0].file as File;
+          const file = files[0]?.file as File;
+          if (!file) return;
           const dataTransfer = new DataTransfer();
           dataTransfer.items.add(file);
 

@@ -339,6 +339,7 @@ model Scholarship {
   type         ScholarshipType @default(EXTERNAL)
   createdById  String
   createdBy    User            @relation("CreatedScholarships", fields: [createdById], references: [id])
+  image        String?
 
   @@map("scholarships")
 }

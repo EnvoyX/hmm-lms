@@ -3,10 +3,12 @@ import GeometricBackground from '~/components/ui/background/geometry';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
-import ScholarshipDialog from './scholarships-dialog';
+import Link from 'next/link';
+import Image from 'next/image';
 
 interface ScholarshipCardProps {
   scholarship: {
+    id: string;
     provider: string;
     title: string;
     description: string;
@@ -17,17 +19,28 @@ interface ScholarshipCardProps {
     requirements: string[];
     link: string;
     otherLinks?: string[];
+    image?: string | null;
   },
   setScId?: (id: string) => void;
 }
 
 export default function ScholarshipCard({ scholarship }: ScholarshipCardProps) {
-  const { title, provider, deadline, type, benefits, quota } = scholarship;
+  const { title, provider, deadline, type, benefits, quota, image } = scholarship;
   return (
     <Card className='gap-2 relative'>
       <GeometricBackground className='' variant='subtle-glow' />
       <ScholarshipBadge deadline={deadline} />
       <CardHeader className='z-10'>
+        {image && (
+          <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
+            <Image
+              src={image}
+              alt={title}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
         <CardTitle className='md:text-lg'>
           {title}
         </CardTitle>
@@ -55,11 +68,11 @@ export default function ScholarshipCard({ scholarship }: ScholarshipCardProps) {
             Quota
           </p>
           <h2 className="">{quota ?? "-"}</h2>
-          <ScholarshipDialog scholarship={scholarship}>
-            <Button className='mt-4 w-full' size='lg' variant='default'>
+          <Button className='mt-4 w-full' size='lg' variant='default' asChild>
+            <Link href={`/scholarships/${scholarship.id}`}>
               Read More
-            </Button>
-          </ScholarshipDialog>
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>

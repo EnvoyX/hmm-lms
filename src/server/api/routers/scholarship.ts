@@ -21,6 +21,9 @@ export const scholarshipRouter = createTRPCRouter({
         provider: "",
         deadline: oneMonthLater,
         link: "",
+        image: "",
+        benefits: [],
+        requirements: [],
         createdById: ctx.session.user.id,
       },
     });
@@ -35,6 +38,22 @@ export const scholarshipRouter = createTRPCRouter({
       include: { createdBy: { select: { name: true } } },
     });
   }),
+
+  getById: adminProcedure
+    .input(scholarshipIdSchema)
+    .query(async ({ ctx, input }) => {
+      return ctx.db.scholarship.findUnique({
+        where: { id: input.id },
+      });
+    }),
+
+  getPublicById: publicProcedure
+    .input(scholarshipIdSchema)
+    .query(async ({ ctx, input }) => {
+      return ctx.db.scholarship.findUnique({
+        where: { id: input.id },
+      });
+    }),
 
   create: adminProcedure
     .input(scholarshipSchema)

@@ -20,8 +20,8 @@ export default function ScholarshipPage() {
       {/* {selectedSc && (
         <ScholarshipDialog scholarship={selectedSc} />
       )} */}
-      {dataToDisplay.map(({ createdBy: _, createdById: _1, createdAt: _2, updatedAt: _3, id: scholarshipId, ...scholarship }) => (
-        <ScholarshipCard key={scholarshipId} scholarship={scholarship} />
+      {dataToDisplay.map(({ createdBy: _, createdById: _1, createdAt: _2, updatedAt: _3, ...scholarship }) => (
+        <ScholarshipCard key={scholarship.id} scholarship={scholarship} />
       ))}
     </div>
   );

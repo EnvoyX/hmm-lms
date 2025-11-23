@@ -6,6 +6,11 @@ export const scholarshipSchema = z.object({
   provider: z.string().min(2, "Provider is required"),
   deadline: z.date(),
   link: z.string().url("Must be a valid URL"),
+  image: z.string().optional(),
+  type: z.enum(["INTERNAL", "EXTERNAL"]).default("EXTERNAL"),
+  quota: z.number().nullable().optional(),
+  benefits: z.array(z.string()).default([]),
+  requirements: z.array(z.string()).default([]),
 });
 
 export const updateScholarshipSchema = scholarshipSchema.extend({

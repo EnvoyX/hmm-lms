@@ -52,7 +52,7 @@ export const eventRouter = createTRPCRouter({
           select: { title: true, classCode: true },
         },
       },
-      orderBy: { start: "asc" },
+      orderBy: { start: 'desc' },
     });
   }),
 
@@ -78,7 +78,7 @@ export const eventRouter = createTRPCRouter({
           select: { title: true, classCode: true },
         },
       },
-      orderBy: { start: "asc" },
+      orderBy: { start: "desc" },
     });
   }),
 
@@ -104,7 +104,7 @@ export const eventRouter = createTRPCRouter({
           select: { title: true, classCode: true },
         },
       },
-      orderBy: { start: "asc" },
+      orderBy: { start: "desc" },
     });
   }),
 
@@ -161,7 +161,7 @@ export const eventRouter = createTRPCRouter({
               select: { id: true, name: true, email: true, image: true, nim: true },
             },
           },
-          orderBy: { respondedAt: "asc" },
+          orderBy: { respondedAt: "desc" },
         }),
         ctx.db.eventPresence.findMany({
           where: { eventId: input.eventId },
@@ -171,7 +171,7 @@ export const eventRouter = createTRPCRouter({
             },
             approver: { select: { id: true, name: true } },
           },
-          orderBy: { createdAt: "asc" },
+          orderBy: { createdAt: "desc" },
         }),
       ]);
       return { rsvpResponses, presenceRecords };

@@ -3,6 +3,8 @@
 
 'use client';
 
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,27 +47,28 @@ interface EventFormProps {
   mode: 'create' | 'edit';
 }
 
+const TIMEZONE = "Asia/Jakarta";
+
 // helper: format Date to 'YYYY-MM-DDTHH:mm' for datetime-local
 function toDateTimeLocalValue(d?: Date | null) {
   if (!d) return '';
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
+  // Convert UTC date to target timezone
+  const zonedDate = toZonedTime(d, TIMEZONE);
+
+  const year = zonedDate.getFullYear();
+  const month = String(zonedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(zonedDate.getDate()).padStart(2, '0');
+  const hours = String(zonedDate.getHours()).padStart(2, '0');
+  const minutes = String(zonedDate.getMinutes()).padStart(2, '0');
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 // helper: parse input value from datetime-local back to Date
 function fromDateTimeLocalValue(v: string): Date {
-  // value is local time; construct Date respecting local components
-  const [datePart, timePart] = v.split('T');
-
-  if (!datePart) return (new Date(v))
-
-  const [y, m, d] = datePart.split('-').map(Number);
-  const [hh, mm] = (timePart ?? '00:00').split(':').map(Number);
-  return new Date(y ?? 0, (m ?? 1) - 1, d ?? 1, hh ?? 0, mm ?? 0, 0, 0);
+  if (!v) return new Date();
+  // v is "YYYY-MM-DDTHH:mm"
+  // Interpret this string as being in the target timezone, then convert to UTC
+  return fromZonedTime(v, TIMEZONE);
 }
 
 export default function EventForm({ event, mode }: EventFormProps) {

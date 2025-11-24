@@ -106,7 +106,7 @@ export default async function MainNavbar({
   return (
     <SidebarProvider defaultOpen={defaultOpen} cookieName={SIDEBAR_COOKIE_NAME}>
       <AppSidebar />
-      <main className='w-full overflow-y-auto h-screen'>
+      <main className='w-full h-screen'>
         <SiteHeader data={tabs} />
         <div className="h-[calc(100%-16*var(--spacing)))] p-4 md:p-6 group-has-data-[collapsible=icon]/sidebar-wrapper:h-[calc(100%-12*var(--spacing))]">
           {children}

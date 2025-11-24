@@ -192,14 +192,14 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
         </Alert>
       )}
 
-      <Card>
-        <CardHeader>
+      <Card className='max-sm:bg-transparent max-sm:border-0 max-sm:shadow-none'>
+        <CardHeader className='max-sm:bg-card max-sm:py-4 max-sm:rounded-md max-sm:shadow-sm'>
           <CardTitle className="text-2xl">{initialForm.title}</CardTitle>
           {initialForm.description && (
             <CardDescription>{initialForm.description}</CardDescription>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="py-0 max-sm:px-0">
           {!isPreview && initialForm.requireAuth && sessionStatus === 'unauthenticated' ? (
             <Alert variant="destructive">
               <AlertDescription>

@@ -114,14 +114,14 @@ export const QuestionRenderer: React.FC<{ question: FormQuestion, form: UseFormR
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="text-lg">
+    <Card className="max-sm:shadow-none max-sm:border-0 max-sm:gap-2">
+      <CardHeader className="">
+        <CardTitle className="md:text-lg">
           {question.title}
           {question.required && <span className="text-red-500 ml-1">*</span>}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="py-0">
         <FormField
           control={form.control}
           name={fieldName}

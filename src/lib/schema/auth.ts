@@ -27,3 +27,32 @@ export const signInSchema = z.object({
     .string()
     .min(8, { message: 'Password must be at least 8 characters' }),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email address.")
+    .endsWith("@mahasiswa.itb.ac.id", "Only ITB student emails are allowed."),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters long."),
+    confirmPassword: z
+      .string()
+      .min(8, "Confirm Password must be at least 8 characters long"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords must match",
+    path: ["confirmPassword"],
+  });
+
+export const alternativeEmailSchema = z.object({
+  alternativeEmail: z
+    .string()
+    .email("Invalid email address.")
+    .refine(
+      (email) => !email.endsWith("@itb.ac.id") && !email.endsWith("@mahasiswa.itb.ac.id"),
+      { message: "Please use a personal email (Gmail, Yahoo, etc.), not an ITB email." }
+    ),
+});

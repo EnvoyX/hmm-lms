@@ -12,11 +12,33 @@ export const editProfileSchema = z
       .optional()
       .or(z.literal("")),
     image: z.string().optional().or(z.literal("")),
+    alternativeEmail: z.string().optional().or(z.literal("")),
     currentPassword: z.string().optional().or(z.literal("")),
     newPassword: z.string().optional().or(z.literal("")),
     confirmPassword: z.string().optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {
+    // Validate alternative email if provided
+    if (data.alternativeEmail && data.alternativeEmail.trim().length > 0) {
+      // Check if it's a valid email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.alternativeEmail)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid email address",
+          path: ["alternativeEmail"],
+        });
+      }
+
+      // Check that it's not an ITB email
+      if (data.alternativeEmail.endsWith("@itb.ac.id") || data.alternativeEmail.endsWith("@mahasiswa.itb.ac.id")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please use a personal email (Gmail, Yahoo, etc.), not an ITB email",
+          path: ["alternativeEmail"],
+        });
+      }
+    }
     // Check if user is trying to change password
     const hasNewPassword =
       data.newPassword && data.newPassword.trim().length > 0;

@@ -106,6 +106,7 @@
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.63.0",
     "recharts": "^2.15.4",
+    "resend": "^6.5.2",
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "superjson": "^2.2.2",

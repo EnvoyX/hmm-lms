@@ -161,6 +161,11 @@ export default function SignIn() {
               </FormItem>
             )}
           />
+          <div className='w-full flex justify-end'>
+            <Link href='/auth/forgot-password' className='text-xs text-muted-foreground hover:text-primary hover:underline'>
+              Forgot password?
+            </Link>
+          </div>
           <Button
             type='submit'
             className='rounded-md w-full shadow-md'

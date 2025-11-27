@@ -27,6 +27,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  alternativeEmail: string | null;
   nim: string | null;
   faculty: string | null;
   program: string | null;
@@ -74,6 +75,7 @@ export function EditProfileDialog({
       name: user.name,
       position: user.position ?? "",
       image: user.image ?? "",
+      alternativeEmail: user.alternativeEmail ?? "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
@@ -87,6 +89,7 @@ export function EditProfileDialog({
         name: user.name,
         position: user.position ?? "",
         image: user.image ?? "",
+        alternativeEmail: user.alternativeEmail ?? "",
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
@@ -99,6 +102,7 @@ export function EditProfileDialog({
       name: data.name,
       position: data.position ?? undefined,
       image: data.image ?? undefined,
+      alternativeEmail: data.alternativeEmail ?? undefined,
       currentPassword: data.currentPassword ?? undefined,
       newPassword: data.newPassword ?? undefined,
     });
@@ -219,6 +223,40 @@ export function EditProfileDialog({
                   <Input value={user.program} disabled className="bg-muted" />
                 </div>
               )}
+            </div>
+
+            <Separator />
+
+            {/* Recovery Email Section */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium">Recovery Email</h3>
+                <p className="text-sm text-muted-foreground">
+                  Add a personal email (Gmail, Yahoo, etc.) for password recovery
+                </p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="alternativeEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recovery Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="yourname@gmail.com"
+                        {...field}
+                        disabled={updateProfileMutation.isPending}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Used for password reset. Must be a personal email, not ITB email.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <Separator />

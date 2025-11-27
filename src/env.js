@@ -22,6 +22,7 @@ export const env = createEnv({
     DO_SPACES_BUCKET: z.string(),
     VAPID_PRIVATE_KEY: z.string(),
     VAPID_SUBJECT: z.string().url().or(z.string().email()),
+    RESEND_API_KEY: z.string(),
   },
 
   /**
@@ -52,7 +53,8 @@ export const env = createEnv({
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
     VAPID_SUBJECT: process.env.VAPID_SUBJECT,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

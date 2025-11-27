@@ -499,19 +499,20 @@ model ResourceAccess {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  password      String
-  nim           String    @unique
-  faculty       String?
-  program       String?
-  position      String?
-  role          Role      @default(STUDENT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  emailVerified DateTime?
-  image         String?
+  id               String    @id @default(cuid())
+  email            String    @unique
+  alternativeEmail String?   // Personal email (Gmail, etc.) for password reset
+  name             String
+  password         String
+  nim              String    @unique
+  faculty          String?
+  program          String?
+  position         String?
+  role             Role      @default(STUDENT)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  emailVerified    DateTime?
+  image            String?
 
   sessions             Session[]
   courses              Course[]
@@ -534,6 +535,20 @@ model User {
   formSubmission       FormSubmission[]
   shortLink            ShortLink[]         @relation("CreatedShortLinks")
   announcementReplies  AnnouncementReply[]
+  passwordResetTokens  PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_reset_tokens")
 }
 
 model Session {

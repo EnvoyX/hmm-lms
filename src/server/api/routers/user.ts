@@ -185,6 +185,7 @@ export const userRouter = createTRPCRouter({
         id: true,
         name: true,
         email: true,
+        alternativeEmail: true,
         nim: true,
         faculty: true,
         program: true,
@@ -225,12 +226,20 @@ export const userRouter = createTRPCRouter({
         name: string;
         position?: string | null;
         image?: string | null;
+        alternativeEmail?: string | null;
         password?: string;
       } = {
         name: input.name,
         position: input.position && input.position.trim() !== "" ? input.position : null,
         image: input.image && input.image.trim() !== "" ? input.image : null,
       };
+
+      // Handle alternative email update
+      if (input.alternativeEmail !== undefined) {
+        updateData.alternativeEmail = input.alternativeEmail && input.alternativeEmail.trim() !== ""
+          ? input.alternativeEmail.trim().toLowerCase()
+          : null;
+      }
 
       // Handle password change if newPassword is provided
       if (input.newPassword && input.newPassword.trim().length > 0) {
@@ -260,6 +269,7 @@ export const userRouter = createTRPCRouter({
           id: true,
           name: true,
           email: true,
+          alternativeEmail: true,
           nim: true,
           faculty: true,
           program: true,

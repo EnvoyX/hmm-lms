@@ -31,10 +31,14 @@ export const editProfileSchema = z
       }
 
       // Check that it's not an ITB email
-      if (data.alternativeEmail.endsWith("@itb.ac.id") || data.alternativeEmail.endsWith("@mahasiswa.itb.ac.id")) {
+      if (
+        data.alternativeEmail.endsWith("@itb.ac.id") ||
+        data.alternativeEmail.endsWith("@mahasiswa.itb.ac.id")
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Please use a personal email (Gmail, Yahoo, etc.), not an ITB email",
+          message:
+            "Please use a personal email (Gmail, etc.), not an ITB email",
           path: ["alternativeEmail"],
         });
       }
@@ -65,7 +69,7 @@ export const editProfileSchema = z
         });
       }
 
-      if (!(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.newPassword!))) {
+      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.newPassword!)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message:

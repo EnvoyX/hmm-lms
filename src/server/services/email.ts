@@ -1,14 +1,20 @@
-import { Resend } from 'resend';
-import { env } from '~/env';
+import { Resend } from "resend";
+import { env } from "~/env";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
-const FROM_EMAIL = 'HMM ITB <noreply@hmmitb.com>';
+const FROM_EMAIL = "HMM ITB <onboarding@resend.dev>";
 
 interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
+}
+
+interface PasswordResetEmailParams {
+  to: string;
+  userName: string;
+  resetLink: string;
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
@@ -21,23 +27,16 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     });
 
     if (error) {
-      console.error('Failed to send email:', error);
+      console.error("Failed to send email:", error);
       return { success: false, error };
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error('Email service error:', error);
+    console.error("Email service error:", error);
     return { success: false, error };
   }
 }
-
-interface PasswordResetEmailParams {
-  to: string;
-  userName: string;
-  resetLink: string;
-}
-
 export async function sendPasswordResetEmail({
   to,
   userName,
@@ -91,8 +90,7 @@ export async function sendPasswordResetEmail({
 
   return sendEmail({
     to,
-    subject: 'Reset Your Password - HMM ITB LMS',
+    subject: "Reset Your Password - HMM ITB LMS",
     html,
   });
 }
-

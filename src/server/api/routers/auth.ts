@@ -11,7 +11,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import z from 'zod';
+import z from "zod";
 
 export const authRouter = createTRPCRouter({
   signUp: publicProcedure.input(signUpSchema).mutation(async ({ input }) => {
@@ -55,7 +55,7 @@ export const authRouter = createTRPCRouter({
     };
   }),
 
-   resetPasswordByAdmin: protectedProcedure
+  resetPasswordByAdmin: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -78,7 +78,7 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      const newPassword = 'TempPass123';
+      const newPassword = "TempPass123";
       const hashedPassword = await hashPassword(newPassword);
 
       await db.user.update({
@@ -96,7 +96,13 @@ export const authRouter = createTRPCRouter({
   requestPasswordReset: publicProcedure
     .input(
       z.object({
-        email: z.string().email().endsWith("@mahasiswa.itb.ac.id", "Only ITB student emails are allowed."),
+        email: z
+          .string()
+          .email()
+          .endsWith(
+            "@mahasiswa.itb.ac.id",
+            "Only ITB student emails are allowed.",
+          ),
       }),
     )
     .mutation(async ({ input }) => {
@@ -105,10 +111,11 @@ export const authRouter = createTRPCRouter({
       });
 
       // Always return success to prevent email enumeration
-      if (!user || !user.alternativeEmail) {
+      if (!user?.alternativeEmail) {
         return {
           success: true,
-          message: "If an account with that email exists and has a recovery email set, you will receive a password reset link.",
+          message:
+            "If an account with that email exists and has a recovery email set, you will receive a password reset link.",
         };
       }
 
@@ -140,7 +147,8 @@ export const authRouter = createTRPCRouter({
 
       return {
         success: true,
-        message: "If an account with that email exists and has a recovery email set, you will receive a password reset link.",
+        message:
+          "If an account with that email exists and has a recovery email set, you will receive a password reset link.",
       };
     }),
 
@@ -186,14 +194,18 @@ export const authRouter = createTRPCRouter({
   // Reset password with token
   resetPassword: publicProcedure
     .input(
-      z.object({
-        token: z.string(),
-        password: z.string().min(8, "Password must be at least 8 characters long."),
-        confirmPassword: z.string(),
-      }).refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords must match",
-        path: ["confirmPassword"],
-      }),
+      z
+        .object({
+          token: z.string(),
+          password: z
+            .string()
+            .min(8, "Password must be at least 8 characters long."),
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: "Passwords must match",
+          path: ["confirmPassword"],
+        }),
     )
     .mutation(async ({ input }) => {
       const resetToken = await db.passwordResetToken.findUnique({
@@ -235,7 +247,8 @@ export const authRouter = createTRPCRouter({
 
       return {
         success: true,
-        message: "Password has been reset successfully. You can now sign in with your new password.",
+        message:
+          "Password has been reset successfully. You can now sign in with your new password.",
       };
     }),
 
@@ -243,10 +256,18 @@ export const authRouter = createTRPCRouter({
   updateAlternativeEmail: protectedProcedure
     .input(
       z.object({
-        alternativeEmail: z.string().email("Invalid email address.")
-          .refine((email) => !email.endsWith("@itb.ac.id") && !email.endsWith("@mahasiswa.itb.ac.id"), {
-            message: "Please use a personal email (Gmail, Yahoo, etc.), not an ITB email.",
-          }),
+        alternativeEmail: z
+          .string()
+          .email("Invalid email address.")
+          .refine(
+            (email) =>
+              !email.endsWith("@itb.ac.id") &&
+              !email.endsWith("@mahasiswa.itb.ac.id"),
+            {
+              message:
+                "Please use a personal email (Gmail, etc.), not an ITB email.",
+            },
+          ),
       }),
     )
     .mutation(async ({ ctx, input }) => {

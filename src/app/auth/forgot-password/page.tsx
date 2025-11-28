@@ -134,13 +134,13 @@ export default function ForgotPassword() {
                     placeholder="13122080@mahasiswa.itb.ac.id"
                     {...field}
                     onChange={(e) => {
-                      const v = e.target.value;
-                      if (v.includes("@")) {
+                      const value = e.target.value;
+                      if (value.includes("@")) {
                         field.onChange(
-                          v.replace(/@.*/, "@mahasiswa.itb.ac.id"),
+                          value.replace(/@.*/, "@mahasiswa.itb.ac.id"),
                         );
                       } else {
-                        field.onChange(v);
+                        field.onChange(value);
                       }
                     }}
                   />

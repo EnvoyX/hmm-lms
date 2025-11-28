@@ -18,14 +18,14 @@ export const signUpSchema = z
   });
 
 export const signInSchema = z.object({
-  email: z.string().email({ message: 'Invalid email format' }),
+  email: z.string().email({ message: "Invalid email format" }),
   // .regex(/[0-9]{8}@mahasiswa.itb.ac.id$/,
   // {
   //   message: 'Email must be ITB student email',
   // }),
   password: z
     .string()
-    .min(8, { message: 'Password must be at least 8 characters' }),
+    .min(8, { message: "Password must be at least 8 characters" }),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -52,7 +52,11 @@ export const alternativeEmailSchema = z.object({
     .string()
     .email("Invalid email address.")
     .refine(
-      (email) => !email.endsWith("@itb.ac.id") && !email.endsWith("@mahasiswa.itb.ac.id"),
-      { message: "Please use a personal email (Gmail, Yahoo, etc.), not an ITB email." }
+      (email) =>
+        !email.endsWith("@itb.ac.id") &&
+        !email.endsWith("@mahasiswa.itb.ac.id"),
+      {
+        message: "Please use a personal email (Gmail, etc.), not an ITB email.",
+      },
     ),
 });

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { api } from "~/trpc/react";
-import { FormSubmitClient } from "~/app/(with-sidebar)/forms/forms-submit-client";
+import { FormSubmitClient } from "~/app/forms/forms-submit-client";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useRouter, useParams } from "next/navigation";

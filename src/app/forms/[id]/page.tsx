@@ -13,7 +13,7 @@ export default async function FormSubmitPage({ params }: FormSubmitPageProps) {
   const form = await api.form.getById({ id });
 
   return (
-    <div className="container mx-auto max-w-5xl">
+    <div className="container mx-auto max-w-5xl md:py-6 px-4">
       <FormSubmitClient form={form} />
     </div>
   );

@@ -534,6 +534,7 @@ model User {
   formSubmission       FormSubmission[]
   shortLink            ShortLink[]         @relation("CreatedShortLinks")
   announcementReplies  AnnouncementReply[]
+  managedForms         Form[]              @relation("FormManagers")
 }
 
 model Session {
@@ -573,6 +574,10 @@ model Form {
   requireAuth              Boolean @default(true)
   showProgressBar          Boolean @default(true)
   collectEmail             Boolean @default(true)
+
+  // Collaboration
+  isPublicToAdmins         Boolean         @default(false)
+  managers                 User[]          @relation("FormManagers")
 
   // Relations
   questions   FormQuestion[]

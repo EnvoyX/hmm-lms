@@ -40,20 +40,20 @@ export default function ResourceItem({ resource, onViewResource }: ResourceItemP
     return (
       <button
         onClick={() => onViewResource(resource)}
-        className="w-full text-left flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+        className="w-full text-left flex items-start gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
       >
-        <div className="flex-shrink-0">{icon}</div>
+        <div className="flex-shrink-0 mt-1">{icon}</div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{resource.title}</p>
+          <p className="font-medium break-words">{resource.title}</p>
           {resource.description && (
-            <p className="text-sm text-muted-foreground mt-1 truncate">{resource.description}</p>
+            <p className="text-sm text-muted-foreground mt-1 break-words">{resource.description}</p>
           )}
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
-          {resource.link.source === "YOUTUBE" && <Youtube className="h-5 w-5 text-error" />}
-          {resource.link.source === "GOOGLE_DRIVE" && <File className="h-5 w-5 text-primary" />}
-          <Badge variant="outline">{resource.link.source.replace('_', ' ')}</Badge>
-          <LinkIcon className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 mt-2">
+            {resource.link.source === "YOUTUBE" && <Youtube className="h-4 w-4 text-error" />}
+            {resource.link.source === "GOOGLE_DRIVE" && <File className="h-4 w-4 text-primary" />}
+            <span className="text-xs text-muted-foreground font-medium">{resource.link.source.replace('_', ' ')}</span>
+            <LinkIcon className="h-3 w-3 text-muted-foreground/50 ml-1" />
+          </div>
         </div>
       </button>
     );
@@ -63,16 +63,16 @@ export default function ResourceItem({ resource, onViewResource }: ResourceItemP
     return (
       <button
         onClick={() => onViewResource(resource)}
-        className="w-full text-left flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+        className="w-full text-left flex items-start gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
       >
-        <div className="flex-shrink-0">{icon}</div>
+        <div className="flex-shrink-0 mt-1">{icon}</div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{resource.title}</p>
-          <p className="text-sm text-muted-foreground mt-1 truncate">{resource.attachment.filename}</p>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
-          <Badge variant="secondary">{formatBytes(resource.attachment.size)}</Badge>
-          <Download className="h-4 w-4 text-muted-foreground" />
+          <p className="font-medium break-words">{resource.title}</p>
+          <p className="text-sm text-muted-foreground mt-1 break-words">{resource.attachment.filename}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">{formatBytes(resource.attachment.size)}</span>
+            <Download className="h-3 w-3 text-muted-foreground/50" />
+          </div>
         </div>
       </button>
     );

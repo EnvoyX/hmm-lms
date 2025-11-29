@@ -36,14 +36,14 @@ export default function ScholarshipDetailPage() {
       <div className="container max-w-5xl mx-auto relative z-10">
         <div className="bg-card rounded-md overflow-hidden border shadow-xl">
           {/* Hero Section */}
-          <div className="relative h-64 md:h-80 w-full bg-muted">
+          <div className="relative h-64 md:h-96 w-full bg-muted group overflow-hidden">
             {scholarship.image ? (
               <MotionImageDialog
                 layoutId={"hero-image"+scholarship.id}
                 src={scholarship.image}
                 alt={scholarship.title}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
                 priority
               />
             ) : (
@@ -51,19 +51,19 @@ export default function ScholarshipDetailPage() {
                 <FileText className="w-24 h-24 text-primary/40" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
             
             <div className="absolute bottom-0 left-0 w-full p-6 md:p-10 pointer-events-none">
               <div className="flex flex-wrap gap-3 mb-4">
-                <Badge variant={isEnded ? "destructive" : "default"} className="text-sm px-3 py-1">
+                <Badge variant={isEnded ? "destructive" : "default"} className="text-sm px-3 py-1 shadow-lg">
                   {isEnded ? "Closed" : "Open for Application"}
                 </Badge>
-                <Badge variant="outline" className="text-sm px-3 py-1 bg-background/50 backdrop-blur-sm">
+                <Badge variant="outline" className="text-sm px-3 py-1 bg-black/40 backdrop-blur-md text-white border-white/20">
                   {scholarship.type}
                 </Badge>
               </div>
-              <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-2">{scholarship.title}</h1>
-              <p className="text-xl text-muted-foreground font-medium">{scholarship.provider}</p>
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 drop-shadow-md">{scholarship.title}</h1>
+              <p className="text-xl text-gray-200 font-medium drop-shadow-sm">{scholarship.provider}</p>
             </div>
           </div>
 

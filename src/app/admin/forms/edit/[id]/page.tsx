@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
-import { FormsBuilder } from '../../forms-builder';
+import { FormsBuilder } from "~/app/admin/forms/forms-builder";
 import type { FormBuilderSchema } from "~/lib/types/forms";
 
 // Page props in Next.js App Router

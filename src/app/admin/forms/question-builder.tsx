@@ -15,11 +15,12 @@ import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { Switch } from "~/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "~/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "~/components/ui/form";
 import { Button } from "~/components/ui/button";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { AlertCircle, Plus, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Checkbox } from "~/components/ui/checkbox";
 
 interface QuestionBuilderItemProps {
   form: UseFormReturn<FormBuilderSchema>;
@@ -79,7 +80,7 @@ export function QuestionBuilderItem({ form, questionIndex }: QuestionBuilderItem
             </FormItem>
           )} />
           <FormField control={form.control} name={`questions.${questionIndex}.required`} render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm h-full mt-2">
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border px-3 shadow-sm mt-2">
               <div className="space-y-0.5"><FormLabel>Required</FormLabel></div>
               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
             </FormItem>
@@ -103,7 +104,9 @@ export function QuestionBuilderItem({ form, questionIndex }: QuestionBuilderItem
             <FormItem><FormLabel>Placeholder Text (Optional)</FormLabel><FormControl><Input placeholder="e.g., Enter your full name" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
           )} />
         )}
-        {/* Add other settings editors here as needed (e.g., for Rating, File Upload) */}
+        {questionType === 'FILE_UPLOAD' && (
+          <FileUploadEditor form={form} questionIndex={questionIndex} />
+        )}
 
       </CardContent>
     </Card>
@@ -150,12 +153,105 @@ function MultipleChoiceEditor({ form, questionIndex }: QuestionBuilderItemProps)
                 />
               </FormControl>
               <FormLabel className="text-sm font-normal">
-                Add "Other" option
+                Add {'"Other"'} option
               </FormLabel>
             </FormItem>
           )}
         />
       </div>
+    </div>
+  );
+}
+
+const FILE_TYPE_CATEGORIES = [
+  { label: 'Images', types: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] },
+  { label: 'PDF', types: ['application/pdf'] },
+  { label: 'Documents', types: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'] },
+  { label: 'Spreadsheets', types: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'] },
+  { label: 'Presentations', types: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'] },
+  { label: 'Archives', types: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'] },
+];
+
+function FileUploadEditor({ form, questionIndex }: QuestionBuilderItemProps) {
+  return (
+    <div className="space-y-4 pt-4 border-t">
+      <Label className="font-semibold">File Upload Settings</Label>
+
+      <FormField
+        control={form.control}
+        name={`questions.${questionIndex}.settings.maxFiles`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Maximum Number of Files</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                min={1}
+                max={10}
+                {...field}
+                onChange={e => field.onChange(parseInt(e.target.value))}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name={`questions.${questionIndex}.settings.allowedFileTypes`}
+        render={({ field }) => {
+          const currentTypes = (field.value ?? []);
+
+          const handleCategoryChange = (categoryTypes: string[], checked: boolean) => {
+            let newTypes = [...currentTypes];
+            if (checked) {
+              // Add types that aren't already present
+              categoryTypes.forEach(t => {
+                if (!newTypes.includes(t)) newTypes.push(t);
+              });
+            } else {
+              // Remove types
+              newTypes = newTypes.filter(t => !categoryTypes.includes(t));
+            }
+            field.onChange(newTypes);
+          };
+
+          const isCategoryChecked = (categoryTypes: string[]) => {
+            // Check if all types in the category are present
+            return categoryTypes.every(t => currentTypes.includes(t));
+          };
+
+          return (
+            <FormItem>
+              <FormLabel>Allowed File Types</FormLabel>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                {FILE_TYPE_CATEGORIES.map((category) => (
+                  <div key={category.label} className="flex items-start space-x-2">
+                    <Checkbox
+                      id={`file-type-${questionIndex}-${category.label}`}
+                      checked={isCategoryChecked(category.types)}
+                      onCheckedChange={(checked) => handleCategoryChange(category.types, checked as boolean)}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <label
+                        htmlFor={`file-type-${questionIndex}-${category.label}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {category.label}
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <FormDescription>
+                Leave all unchecked to allow any file type.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          );
+        }}
+      />
     </div>
   );
 }

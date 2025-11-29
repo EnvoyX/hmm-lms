@@ -139,7 +139,7 @@ export const getTryouts = unstable_cache(
 
 export const uploadImages = async (
   files: FileList,
-  entityType: 'course' | 'tryout' | 'announcement' | 'profile' | 'event' | 'scholarship',
+  entityType: 'course' | 'tryout' | 'announcement' | 'profile' | 'event' | 'scholarship' | 'form_submission',
   entityId: string,
   questionNumber?: number
 ) => {

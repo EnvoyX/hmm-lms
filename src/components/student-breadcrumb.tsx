@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import { Fragment } from 'react';
+import BreadcrumbItemResolver from './breadcrumb-item-resolver';
 
 export default function StudentBreadcrumb({ isMobile = false }: { isMobile?: boolean }) {
   const pathNames = usePathname()?.split("/").filter(Boolean) || [];
@@ -31,17 +32,18 @@ export default function StudentBreadcrumb({ isMobile = false }: { isMobile?: boo
           {pathNames.map((path, index) => {
             const href = `/${pathNames.slice(0, index + 1).join("/")}`;
             const isLast = index === pathNames.length - 1;
-            const label = path.replace(/-/g, " ");
 
             return (
               <Fragment key={href}>
                 {index !== 0 && <BreadcrumbSeparator />}
                 <BreadcrumbItem className='capitalize'>
                   {isLast ? (
-                    <BreadcrumbPage>{label}</BreadcrumbPage>
+                    <BreadcrumbPage>
+                      <BreadcrumbItemResolver path={path} index={index} pathNames={pathNames} />
+                    </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink href={href} className="hover:text-foreground">
-                      {label}
+                        <BreadcrumbItemResolver path={path} index={index} pathNames={pathNames} />
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
@@ -54,8 +56,8 @@ export default function StudentBreadcrumb({ isMobile = false }: { isMobile?: boo
   }
 
   // If more than 3 items, show: first > ... > last
-  const firstPath = pathNames[0];
-  const lastPath = pathNames[pathNames.length - 1];
+  const firstPath = pathNames[0]!;
+  const lastPath = pathNames[pathNames.length - 1]!;
   const middlePaths = pathNames.slice(1, -1);
 
   return (
@@ -64,7 +66,7 @@ export default function StudentBreadcrumb({ isMobile = false }: { isMobile?: boo
         {/* First item */}
         <BreadcrumbItem className='capitalize'>
           <BreadcrumbLink href={`/${firstPath}`} className="hover:text-foreground">
-            {firstPath?.replace(/-/g, " ")}
+            <BreadcrumbItemResolver path={firstPath} index={0} pathNames={pathNames} />
           </BreadcrumbLink>
         </BreadcrumbItem>
 
@@ -79,13 +81,15 @@ export default function StudentBreadcrumb({ isMobile = false }: { isMobile?: boo
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               {middlePaths.map((path, index) => {
-                const href = `/${pathNames.slice(0, index + 2).join("/")}`;
-                const label = path.replace(/-/g, " ");
+                // index here is relative to middlePaths
+                // real index in pathNames is index + 1
+                const realIndex = index + 1;
+                const href = `/${pathNames.slice(0, realIndex + 1).join("/")}`;
 
                 return (
                   <DropdownMenuItem key={href} asChild>
                     <a href={href} className="capitalize">
-                      {label}
+                      <BreadcrumbItemResolver path={path} index={realIndex} pathNames={pathNames} />
                     </a>
                   </DropdownMenuItem>
                 );
@@ -98,7 +102,9 @@ export default function StudentBreadcrumb({ isMobile = false }: { isMobile?: boo
 
         {/* Last item (current page) */}
         <BreadcrumbItem className='capitalize'>
-          <BreadcrumbPage>{lastPath?.replace(/-/g, " ")}</BreadcrumbPage>
+          <BreadcrumbPage>
+            <BreadcrumbItemResolver path={lastPath} index={pathNames.length - 1} pathNames={pathNames} />
+          </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

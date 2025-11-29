@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Save, Trash2, Upload, X, ImageIcon } from "lucide-react";
+import { Loader2, Save, Trash2, Upload, X, ImageIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ScholarshipType } from "@prisma/client";
 import { useFileUpload } from "~/hooks/use-file-upload";
@@ -59,8 +59,8 @@ export default function ScholarshipSettings({ scholarship }: ScholarshipSettings
     link: scholarship.link,
     type: scholarship.type,
     image: scholarship.image,
-    benefits: scholarship.benefits.join("\n"),
-    requirements: scholarship.requirements.join("\n"),
+    benefits: scholarship.benefits.length > 0 ? scholarship.benefits : ["", "", ""],
+    requirements: scholarship.requirements.length > 0 ? scholarship.requirements : ["", "", ""],
     quota: scholarship.quota?.toString() ?? "",
   });
 
@@ -133,8 +133,8 @@ export default function ScholarshipSettings({ scholarship }: ScholarshipSettings
       link: formData.link,
       type: formData.type,
       image: formData.image ?? undefined,
-      benefits: formData.benefits.split("\n").filter(line => line.trim() !== ""),
-      requirements: formData.requirements.split("\n").filter(line => line.trim() !== ""),
+      benefits: formData.benefits.filter(line => line.trim() !== ""),
+      requirements: formData.requirements.filter(line => line.trim() !== ""),
       quota: formData.quota ? parseInt(formData.quota) : null,
     });
   };
@@ -240,24 +240,82 @@ export default function ScholarshipSettings({ scholarship }: ScholarshipSettings
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="benefits">Benefits (One per line)</Label>
-                <Textarea
-                  id="benefits"
-                  value={formData.benefits}
-                  onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-                  rows={4}
-                  placeholder="Full Tuition Coverage&#10;Monthly Stipend"
-                />
+                <Label>Benefits</Label>
+                <div className="space-y-2">
+                  {formData.benefits.map((benefit, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={benefit}
+                        onChange={(e) => {
+                          const newBenefits = [...formData.benefits];
+                          newBenefits[index] = e.target.value;
+                          setFormData({ ...formData, benefits: newBenefits });
+                        }}
+                        placeholder={`Benefit ${index + 1}`}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newBenefits = formData.benefits.filter((_, i) => i !== index);
+                          setFormData({ ...formData, benefits: newBenefits });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ""] })}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Benefit
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="requirements">Requirements (One per line)</Label>
-                <Textarea
-                  id="requirements"
-                  value={formData.requirements}
-                  onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                  rows={4}
-                  placeholder="GPA > 3.5&#10;Active Student"
-                />
+                <Label>Requirements</Label>
+                <div className="space-y-2">
+                  {formData.requirements.map((requirement, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={requirement}
+                        onChange={(e) => {
+                          const newRequirements = [...formData.requirements];
+                          newRequirements[index] = e.target.value;
+                          setFormData({ ...formData, requirements: newRequirements });
+                        }}
+                        placeholder={`Requirement ${index + 1}`}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newRequirements = formData.requirements.filter((_, i) => i !== index);
+                          setFormData({ ...formData, requirements: newRequirements });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setFormData({ ...formData, requirements: [...formData.requirements, ""] })}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Requirement
+                  </Button>
+                </div>
               </div>
             </div>
 

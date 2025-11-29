@@ -3,6 +3,7 @@
 import React from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import {
   CalendarIcon,
   Check,
@@ -63,8 +64,7 @@ interface FormQuestion {
   description?: string | null;
   type: FormQuestionType;
   required: boolean;
-  settings?:
-  JsonValue
+  settings?: JsonValue
 }
 
 // Define the shape of the form data for better type safety
@@ -114,7 +114,7 @@ export const QuestionRenderer: React.FC<{ question: FormQuestion, form: UseFormR
   };
 
   return (
-    <Card className="max-sm:shadow-none max-sm:border-0 max-sm:gap-2">
+    <Card className="max-sm:shadow-none max-sm:border-0 max-sm:gap-2 gap-4">
       <CardHeader className="">
         <CardTitle className="md:text-lg">
           {question.title}
@@ -174,12 +174,12 @@ const MultipleChoiceQuestion: React.FC<QuestionComponentProps> = ({ question, fo
       control={form.control}
       name={fieldName}
       render={({ field }) => (
-        <RadioGroup onValueChange={field.onChange} value={isOtherSelected ? '__other__' : field.value as string} className="space-y-3">
+        <RadioGroup onValueChange={field.onChange} value={isOtherSelected ? '__other__' : field.value as string} className="space-y-2">
           {settings?.options?.map((option) => (
             <Label
               key={option.id}
               htmlFor={`${fieldName}-${option.id}`}
-              className="p-4 flex items-center border rounded-md cursor-pointer hover:bg-accent has-[[data-state=checked]]:bg-accent has-[[data-state=checked]]:border-primary"
+              className="p-3 flex items-center border rounded-md cursor-pointer hover:bg-accent has-[[data-state=checked]]:bg-accent has-[[data-state=checked]]:border-primary"
             >
               <RadioGroupItem value={option.value} id={`${fieldName}-${option.id}`} />
               <span className="ml-3 flex-1">{option.text}</span>
@@ -188,11 +188,11 @@ const MultipleChoiceQuestion: React.FC<QuestionComponentProps> = ({ question, fo
           {settings?.allowOther && (
             <Label
               htmlFor={`${fieldName}-other`}
-              className="p-4 flex flex-wrap items-center border rounded-md cursor-pointer hover:bg-accent has-[[data-state=checked]]:bg-accent has-[[data-state=checked]]:border-primary"
+              className="p-3 flex flex-wrap items-center border rounded-md cursor-pointer hover:bg-accent has-[[data-state=checked]]:bg-accent has-[[data-state=checked]]:border-primary"
             >
-              <RadioGroupItem value="__other__" id={`${fieldName}-other`} />
+              <RadioGroupItem value="" id={`${fieldName}-other`} />
               <span className="ml-3">Other:</span>
-              {(field.value === '__other__' || isOtherSelected) && (
+              {(field.value === '' || isOtherSelected) && (
                 <Input
                   placeholder="Please specify..."
                   value={isOtherSelected ? field.value as string : ''}
@@ -309,7 +309,20 @@ const FileUploadQuestion: React.FC<QuestionComponentProps> = ({ question, form, 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
     const maxFiles = settings?.maxFiles ?? 5;
-    const validFiles = selectedFiles.slice(0, maxFiles);
+
+    // Filter by type if specified
+    let validFiles = selectedFiles;
+    if (settings?.allowedFileTypes && settings.allowedFileTypes.length > 0) {
+      validFiles = validFiles.filter(file => settings.allowedFileTypes!.includes(file.type));
+    }
+
+    // Enforce max files
+    validFiles = validFiles.slice(0, maxFiles);
+
+    if (validFiles.length < selectedFiles.length) {
+      toast.error("Some files were rejected due to type or count restrictions.");
+    }
+
     setFiles(validFiles);
     form.setValue(fieldName, validFiles);
   };
@@ -395,7 +408,7 @@ const NameSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName 
                 onValueChange={setSearch}
               />
               <CommandEmpty>No person found.</CommandEmpty>
-              <CommandGroup>
+              <CommandGroup className='max-h-64 overflow-y-scroll'>
                 {users.map(user => (
                   <CommandItem
                     key={user.id}
@@ -456,7 +469,7 @@ const NimSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName }
                 onValueChange={setSearch}
               />
               <CommandEmpty>No student found.</CommandEmpty>
-              <CommandGroup>
+              <CommandGroup className='max-h-64 overflow-y-scroll'>
                 {users.map(user => (
                   <CommandItem
                     key={user.id}
@@ -640,7 +653,7 @@ const CourseSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldNam
                 onValueChange={setSearch}
               />
               <CommandEmpty>No course found.</CommandEmpty>
-              <CommandGroup>
+              <CommandGroup className='max-h-64 overflow-y-scroll'>
                 {courses.map(course => (
                   <CommandItem
                     key={course.id}
@@ -701,7 +714,7 @@ const EventSelectQuestion: React.FC<QuestionComponentProps> = ({ form, fieldName
                 onValueChange={setSearch}
               />
               <CommandEmpty>No event found.</CommandEmpty>
-              <CommandGroup>
+              <CommandGroup className='max-h-64 overflow-y-scroll'>
                 {events.map(event => (
                   <CommandItem
                     key={event.id}

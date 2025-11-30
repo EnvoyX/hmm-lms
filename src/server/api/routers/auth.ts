@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { randomBytes } from "crypto";
-import { hashPassword } from "~/lib/utils";
+import { hashPassword, verifyPassword } from "~/lib/utils";
 import { signUpSchema } from "~/lib/schema/auth";
 import { sendPasswordResetEmail } from "~/server/services/email";
 import { env } from "~/env";
@@ -119,6 +119,29 @@ export const authRouter = createTRPCRouter({
         };
       }
 
+      // Check user last password reset attempt
+      console.log(
+        "Last password reset attempt:",
+        user.lastPasswordResetAttempt,
+      );
+      if (user.lastPasswordResetAttempt !== null) {
+        const cooldownMs = 2 * 60 * 1000; // 2 minutes (calculated in miliseconds)
+        const now = new Date().getTime();
+        const last = user.lastPasswordResetAttempt
+          ? new Date(user.lastPasswordResetAttempt as Date).getTime()
+          : 0;
+        const diff = now - last;
+        if (diff < cooldownMs) {
+          const secondsLeft = Math.ceil((cooldownMs - diff) / 1000);
+          const minutesLeft = Math.floor(secondsLeft / 60);
+
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: `Please wait ${minutesLeft} minutes and ${secondsLeft} seconds before requesting another password reset.`,
+          });
+        }
+      }
+
       // Delete any existing reset tokens for this user
       await db.passwordResetToken.deleteMany({
         where: { userId: user.id },
@@ -127,6 +150,11 @@ export const authRouter = createTRPCRouter({
       // Create a new reset token
       const token = randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      await db.user.update({
+        where: { id: user.id },
+        data: { lastPasswordResetAttempt: new Date() },
+      });
 
       await db.passwordResetToken.create({
         data: {
@@ -229,6 +257,20 @@ export const authRouter = createTRPCRouter({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Reset token has expired. Please request a new one.",
+        });
+      }
+
+      // Check if new password is the same as the current password
+      const currentHashedPassword = resetToken.user.password;
+      const isSamePassword = await verifyPassword(
+        input.password,
+        currentHashedPassword,
+      );
+
+      if (isSamePassword) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "New password cannot be the same as your previous password.",
         });
       }
 

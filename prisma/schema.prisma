@@ -514,30 +514,30 @@ model User {
   emailVerified    DateTime?
   image            String?
 
-  sessions             Session[]
-  courses              Course[]
-  learningSessions     LearningSession[]
-  userAttempts         UserAttempt[]
-  rsvpResponses        EventRSVPResponse[] // <-- FIXED
-  presenceRecords      EventPresence[] // <-- FIXED
-  courseTestimonial    CourseTestimonial[]
-  pushSubscriptions    PushSubscription[]
-  createdEvents        Event[]              @relation("CreatedBy")
-  events               Event[]              @relation("UserEvents")
-  createdAnnouncements Announcement[]       @relation("CreatedAnnouncements")
-  createdScholarships  Scholarship[]        @relation("CreatedScholarships")
-  createdJobVacancies  JobVacancy[]         @relation("CreatedJobVacancies")
-  uploadedResources    Resource[]           @relation("UploadedResources")
-  resourceAccesses     ResourceAccess[]     @relation("ResourceAccesses")
-  rsvpApprovals        EventRSVPResponse[]  @relation("RSVPApprover")
-  presenceApprovals    EventPresence[]      @relation("PresenceApprover")
-  form                 Form[]
-  formSubmission       FormSubmission[]
-  shortLink            ShortLink[]          @relation("CreatedShortLinks")
-  announcementReplies  AnnouncementReply[]
-  managedForms         Form[]               @relation("FormManagers")
-  passwordResetTokens  PasswordResetToken[]
-  lastPasswordResetTry DateTime?
+  sessions                 Session[]
+  courses                  Course[]
+  learningSessions         LearningSession[]
+  userAttempts             UserAttempt[]
+  rsvpResponses            EventRSVPResponse[] // <-- FIXED
+  presenceRecords          EventPresence[] // <-- FIXED
+  courseTestimonial        CourseTestimonial[]
+  pushSubscriptions        PushSubscription[]
+  createdEvents            Event[]              @relation("CreatedBy")
+  events                   Event[]              @relation("UserEvents")
+  createdAnnouncements     Announcement[]       @relation("CreatedAnnouncements")
+  createdScholarships      Scholarship[]        @relation("CreatedScholarships")
+  createdJobVacancies      JobVacancy[]         @relation("CreatedJobVacancies")
+  uploadedResources        Resource[]           @relation("UploadedResources")
+  resourceAccesses         ResourceAccess[]     @relation("ResourceAccesses")
+  rsvpApprovals            EventRSVPResponse[]  @relation("RSVPApprover")
+  presenceApprovals        EventPresence[]      @relation("PresenceApprover")
+  form                     Form[]
+  formSubmission           FormSubmission[]
+  shortLink                ShortLink[]          @relation("CreatedShortLinks")
+  announcementReplies      AnnouncementReply[]
+  managedForms             Form[]               @relation("FormManagers")
+  passwordResetTokens      PasswordResetToken[]
+  lastPasswordResetAttempt DateTime?
 }
 
 model PasswordResetToken {

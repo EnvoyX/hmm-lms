@@ -501,7 +501,7 @@ model ResourceAccess {
 model User {
   id               String    @id @default(cuid())
   email            String    @unique
-  alternativeEmail String?   // Personal email (Gmail, etc.) for password reset
+  alternativeEmail String? // Personal email (Gmail, etc.) for password reset
   name             String
   password         String
   nim              String    @unique
@@ -522,20 +522,22 @@ model User {
   presenceRecords      EventPresence[] // <-- FIXED
   courseTestimonial    CourseTestimonial[]
   pushSubscriptions    PushSubscription[]
-  createdEvents        Event[]             @relation("CreatedBy")
-  events               Event[]             @relation("UserEvents")
-  createdAnnouncements Announcement[]      @relation("CreatedAnnouncements")
-  createdScholarships  Scholarship[]       @relation("CreatedScholarships")
-  createdJobVacancies  JobVacancy[]        @relation("CreatedJobVacancies")
-  uploadedResources    Resource[]          @relation("UploadedResources")
-  resourceAccesses     ResourceAccess[]    @relation("ResourceAccesses")
-  rsvpApprovals        EventRSVPResponse[] @relation("RSVPApprover")
-  presenceApprovals    EventPresence[]     @relation("PresenceApprover")
+  createdEvents        Event[]              @relation("CreatedBy")
+  events               Event[]              @relation("UserEvents")
+  createdAnnouncements Announcement[]       @relation("CreatedAnnouncements")
+  createdScholarships  Scholarship[]        @relation("CreatedScholarships")
+  createdJobVacancies  JobVacancy[]         @relation("CreatedJobVacancies")
+  uploadedResources    Resource[]           @relation("UploadedResources")
+  resourceAccesses     ResourceAccess[]     @relation("ResourceAccesses")
+  rsvpApprovals        EventRSVPResponse[]  @relation("RSVPApprover")
+  presenceApprovals    EventPresence[]      @relation("PresenceApprover")
   form                 Form[]
   formSubmission       FormSubmission[]
-  shortLink            ShortLink[]         @relation("CreatedShortLinks")
+  shortLink            ShortLink[]          @relation("CreatedShortLinks")
   announcementReplies  AnnouncementReply[]
+  managedForms         Form[]               @relation("FormManagers")
   passwordResetTokens  PasswordResetToken[]
+  lastPasswordResetTry DateTime?
 }
 
 model PasswordResetToken {
@@ -588,6 +590,10 @@ model Form {
   requireAuth              Boolean @default(true)
   showProgressBar          Boolean @default(true)
   collectEmail             Boolean @default(true)
+
+  // Collaboration
+  isPublicToAdmins Boolean @default(false)
+  managers         User[]  @relation("FormManagers")
 
   // Relations
   questions   FormQuestion[]

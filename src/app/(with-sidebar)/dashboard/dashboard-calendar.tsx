@@ -253,7 +253,7 @@ export function DashboardCalendar() {
                                   disabled={rsvpMutation.isPending}
                                   className="flex-1"
                                 >
-                                  Can't Go
+                                Can&apos;t Go
                                 </Button>
                               </div>
                             </div>

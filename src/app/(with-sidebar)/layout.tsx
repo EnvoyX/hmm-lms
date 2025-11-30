@@ -24,3 +24,10 @@ export default async function Layout({
     </MainNavbar>
   )
 }
+
+export const metadata = {
+  title: {
+    default: "LMS",
+    template: "%s | HMM LMS",
+  },
+}

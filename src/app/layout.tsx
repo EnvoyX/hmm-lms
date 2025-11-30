@@ -10,11 +10,10 @@ import { DisplaySettingProvider } from '~/components/providers/display-provider'
 import Script from 'next/script';
 import { ServiceWorkerUpdate } from '~/components/sw-update';
 import { SpeedInsights } from "@vercel/speed-insights/next"
-// import { RegisterSW } from '~/components/register-sw';
 
-const APP_NAME = "HMM LMS";
-const APP_DEFAULT_TITLE = "HMM LMS";
-const APP_TITLE_TEMPLATE = "%s | HMM LMS";
+const APP_NAME = "HMM ITB";
+const APP_DEFAULT_TITLE = "HMM ITB";
+const APP_TITLE_TEMPLATE = "%s | HMM ITB";
 const APP_DESCRIPTION = "LMS for Himpunan Mahasiswa Mesin ITB";
 
 

@@ -131,7 +131,7 @@ export default async function AdminNavbar({
   return (
     <SidebarProvider defaultOpen={defaultOpen} cookieName={SIDEBAR_COOKIE_NAME}>
       <AdminSidebar />
-      <main className='w-full overflow-y-auto h-screen'>
+      <main className='w-full h-screen'>
         <AdminSiteHeader data={tabs} />
         <div className="h-[calc(100%-16*var(--spacing)))] p-4 md:p-6 group-has-data-[collapsible=icon]/sidebar-wrapper:h-[calc(100%-12*var(--spacing))]">
           {children}

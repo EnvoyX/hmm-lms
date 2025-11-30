@@ -27,48 +27,71 @@ interface ScholarshipCardProps {
 export default function ScholarshipCard({ scholarship }: ScholarshipCardProps) {
   const { title, provider, deadline, type, benefits, quota, image } = scholarship;
   return (
-    <Card className='gap-2 relative'>
+    <Card className='flex flex-col md:flex-row gap-0 relative overflow-hidden'>
       <GeometricBackground className='' variant='subtle-glow' />
-      <ScholarshipBadge deadline={deadline} />
-      <CardHeader className='z-10'>
-        {image && (
-          <div className="relative w-full h-48 mb-4 rounded-md overflow-hidden">
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover"
-            />
-          </div>
+
+      {/* Image Section */}
+      <div className="relative w-full md:w-64 h-48 md:h-auto shrink-0">
+        {image ? (
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
+            No Image
+            </div>
         )}
-        <CardTitle className='md:text-lg'>
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className='flex z-10'>
-        <div className="w-3/5 space-y-2">
-          <h2 className="text-primary capitalize">{provider}</h2>
-          <p className="text-muted-foreground">Scholarship Type: <span className='text-primary capitalize'>{type.toLowerCase()}</span></p>
-          <div className="grid grid-cols-2 text-sm gap-x-4 gap-y-1">
-            {benefits.map((benefit, index) => (
-              <div className="flex gap-2 items-center" key={index + benefit}>
-                <CircleCheckBig className='' size={14} />
-                <p className="">{benefit}</p>
-              </div>
-            ))}
+        <ScholarshipBadge deadline={deadline} />
+      </div>
+
+      {/* Content Section */}
+      <CardContent className='flex flex-col p-4 md:p-6 w-full z-10 gap-4'>
+        <div className="flex justify-between items-start gap-4">
+          <div>
+            <h2 className="text-primary font-semibold text-sm uppercase tracking-wider mb-1">{provider}</h2>
+            <CardTitle className='text-lg md:text-xl leading-tight'>
+              {title}
+            </CardTitle>
           </div>
         </div>
-        <Separator orientation='vertical' className='min-w-1 bg-black' />
-        <div className="flex-1">
-          <p className="text-muted-foreground">
-            Deadline
-          </p>
-          <h2 className="">{deadline.toLocaleDateString("id", { dateStyle: 'medium' })}</h2>
-          <p className="text-muted-foreground mt-2">
-            Quota
-          </p>
-          <h2 className="">{quota ?? "-"}</h2>
-          <Button className='mt-4 w-full' size='lg' variant='default' asChild>
+
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground text-xs">Type</p>
+            <p className="font-medium capitalize">{type.toLowerCase()}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Deadline</p>
+            <p className="font-medium">{deadline.toLocaleDateString("id", { dateStyle: 'medium' })}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Quota</p>
+            <p className="font-medium">{quota ?? "-"}</p>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-2">
+          <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Benefits</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            {benefits.slice(0, 4).map((benefit, index) => (
+              <div className="flex gap-2 items-start" key={index + benefit}>
+                <CircleCheckBig className='text-primary shrink-0 mt-0.5' size={14} />
+                <p className="line-clamp-1 text-muted-foreground">{benefit}</p>
+              </div>
+            ))}
+            {benefits.length > 4 && (
+              <p className="text-xs text-muted-foreground italic">+ {benefits.length - 4} more benefits</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-auto flex justify-end pt-2">
+          <Button className='w-full md:w-auto' size='sm' variant='default' asChild>
             <Link href={`/scholarships/${scholarship.id}`}>
               Read More
             </Link>
@@ -82,8 +105,8 @@ export default function ScholarshipCard({ scholarship }: ScholarshipCardProps) {
 function ScholarshipBadge({ deadline }: { deadline: Date }) {
   const isEnded = deadline < new Date();
   return (
-    <div className={`${!isEnded ? "bg-destructive/10 text-destructive border-destructive/50" : "bg-muted text-muted-foreground border-primary/50"} absolute right-0 rounded-l-full top-8 px-2 py-1 text-sm font-medium border-y border-l w-max`}>
-      {isEnded ? "Closed" : "Closing Soon"}
+    <div className={`${!isEnded ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground"} absolute top-2 left-2 px-2 py-0.5 text-xs font-bold rounded shadow-sm z-20`}>
+      {isEnded ? "CLOSED" : "CLOSING SOON"}
     </div>
   )
 }

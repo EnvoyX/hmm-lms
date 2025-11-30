@@ -592,8 +592,8 @@ model Form {
   collectEmail             Boolean @default(true)
 
   // Collaboration
-  isPublicToAdmins Boolean @default(false)
-  managers         User[]  @relation("FormManagers")
+  isPublicToAdmins         Boolean         @default(false)
+  managers                 User[]          @relation("FormManagers")
 
   // Relations
   questions   FormQuestion[]

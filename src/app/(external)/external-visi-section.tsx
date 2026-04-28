@@ -21,20 +21,17 @@ export function ExternalVisiSection({ visiImage }: Props) {
       />
 
       <div className="hmm-section-y-lg relative z-10 mx-auto max-w-[86rem] px-4 sm:px-8">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-14">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14">
           <div>
             <div className="hmm-eyebrow-rule text-[color-mix(in_srgb,var(--color-hmm-cream)_72%,var(--color-hmm-white))]">
               <p className="hmm-type-eyebrow">{visi.heading}</p>
             </div>
 
-            <h2 className="hmm-type-subsection mt-5 max-w-[40ch] text-balance text-white sm:mt-6">
+            <h2 className="hmm-type-section mt-3 max-w-[20ch] text-[clamp(2.2rem,5.3vw,4rem)] leading-tight text-balance text-white sm:mt-4">
               {visi.lead}
             </h2>
 
-            <div className="hmm-tldr mt-6 max-w-2xl">
-              <p className="hmm-sans text-[0.65rem] font-bold tracking-[0.22em] text-[color-mix(in_srgb,var(--color-hmm-yellow)_48%,var(--color-hmm-cream))] uppercase">
-                TL;DR
-              </p>
+            <div className="hmm-tldr mt-6 max-w-3xl">
               <p className="hmm-sans mt-2 text-sm leading-relaxed font-semibold text-white/95 sm:text-base">
                 {visi.tldr}
               </p>
@@ -52,13 +49,13 @@ export function ExternalVisiSection({ visiImage }: Props) {
               </div>
             ) : null}
 
-            <ExternalReveal className="mt-10 sm:mt-12">
+            <ExternalReveal className="mt-8 sm:mt-10">
               <h3 className="hmm-type-subsection text-lg text-white/95 sm:text-xl">
                 {inkubatorKarya.title}
               </h3>
 
-              <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-1 lg:gap-6 xl:grid-cols-2 xl:gap-8">
-                <div className="hmm-ink-card">
+              <div className="mt-8 grid items-stretch gap-6 lg:mt-10 lg:grid-cols-1 lg:gap-6 xl:grid-cols-2 xl:gap-8">
+                <div className="hmm-ink-card flex h-full">
                   <div className="flex items-start gap-3">
                     <RiFlaskLine
                       className="mt-0.5 h-7 w-7 shrink-0 text-[color-mix(in_srgb,var(--color-hmm-cream)_88%,var(--color-hmm-maroon))]"
@@ -82,7 +79,7 @@ export function ExternalVisiSection({ visiImage }: Props) {
                     </div>
                   </div>
                 </div>
-                <div className="hmm-ink-card">
+                <div className="hmm-ink-card flex h-full">
                   <div className="flex items-start gap-3">
                     <RiBriefcase3Line
                       className="mt-0.5 h-7 w-7 shrink-0 text-[color-mix(in_srgb,var(--color-hmm-cream)_88%,var(--color-hmm-maroon))]"
@@ -109,8 +106,8 @@ export function ExternalVisiSection({ visiImage }: Props) {
               </div>
             </ExternalReveal>
 
-            <ExternalReveal className="mt-10 max-w-3xl sm:mt-12">
-              <div className="rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--color-hmm-navy-deep)_55%,transparent)] p-5 sm:p-6">
+            <ExternalReveal className="mt-8 max-w-3xl sm:mt-10">
+              <div className="hmm-visi-expand rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--color-hmm-navy-deep)_55%,transparent)] p-5 sm:p-6">
                 <h4 className="hmm-sans text-xs font-bold tracking-[0.18em] text-white/90 uppercase">
                   {setelahItu.title}
                 </h4>
@@ -137,6 +134,7 @@ export function ExternalVisiSection({ visiImage }: Props) {
                   sizes="(min-width: 1024px) 38vw, 100vw"
                   priority={false}
                 />
+                <div className="hmm-vision-photo-badge">Kabinet in motion</div>
               </div>
             </div>
           ) : null}

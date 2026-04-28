@@ -8,10 +8,8 @@ import {
   pillars,
 } from "./content";
 import { ExternalEditorialGrid } from "./external-editorial-grid";
-import { ExternalMisiSection } from "./external-misi-section";
 import { ExternalReveal } from "./external-reveal";
 import { ExternalSolidarityCta } from "./external-solidarity-cta";
-import { ExternalVisiSection } from "./external-visi-section";
 import { ExternalWordmarkRail } from "./external-wordmark-rail";
 import { ExternalLandingFooter } from "./external-landing-footer";
 import { HmmExternalNavbar } from "./hmm-external-navbar";
@@ -24,7 +22,6 @@ function resolvePublic(src: string): string | null {
 export default function ExternalLandingPage() {
   const im = {
     hero: resolvePublic(externalImages.hero),
-    visi: resolvePublic(externalImages.visiArt),
     pillarStudy: resolvePublic(externalImages.pillarStudy),
     pillarSociety: resolvePublic(externalImages.pillarSociety),
     pillarSolidarity: resolvePublic(externalImages.pillarSolidarity),
@@ -88,9 +85,9 @@ export default function ExternalLandingPage() {
                 />
               </div>
               <div className="hmm-eyebrow-rule min-w-0 text-white/90 sm:min-w-0 sm:flex-1">
-                <p className="hmm-sans text-[clamp(0.7rem,2.1vw,0.875rem)] leading-snug font-semibold tracking-[0.1em] sm:text-sm sm:tracking-[0.16em]">
+                {/* <p className="hmm-sans text-[clamp(0.7rem,2.1vw,0.875rem)] leading-snug font-semibold tracking-[0.1em] sm:text-sm sm:tracking-[0.16em]">
                   HIMPUNAN MAHASISWA MESIN ITB
-                </p>
+                </p> */}
               </div>
             </div>
 
@@ -151,8 +148,6 @@ export default function ExternalLandingPage() {
           </div>
         </section>
 
-        <ExternalVisiSection visiImage={im.visi} />
-
         <ExternalWordmarkRail />
 
         <ExternalEditorialGrid spots={editorialResolved} />
@@ -177,8 +172,7 @@ export default function ExternalLandingPage() {
                 </p>
               </div>
               <p className="hmm-sans text-[0.875rem] leading-relaxed font-medium text-white/70 sm:max-w-[42ch] sm:text-sm">
-                Study, Society, Solidarity — tiga gaya hidup HMM, dirangkai
-                seperti tiga garis pada identitas kami.
+                Study, Society, Solidarity
               </p>
             </div>
           </div>
@@ -205,11 +199,11 @@ export default function ExternalLandingPage() {
               <div className="hmm-section-y-md flex flex-col justify-end px-4 sm:px-8 lg:px-12">
                 <div className="hmm-eyebrow-rule text-white/80">
                   <p className="hmm-type-eyebrow text-[var(--color-hmm-cream)]">
-                    01 — Study
+                    01
                   </p>
                 </div>
                 <h2 className="hmm-type-section mt-3 text-balance text-white sm:mt-4">
-                  Keilmuan & karya
+                  Study
                 </h2>
                 <p className="hmm-sans text-xs font-bold tracking-[0.2em] text-white/50 uppercase">
                   {pillars[0].kicker}
@@ -241,11 +235,11 @@ export default function ExternalLandingPage() {
             <div className="hmm-section-y-md relative z-10 flex min-h-[min(88svh,40rem)] w-full max-w-[86rem] flex-col justify-end px-4 sm:min-h-[80svh] sm:px-8">
               <div className="hmm-eyebrow-rule text-white/85">
                 <p className="hmm-type-eyebrow text-[var(--color-hmm-cream)]">
-                  02 — Society
+                  02
                 </p>
               </div>
               <blockquote className="hmm-title mt-3 max-w-full text-[clamp(1.5rem,6vw,3rem)] leading-[1.2] font-bold text-balance text-white sm:max-w-[20ch] sm:text-4xl md:max-w-[24ch] md:text-5xl">
-                Tanggung jawab sosial, nyata.
+                Society
               </blockquote>
               <h2 className="hmm-sans mt-4 text-sm font-bold tracking-[0.2em] text-white/60 uppercase">
                 {pillars[1].kicker}
@@ -262,7 +256,7 @@ export default function ExternalLandingPage() {
               <div className="hmm-section-y-md order-2 flex flex-col justify-center bg-[var(--color-hmm-navy-deep)] px-4 sm:px-8 lg:order-1 lg:pr-4 lg:pl-8 xl:pl-12">
                 <div className="hmm-eyebrow-rule text-white/85">
                   <p className="hmm-type-eyebrow text-[var(--color-hmm-cream)]">
-                    03 — Solidarity
+                    03
                   </p>
                 </div>
                 <h2 className="hmm-type-section mt-3 text-balance text-white sm:mt-2">
@@ -335,11 +329,11 @@ export default function ExternalLandingPage() {
 
             <ExternalReveal>
               <div className="mt-12 flex flex-col gap-12 md:mt-16 md:flex-row md:items-start md:gap-20">
-                <div className="hmm-heritage-stat-card shrink-0 px-6 py-5 sm:px-8 sm:py-6">
+                <div className="shrink-0">
                   <p className="hmm-heritage-stat-num hmm-title text-6xl leading-none font-bold sm:text-7xl">
                     80+
                   </p>
-                  <p className="hmm-sans mt-3 text-sm font-semibold tracking-[0.16em] text-white/70">
+                  <p className="hmm-sans mt-2 text-sm font-semibold tracking-[0.16em] text-white/70">
                     YEARS IN MOTION
                   </p>
                 </div>
@@ -362,10 +356,6 @@ export default function ExternalLandingPage() {
             </ExternalReveal>
           </div>
         </section>
-
-        <div className="hmm-chapter-transition-heritage-misi" aria-hidden />
-
-        <ExternalMisiSection />
 
         {/* — CTA / Solidarity — */}
         <section
@@ -397,7 +387,7 @@ export default function ExternalLandingPage() {
               Solidarity forever
             </h2>
             <p className="hmm-type-prose mt-4 max-w-2xl text-white/90">
-              Satu arah, satu solidaritas — memperkuat pionir masa depan dalam
+              Satu arah, satu solidaritas, memperkuat pionir masa depan dalam
               dan luar kampus.
             </p>
             <ExternalSolidarityCta />

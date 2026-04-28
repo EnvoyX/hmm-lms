@@ -6,7 +6,14 @@ export const manifesto = {
   /** Three-beat punch line (IG-style) */
   punch: "Presisi. Karya. Dampak.",
   support:
-    "Pionir di kelas, di himpunan, di Indonesia — untuk keilmuan, masyarakat, dan bangsa.",
+    "Pionir di kelas, di himpunan, di Indonesia untuk keilmuan, masyarakat, dan bangsa.",
+} as const;
+
+export const about = {
+  heading: "Kabinet Pemimpin Berkarya",
+  lead: "Mewadahi pionir masa depan yang bertumbuh lewat karya, keprofesian, dan solidaritas.",
+  description:
+    "Kabinet Pemimpin Berkarya adalah susunan pengurus HMM ITB yang bergerak untuk memastikan setiap fungsi organisasi berjalan selaras: pengembangan anggota, dukungan karya, koneksi eksternal, dan dampak bagi masyarakat.",
 } as const;
 
 export const visi = {
@@ -19,7 +26,7 @@ export const inkubatorKarya = {
   title: "Inkubator karya & keprofesian",
   karya: {
     subtitle: "Inkubator karya",
-    lead: "Kajian, lomba, karya masyarakat — keilmuan yang hidup.",
+    lead: "Kajian, lomba, karya masyarakat, keilmuan yang hidup.",
     body: "HMM ITB menjadi wadah yang mengembangkan pemahaman dan keterampilan anggotanya dalam bidang ke-karya-an, yaitu karya keteknikmesinan (kajian isu, perlombaan, dan karya untuk masyarakat). Tujuannya: anggota lebih memahami keilmuannya sendiri dan menerapkannya di masyarakat dan masa depan.",
   },
   keprofesian: {
@@ -50,21 +57,21 @@ export type EditorialSpot = {
 export const editorialSpots: ReadonlyArray<EditorialSpot> = [
   {
     id: "lab-momentum",
-    imageSrc: "/external/images/inddes.jpg",
+    imageSrc: "/external/images/juara_ui.jpg",
     tag: "Study",
     caption: "Fokus di lab, siap lomba nasional",
     bento: "feature",
   },
   {
     id: "kawan-dan-aksi",
-    imageSrc: "/external/images/wisok.jpg",
+    imageSrc: "/external/images/wanakarya.jpg",
     tag: "Society",
     caption: "Dampak nyata, bareng warga",
     bento: "default",
   },
   {
     id: "karya-desain",
-    imageSrc: "/external/images/inddes.jpg",
+    imageSrc: "/external/images/treser.jpg",
     tag: "Study",
     caption: "Dari sketsa ke produk",
     bento: "default",
@@ -72,14 +79,14 @@ export const editorialSpots: ReadonlyArray<EditorialSpot> = [
   {
     id: "jalin-luar",
     /* Campus / visit story; use kunjungan.jpg in public when available (see other editorial assets) */
-    imageSrc: "/external/images/about-hero.png",
+    imageSrc: "/external/images/unilever.jpg",
     tag: "Society",
     caption: "Jejak kunjungan & kolaborasi",
     bento: "default",
   },
   {
     id: "satu-irama",
-    imageSrc: "/external/images/salam_satu_bakul.jpg",
+    imageSrc: "/external/images/welpar.jpg",
     tag: "Solidarity",
     caption: "Kekuatan satu badan, satu tujuan",
     bento: "default",
@@ -144,6 +151,150 @@ export const misi: ReadonlyArray<MisiItem> = [
   },
 ] as const;
 
+export type OrganogramItem = {
+  title: string;
+  imageSrc: string;
+};
+
+export const organogramItems: ReadonlyArray<OrganogramItem> = [
+  { title: "DPA", imageSrc: "/external/images/organogram/DPA.jpg" },
+  { title: "Prince", imageSrc: "/external/images/organogram/Prince.jpg" },
+  { title: "RCKT", imageSrc: "/external/images/organogram/RCKT.jpg" },
+  { title: "SENATOR", imageSrc: "/external/images/organogram/SENATOR.jpg" },
+  {
+    title: "Bureau of Human Capital",
+    imageSrc: "/external/images/organogram/Bureau of Human Capital.jpg",
+  },
+  {
+    title: "Bureau of Creative Communication and Information",
+    imageSrc:
+      "/external/images/organogram/Bureau of Creative Communication and Information.jpg",
+  },
+  {
+    title: "General Secretariat",
+    imageSrc: "/external/images/organogram/General Secretariat.jpg",
+  },
+  {
+    title: "Department of Knowledge and Creation",
+    imageSrc:
+      "/external/images/organogram/Department of Knowledge and Creation.jpg",
+  },
+  {
+    title: "Department of Career Development",
+    imageSrc:
+      "/external/images/organogram/Department of Career Development.jpg",
+  },
+  {
+    title: "Department of Student Welfare",
+    imageSrc: "/external/images/organogram/Department of Student Welfare.jpg",
+  },
+  {
+    title: "Department of Public Relations",
+    imageSrc: "/external/images/organogram/Department of Public Relations.jpg",
+  },
+  {
+    title: "Department of Social Service",
+    imageSrc: "/external/images/organogram/Department of Social Service.jpg",
+  },
+  {
+    title: "Sub-Bureau of Member Development",
+    imageSrc:
+      "/external/images/organogram/Sub-Bureau of Member Development.jpg",
+  },
+  {
+    title: "Sub-Bureau of Member Empowerment & Personalization",
+    imageSrc:
+      "/external/images/organogram/Sub-Bureau of Member Empowerment & Personalization.jpg",
+  },
+  {
+    title: "Sub-Bureau of Human Resource Management",
+    imageSrc:
+      "/external/images/organogram/Sub-Bureau of Human Resource Management.jpg",
+  },
+  {
+    title: "Sub-Bureau of Creative Marketing & Strategy",
+    imageSrc:
+      "/external/images/organogram/Sub-Bureau of Creative Marketing & Strategy.jpg",
+  },
+  {
+    title: "Sub-Bureau of Photography and Videography",
+    imageSrc:
+      "/external/images/organogram/Sub-Bureau of Photography and Videography.jpg",
+  },
+  {
+    title: "Sub-Bureau of Website Development",
+    imageSrc:
+      "/external/images/organogram/Sub-Bureau of Website Development.jpg",
+  },
+  { title: "Secretary", imageSrc: "/external/images/organogram/Secretary.jpg" },
+  { title: "Treasurer", imageSrc: "/external/images/organogram/Treasurer.jpg" },
+  {
+    title: "M-Trepreneur",
+    imageSrc: "/external/images/organogram/M-Trepreneur.jpg",
+  },
+  {
+    title: "Engineering Product Development",
+    imageSrc: "/external/images/organogram/Engineering Product Development.jpg",
+  },
+  {
+    title: "Division of Research and Learning",
+    imageSrc:
+      "/external/images/organogram/Division of Research and Learning.jpg",
+  },
+  {
+    title: "Division of Competition Incubation",
+    imageSrc:
+      "/external/images/organogram/Division of Competition Incubation.jpg",
+  },
+  {
+    title: "Division of Career Information",
+    imageSrc: "/external/images/organogram/Division of Career Information.jpg",
+  },
+  {
+    title: "Division of Career Preparation",
+    imageSrc: "/external/images/organogram/Division of Career Preparation.jpg",
+  },
+  {
+    title: "Division of Community and Well-being",
+    imageSrc:
+      "/external/images/organogram/Division of Community and Well-being.jpg",
+  },
+  {
+    title: "Division of Appreciation",
+    imageSrc: "/external/images/organogram/Division of Appreciation.jpg",
+  },
+  {
+    title: "Division of Extracurricular",
+    imageSrc: "/external/images/organogram/Division of Extracurricular.jpg",
+  },
+  {
+    title: "Academics and Scholarship",
+    imageSrc: "/external/images/organogram/Academics and Scholarship.jpg",
+  },
+  {
+    title: "Division of Intracampus Relations",
+    imageSrc:
+      "/external/images/organogram/Division of Intracampus Relations.jpg",
+  },
+  {
+    title: "Extracampus Relations",
+    imageSrc: "/external/images/organogram/Extracampus Relations.jpg",
+  },
+  {
+    title: "Division of Alumni Relations",
+    imageSrc: "/external/images/organogram/Division of Alumni Relations.jpg",
+  },
+  {
+    title: "Division of Community Service",
+    imageSrc: "/external/images/organogram/Division of Community Service.jpg",
+  },
+  {
+    title: "Division of Community Development",
+    imageSrc:
+      "/external/images/organogram/Division of Community Development.jpg",
+  },
+] as const;
+
 export const heritageTimeline = [
   {
     year: "1946",
@@ -161,13 +312,15 @@ export const externalImages = {
   /** Full-bleed manifesto / hero */
   hero: "/external/images/hero.png",
   /** Study pillar — split layout (academics / keilmuan) */
-  pillarStudy: "/external/images/organogram/Academics and Scholarship.jpg",
+  pillarStudy: "/external/images/ilmu_karya.jpg",
   /** Society pillar — full-bleed, left weight */
   pillarSociety: "/external/images/salam_satu_bakul.jpg",
   /** Solidarity pillar */
-  pillarSolidarity: "/external/images/wisok.jpg",
+  pillarSolidarity: "/external/images/ngarak.jpg",
   /** Intentional light “studio” chapter */
   heritage: "/external/images/about-hero.png",
+  /** About hero wallpaper */
+  aboutHero: "/external/images/about-hero.png",
   /** Visi / inkubator dark chapter (optional) */
   visiArt: "/external/images/badan_pengurus.jpg",
   /** CTA */
@@ -177,8 +330,8 @@ export const externalImages = {
 export const externalContact = {
   email: "bccipionirberkarya@gmail.com",
   /** Official socials; update if handles change */
-  instagramUrl: "https://www.instagram.com/hmmitb/" as string,
-  tiktokUrl: "https://www.tiktok.com/@hmmitb" as string,
+  instagramUrl: "https://www.instagram.com/hmm_itb/" as string,
+  tiktokUrl: "https://www.tiktok.com/@hmm.itb" as string,
   lineUrl: "" as string,
 } as const;
 
@@ -206,7 +359,7 @@ export const pillars = [
     title: "Solidarity",
     kicker: "Kekeluargaan",
     description:
-      "Kekeluargaan, keharmonisan, dan kesejahteraan anggota — satu solidaritas.",
+      "Kekeluargaan, keharmonisan, dan kesejahteraan anggota. Satu solidaritas.",
     variant: "solidarity" as const,
     imageKey: "pillarSolidarity" as const,
   },

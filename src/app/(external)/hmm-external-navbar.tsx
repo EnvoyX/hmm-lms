@@ -1,29 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "~/lib/utils";
 
-const NAV: ReadonlyArray<{ id: string; label: string }> = [
-  { id: "manifesto", label: "Manifesto" },
-  { id: "visi", label: "Visi" },
-  { id: "editorial", label: "Spotlight" },
-  { id: "pillars", label: "Pillars" },
-  { id: "heritage", label: "Heritage" },
-  { id: "misi", label: "Misi" },
-  { id: "solidarity", label: "Solidarity" },
+const EXTERNAL_PAGES: ReadonlyArray<{ href: string; label: string }> = [
+  { href: "/", label: "Beranda" },
+  { href: "/about", label: "About" },
 ];
-
-const SECTION_SCROLL_OFFSET = 88;
-
-function computeActiveSection(): string {
-  const id = [...NAV].reverse().find(({ id: sectionId }) => {
-    const el = document.getElementById(sectionId);
-    if (!el) return false;
-    return el.getBoundingClientRect().top <= SECTION_SCROLL_OFFSET;
-  })?.id;
-  return id ?? NAV[0]!.id;
-}
 
 function computeScrollProgress(): number {
   const h = document.documentElement;
@@ -33,15 +19,15 @@ function computeScrollProgress(): number {
 }
 
 export function HmmExternalNavbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>(NAV[0]!.id);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 12);
       setScrollProgress(computeScrollProgress());
-      setActiveSection(computeActiveSection());
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -64,8 +50,8 @@ export function HmmExternalNavbar() {
         />
       </div>
       <div className="hmm-nav-inner">
-        <a
-          href="#manifesto"
+        <Link
+          href="/"
           className="group flex min-h-11 min-w-11 shrink-0 items-center gap-2 sm:min-h-0 sm:gap-3"
         >
           <Image
@@ -84,34 +70,93 @@ export function HmmExternalNavbar() {
               HIMPUNAN MAHASISWA MESIN ITB
             </span>
           </div>
-        </a>
+        </Link>
 
-        <nav
-          className="hmm-sans max-w-[calc(100%-5.5rem)] min-w-0 snap-x snap-mandatory overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] sm:max-w-none"
-          aria-label="External landing"
+        <div className="hidden min-w-0 flex-1 items-center justify-end md:flex">
+          <nav
+            className="hmm-sans hmm-nav-desktop hmm-nav-desktop--centered"
+            aria-label="External pages"
+          >
+            <ul className="flex items-center gap-1">
+              {EXTERNAL_PAGES.map((page) => {
+                const isActive = pathname === page.href;
+                return (
+                  <li key={page.href}>
+                    <Link
+                      href={page.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "hmm-nav-desktop-link block px-3 py-2 text-xs font-semibold tracking-[0.12em] transition",
+                        "focus-visible:ring-2 focus-visible:ring-[var(--color-hmm-yellow)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[color-mix(in_srgb,var(--color-hmm-navy-deep)_90%,black)] focus-visible:outline-none",
+                        isActive && "hmm-nav-link--active",
+                      )}
+                    >
+                      {page.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <Link href="/auth/sign-in" className="hmm-nav-signin">
+            Sign In
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          className="hmm-nav-mobile-toggle md:hidden"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-expanded={mobileOpen}
+          aria-controls="hmm-mobile-nav"
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          data-hmm-open={mobileOpen ? "true" : "false"}
         >
-          <ul className="flex flex-nowrap items-center justify-end gap-x-0.5 pr-1 sm:gap-x-1 sm:pr-0">
-            {NAV.map((item) => {
-              const isActive = activeSection === item.id;
+          <span className="hmm-nav-mobile-icon" aria-hidden="true">
+            <span className="hmm-nav-mobile-icon__line" />
+            <span className="hmm-nav-mobile-icon__line" />
+            <span className="hmm-nav-mobile-icon__line" />
+          </span>
+        </button>
+      </div>
+
+      <div
+        id="hmm-mobile-nav"
+        className={cn(
+          "hmm-nav-mobile md:hidden",
+          mobileOpen ? "hmm-nav-mobile--open" : "hmm-nav-mobile--closed",
+        )}
+      >
+        <nav className="hmm-sans" aria-label="External mobile pages">
+          <ul className="grid grid-cols-2 gap-2">
+            {EXTERNAL_PAGES.map((page) => {
+              const isActive = pathname === page.href;
               return (
-                <li key={item.id} className="shrink-0 snap-center">
-                  <a
-                    href={`#${item.id}`}
+                <li key={page.href}>
+                  <Link
+                    href={page.href}
+                    onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "block min-h-11 min-w-[2.75rem] rounded-sm px-2 py-2.5 text-center text-[0.6rem] leading-tight font-semibold tracking-[0.1em] text-white/90 transition-[color,background,box-shadow] duration-200 sm:min-h-0 sm:min-w-0 sm:px-2.5 sm:py-2.5 sm:text-[0.65rem] sm:tracking-[0.12em] md:px-3 md:text-xs",
-                      "hover:bg-white/10 hover:text-white",
-                      "focus-visible:ring-2 focus-visible:ring-[var(--color-hmm-yellow)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[color-mix(in_srgb,var(--color-hmm-navy-deep)_90%,black)] focus-visible:outline-none",
+                      "hmm-nav-mobile-link block px-2 py-2.5 text-center text-xs font-semibold tracking-[0.12em] text-white/90",
                       isActive && "hmm-nav-link--active",
                     )}
-                    aria-current={isActive ? "true" : undefined}
                   >
-                    {item.label}
-                  </a>
+                    {page.label}
+                  </Link>
                 </li>
               );
             })}
           </ul>
         </nav>
+
+        <Link
+          href="/auth/sign-in"
+          onClick={() => setMobileOpen(false)}
+          className="hmm-nav-signin mt-3 inline-flex w-full justify-center"
+        >
+          Sign In to LMS
+        </Link>
       </div>
     </header>
   );

@@ -106,7 +106,7 @@ export function ExternalEditorialGrid({ spots }: Props) {
           Kilas karya &amp; solidaritas
         </h2>
         <p className="hmm-sans mt-3 max-w-xl text-sm leading-relaxed font-medium text-white/80 sm:text-[0.95rem]">
-          Sorotan singkat — geser pikiranmu sebelum masuk ke narasi pilar.
+          Ubah pikiranmu sebelum masuk ke narasi pilar.
         </p>
 
         <div className="mt-10 grid min-h-0 auto-rows-fr grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-4 lg:grid-rows-2 lg:gap-5">

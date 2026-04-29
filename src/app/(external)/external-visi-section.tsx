@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { RiBriefcase3Line, RiFlaskLine } from "@remixicon/react";
-import { inkubatorKarya, setelahItu, visi } from "./content";
+import { inkubatorKarya, visi } from "./content";
 import { ExternalReveal } from "./external-reveal";
 
 type Props = { visiImage: string | null };
@@ -103,22 +103,6 @@ export function ExternalVisiSection({ visiImage }: Props) {
                     </div>
                   </div>
                 </div>
-              </div>
-            </ExternalReveal>
-
-            <ExternalReveal className="mt-8 max-w-3xl sm:mt-10">
-              <div className="hmm-visi-expand rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--color-hmm-navy-deep)_55%,transparent)] p-5 sm:p-6">
-                <h4 className="hmm-sans text-xs font-bold tracking-[0.18em] text-white/90 uppercase">
-                  {setelahItu.title}
-                </h4>
-                <details className="group/s mt-3">
-                  <summary className="hmm-sans cursor-pointer list-none text-sm font-semibold text-white/95 group-open/s:mb-2">
-                    Apa maksud &ldquo;pionir masa depan&rdquo;?
-                  </summary>
-                  <p className="hmm-type-prose text-white/82">
-                    {setelahItu.body}
-                  </p>
-                </details>
               </div>
             </ExternalReveal>
           </div>

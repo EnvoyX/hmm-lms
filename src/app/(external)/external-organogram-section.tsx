@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
+import { organogramDetailsByTitle } from "./organogram-details";
+
 type OrganogramCard = {
   title: string;
   imageUrl: string;
@@ -22,9 +24,86 @@ type Group = {
   items: OrganogramCard[];
 };
 
-function normalizeTitle(title: string): string {
-  if (title === "Prince") return "Ketua";
-  return title;
+function TextWithBold({ text }: { text: string }) {
+  const segments = text.split(/(\*\*.+?\*\*)/g);
+  return (
+    <>
+      {segments.map((seg, i) => {
+        const m = /^\*\*(.+)\*\*$/.exec(seg);
+        if (m) {
+          return (
+            <strong
+              key={i}
+              className="font-semibold text-[color-mix(in_srgb,var(--color-hmm-cream)_96%,white)]"
+            >
+              {m[1]}
+            </strong>
+          );
+        }
+        return <span key={i}>{seg}</span>;
+      })}
+    </>
+  );
+}
+
+function OrganogramModalDetailBody({ title }: { title: string }) {
+  const detail = organogramDetailsByTitle[title];
+
+  if (!detail) {
+    return (
+      <p className="hmm-type-prose mt-4 text-sm leading-relaxed text-white/78">
+        Detail untuk posisi ini belum dipublikasikan.
+      </p>
+    );
+  }
+
+  if (detail.kind === "featured") {
+    return (
+      <>
+        <p className="hmm-organogram-modal__tagline mt-4">{detail.tagline}</p>
+        <ul className="hmm-organogram-modal__people mt-5 space-y-3">
+          {detail.people.map((row) => (
+            <li key={`${row.role}-${row.name}`}>
+              <p className="text-[0.65rem] font-bold tracking-[0.14em] text-white/55 uppercase">
+                {row.role}
+              </p>
+              <p className="mt-1 text-base font-semibold text-white/95">
+                {row.name}
+              </p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-5 space-y-3 border-t border-white/10 pt-5">
+          {detail.paragraphs.map((paragraph, i) => (
+            <p
+              key={i}
+              className="hmm-type-prose text-sm leading-relaxed text-white/78 sm:text-[0.95rem]"
+            >
+              <TextWithBold text={paragraph} />
+            </p>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <p className="hmm-organogram-card__kicker mt-4">Susunan</p>
+      <dl className="hmm-organogram-modal__roster mt-3 space-y-4">
+        {detail.rows.map((row) => (
+          <div key={`${row.role}-${row.name}`}>
+            <dt className="text-[0.68rem] font-bold tracking-[0.1em] text-white/55 uppercase">
+              {row.role}
+            </dt>
+            <dd className="mt-1 text-sm font-semibold text-white/92">
+              {row.name}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </>
+  );
 }
 
 function splitGroups(items: OrganogramCard[]): {
@@ -93,7 +172,7 @@ function OrganogramCardButton({
   onClick: () => void;
 }) {
   const [loading, setLoading] = useState(true);
-  const title = normalizeTitle(item.title);
+  const title = item.title;
   return (
     <button
       type="button"
@@ -234,7 +313,7 @@ export function ExternalOrganogramSection({ items }: Props) {
           className="hmm-organogram-modal"
           role="dialog"
           aria-modal="true"
-          aria-label={normalizeTitle(active.title)}
+          aria-label={active.title}
         >
           <button
             type="button"
@@ -246,20 +325,23 @@ export function ExternalOrganogramSection({ items }: Props) {
             <div className="hmm-organogram-modal__media">
               <Image
                 src={active.imageUrl}
-                alt={normalizeTitle(active.title)}
+                alt={active.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
             </div>
             <div className="hmm-organogram-modal__content">
-              <p className="hmm-organogram-card__kicker">Position Detail</p>
-              <h4 className="hmm-type-subsection mt-2 text-white">
-                {normalizeTitle(active.title)}
-              </h4>
+              <div className="hmm-organogram-modal__scroll">
+                <p className="hmm-organogram-card__kicker">Position Detail</p>
+                <h4 className="hmm-type-subsection mt-2 text-white">
+                  {active.title}
+                </h4>
+                <OrganogramModalDetailBody title={active.title} />
+              </div>
               <button
                 type="button"
-                className="hmm-nav-signin mt-5"
+                className="hmm-nav-signin mt-6 shrink-0"
                 onClick={() => setActive(null)}
               >
                 Close

@@ -1331,6 +1331,7 @@
   z-index: 1;
   width: min(64rem, 100%);
   display: grid;
+  align-items: stretch;
   overflow: hidden;
   border-radius: 1rem;
   border: 1px solid color-mix(in srgb, var(--color-hmm-white) 20%, transparent);
@@ -1344,7 +1345,38 @@
 }
 
 .hmm-external .hmm-organogram-modal__content {
+  display: flex;
+  max-height: min(85vh, 52rem);
+  min-height: 0;
+  flex-direction: column;
   padding: 1rem 1rem 1.2rem;
+  overflow: hidden;
+}
+
+.hmm-external .hmm-organogram-modal__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-right: 0.25rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hmm-external .hmm-organogram-modal__tagline {
+  margin: 0;
+  border-left: 3px solid color-mix(in srgb, var(--color-hmm-yellow) 62%, var(--color-hmm-maroon));
+  padding-left: 0.85rem;
+  font-family: var(--hmm-font-sans);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--color-hmm-cream) 88%, var(--color-hmm-white));
+}
+
+.hmm-external .hmm-organogram-modal__people {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 @media (min-width: 860px) {

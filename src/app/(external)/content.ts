@@ -1,5 +1,5 @@
 /**
- * External landing copy and asset paths. Images live under /public/external/images/ — add files to match.
+ * External landing copy and asset paths. Images live under /public/external/images/; add files to match.
  */
 
 export const manifesto = {
@@ -10,10 +10,12 @@ export const manifesto = {
 } as const;
 
 export const about = {
-  heading: "Kabinet Pemimpin Berkarya",
-  lead: "Mewadahi pionir masa depan yang bertumbuh lewat karya, keprofesian, dan solidaritas.",
-  description:
-    "Kabinet Pemimpin Berkarya adalah susunan pengurus HMM ITB yang bergerak untuk memastikan setiap fungsi organisasi berjalan selaras: pengembangan anggota, dukungan karya, koneksi eksternal, dan dampak bagi masyarakat.",
+  kabinetName: "Pionir Berkarya",
+  /** First clause styled bold italic in the hero */
+  headingPrefix: "HMM ITB: the Creation and Career Incubator,",
+  headingSuffix: "shaping its members into Future Pioneers!",
+  /** Short hero line below the title */
+  lead: "Inkubator karya dan karier untuk membentuk pionir masa depan.",
 } as const;
 
 export const visi = {
@@ -32,13 +34,8 @@ export const inkubatorKarya = {
   keprofesian: {
     subtitle: "Inkubator keprofesian",
     lead: "Karir terpersonalisasi, relevan, siap industri.",
-    body: "HMM ITB menjadi wadah yang mengembangkan pemahaman dan keterampilan anggotanya dalam bidang karir — mencakup soft skill yang sesuai tujuan karir masing-masing secara terpersonalisasi, sehingga anggota memiliki kemampuan yang dibutuhkan dan dapat diterima di perusahaan yang diinginkan.",
+    body: "HMM ITB menjadi wadah yang mengembangkan pemahaman dan keterampilan anggotanya dalam bidang karir, mencakup soft skill yang sesuai tujuan karir masing-masing secara terpersonalisasi, sehingga anggota memiliki kemampuan yang dibutuhkan dan dapat diterima di perusahaan yang diinginkan.",
   },
-} as const;
-
-export const setelahItu = {
-  title: "Pionir masa depan",
-  body: "Setelah anggota memiliki pemahaman yang mendalam terhadap keilmuan keteknikmesinannya, serta tujuan karir, soft skill yang sesuai, dan mampu mencapai karir yang diinginkan, anggota disebut pionir masa depan: orang-orang yang pertama kali siap memecahkan masalah di masa depan—baik di perkuliahan, himpunan, maupun pekerjaan.",
 } as const;
 
 export type EditorialPillar = "Study" | "Society" | "Solidarity";
@@ -109,7 +106,7 @@ export const misi: ReadonlyArray<MisiItem> = [
   },
   {
     cardTitle: "Pionir pribadi",
-    oneLiner: "Berkembang personal — tidak satu cetakan.",
+    oneLiner: "Berkembang personal; tidak satu cetakan.",
     summary: "Pionir dan personalisasi",
     body: "Mengembangkan anggota HMM ITB menjadi pionir dan sistem perkembangan diri anggota yang terpersonalisasi.",
   },
@@ -155,6 +152,11 @@ export type OrganogramItem = {
   title: string;
   imageSrc: string;
 };
+
+export {
+  organogramDetailsByTitle,
+  type OrganogramModalDetail,
+} from "./organogram-details";
 
 export const organogramItems: ReadonlyArray<OrganogramItem> = [
   { title: "DPA", imageSrc: "/external/images/organogram/DPA.jpg" },
@@ -303,7 +305,7 @@ export const heritageTimeline = [
   },
   {
     year: "Now",
-    title: "Pionir Berkarya",
+    title: about.kabinetName,
     text: "HMM ITB terus mengembangkan pendidikan kemahasiswaan, advokasi anggota, dan pengabdian masyarakat yang berdampak.",
   },
 ] as const;
@@ -311,9 +313,9 @@ export const heritageTimeline = [
 export const externalImages = {
   /** Full-bleed manifesto / hero */
   hero: "/external/images/hero.png",
-  /** Study pillar — split layout (academics / keilmuan) */
+  /** Study pillar: split layout (academics / keilmuan) */
   pillarStudy: "/external/images/ilmu_karya.jpg",
-  /** Society pillar — full-bleed, left weight */
+  /** Society pillar: full-bleed, left weight */
   pillarSociety: "/external/images/salam_satu_bakul.jpg",
   /** Solidarity pillar */
   pillarSolidarity: "/external/images/ngarak.jpg",

@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import { about } from "~/app/(external)/content";
+
 const logoMeanings = [
   {
     key: "p",
@@ -71,7 +73,7 @@ export function ExternalLogoMeaningSection() {
             Makna di Balik Logo
           </h2>
           <p className="hmm-sans mt-4 max-w-3xl text-[0.98rem] leading-relaxed text-white/78">
-            Simbol Kabinet Pemimpin Berkarya dirancang sebagai narasi visual:
+            Simbol Kabinet {about.kabinetName} dirancang sebagai narasi visual:
             pionir, berkarya, arah yang jelas, dan gerak kolektif.
           </p>
         </div>

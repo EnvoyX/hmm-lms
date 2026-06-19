@@ -1,0 +1,52 @@
+@font-face {
+    font-family: 'ITC New Baskerville Std';
+    src: url('NewBaskervilleStd-Italic.eot');
+    src: local('ITC New Baskerville Std Italic'), local('NewBaskervilleStd-Italic'),
+        url('NewBaskervilleStd-Italic.eot?#iefix') format('embedded-opentype'),
+        url('NewBaskervilleStd-Italic.woff2') format('woff2'),
+        url('NewBaskervilleStd-Italic.woff') format('woff'),
+        url('NewBaskervilleStd-Italic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'ITC New Baskerville Std';
+    src: url('NewBaskervilleStd-Roman.eot');
+    src: local('ITC New Baskerville Std Roman'), local('NewBaskervilleStd-Roman'),
+        url('NewBaskervilleStd-Roman.eot?#iefix') format('embedded-opentype'),
+        url('NewBaskervilleStd-Roman.woff2') format('woff2'),
+        url('NewBaskervilleStd-Roman.woff') format('woff'),
+        url('NewBaskervilleStd-Roman.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'ITC New Baskerville Std';
+    src: url('NewBaskervilleStd-BoldIt.eot');
+    src: local('ITC New Baskerville Std Bold Italic'), local('NewBaskervilleStd-BoldIt'),
+        url('NewBaskervilleStd-BoldIt.eot?#iefix') format('embedded-opentype'),
+        url('NewBaskervilleStd-BoldIt.woff2') format('woff2'),
+        url('NewBaskervilleStd-BoldIt.woff') format('woff'),
+        url('NewBaskervilleStd-BoldIt.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'ITC New Baskerville Std';
+    src: url('NewBaskervilleStd-Bold.eot');
+    src: local('ITC New Baskerville Std Bold'), local('NewBaskervilleStd-Bold'),
+        url('NewBaskervilleStd-Bold.eot?#iefix') format('embedded-opentype'),
+        url('NewBaskervilleStd-Bold.woff2') format('woff2'),
+        url('NewBaskervilleStd-Bold.woff') format('woff'),
+        url('NewBaskervilleStd-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+

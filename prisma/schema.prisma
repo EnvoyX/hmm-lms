@@ -1,0 +1,695 @@
+// ----------------------------------------------------------------
+// THIS IS A GENERATED FILE. DO NOT EDIT.
+// ----------------------------------------------------------------
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User-related enums
+enum Role {
+  ADMIN
+  STUDENT
+  SUPERADMIN
+}
+
+// Resource system enums
+enum ResourceType {
+  FILE
+  LINK
+}
+
+enum ResourceCategory {
+  E_BOOK
+  PRESENTATION
+  NOTES
+  PROBLEMS
+  VIDEO
+  SYLLABUS
+  OTHER
+}
+
+enum AttachableType {
+  COURSE
+  ANNOUNCEMENT
+  EVENT
+  JOB_VACANCY
+  SCHOLARSHIP
+}
+
+enum LinkSource {
+  YOUTUBE
+  GOOGLE_DRIVE
+}
+
+enum AccessType {
+  VIEW
+  DOWNLOAD
+}
+
+// Quiz-related enums
+enum QuestionType {
+  MULTIPLE_CHOICE_SINGLE
+  MULTIPLE_CHOICE_MULTIPLE
+  SHORT_ANSWER
+  LONG_ANSWER
+}
+
+// Organization-related enums
+enum EventColor {
+  SKY
+  AMBER
+  VIOLET
+  ROSE
+  EMERALD
+  ORANGE
+}
+
+enum AnnouncementScope {
+  GLOBAL
+  COURSE
+}
+
+enum ScholarshipType {
+  INTERNAL
+  EXTERNAL
+}
+
+// Event-related enums
+enum EventMode {
+  BASIC // No RSVP or attendance tracking
+  RSVP_ONLY // Only RSVP functionality
+  ATTENDANCE_ONLY // Only presence/attendance tracking
+  RSVP_AND_ATTENDANCE // Both RSVP and attendance tracking
+}
+
+enum RSVPStatus {
+  YES
+  NO
+  MAYBE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PresenceStatus {
+  ABSENT
+  PRESENT
+  LATE
+  EXCUSED
+  PENDING_APPROVAL
+  REJECTED
+}
+
+enum FormQuestionType {
+  SHORT_ANSWER
+  LONG_ANSWER
+  MULTIPLE_CHOICE
+  MULTIPLE_SELECT
+  FILE_UPLOAD
+  NAME_SELECT
+  NIM_SELECT
+  RATING
+  DATE
+  TIME
+  COURSE_SELECT
+  EVENT_SELECT
+}
+
+enum FormType {
+  NORMAL
+  HOTLINE
+}
+
+// Core LMS course models
+model Course {
+  id              String              @id @default(cuid())
+  title           String
+  description     String?
+  classCode       String              @unique
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  syllabus        String?             @db.Text
+  isActive        Boolean             @default(true)
+  members         User[]
+  learningSession LearningSession[]
+  tryout          Tryout[]
+  announcements   Announcement[]
+  events          Event[]             @relation("CourseEvents")
+  testimonial     CourseTestimonial[]
+}
+
+model CourseTestimonial {
+  id        String   @id @default(cuid())
+  courseId  String
+  userId    String
+  rating    Int // 1 to 5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+}
+
+model LearningSession {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  date      DateTime @db.Date
+  duration  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, courseId, date])
+}
+
+model Event {
+  id                       String     @id @default(cuid())
+  title                    String
+  description              String?
+  start                    DateTime
+  end                      DateTime
+  allDay                   Boolean    @default(false)
+  location                 String?
+  color                    EventColor @default(SKY)
+  timeline                 Json?
+  hasTimeline              Boolean    @default(false)
+  eventMode                EventMode  @default(BASIC)
+  rsvpDeadline             DateTime?
+  rsvpRequiresApproval     Boolean    @default(false)
+  rsvpAllowMaybe           Boolean    @default(true)
+  rsvpMaxAttendees         Int?
+  rsvpPublic               Boolean    @default(false)
+  presenceCheckInRadius    Float?
+  presenceAutoCheckOut     Boolean    @default(true)
+  presenceRequiresApproval Boolean    @default(false)
+  presenceAllowLateCheckIn Boolean    @default(true)
+  presenceCheckInBuffer    Int?
+
+  // Google Sheets integration
+  rsvpSheetUrl       String?
+  rsvpSheetId        String?
+  attendanceSheetUrl String?
+  attendanceSheetId  String?
+
+  createdById     String
+  createdBy       User                @relation("CreatedBy", fields: [createdById], references: [id])
+  userId          String?
+  user            User?               @relation("UserEvents", fields: [userId], references: [id])
+  courseId        String?
+  course          Course?             @relation("CourseEvents", fields: [courseId], references: [id])
+  rsvpForm        EventRSVPForm?
+  rsvpResponses   EventRSVPResponse[]
+  presenceRecords EventPresence[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("events")
+}
+
+model EventRSVPForm {
+  id                  String   @id @default(cuid())
+  eventId             String   @unique
+  title               String   @default("RSVP")
+  description         String?
+  confirmationMessage String?
+  collectName         Boolean  @default(true)
+  collectEmail        Boolean  @default(false)
+  collectPhone        Boolean  @default(false)
+  customFields        Json?
+  event               Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("event_rsvp_forms")
+}
+
+model EventRSVPResponse {
+  id             String         @id @default(cuid())
+  eventId        String
+  userId         String?
+  status         RSVPStatus
+  respondedAt    DateTime       @default(now())
+  guestName      String?
+  guestEmail     String?
+  guestPhone     String?
+  responses      Json?
+  notes          String?
+  plusOnes       Int            @default(0)
+  approvalStatus ApprovalStatus @default(PENDING)
+  approvedBy     String?
+  approvedAt     DateTime?
+  rejectedReason String?
+  event          Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approver       User?          @relation("RSVPApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([eventId, userId])
+  @@unique([eventId, guestEmail])
+  @@map("event_rsvp_responses")
+}
+
+model EventPresence {
+  id                String         @id @default(cuid())
+  eventId           String
+  userId            String
+  checkedInAt       DateTime?
+  checkedOutAt      DateTime?
+  checkInLatitude   Float?
+  checkInLongitude  Float?
+  checkOutLatitude  Float?
+  checkOutLongitude Float?
+  status            PresenceStatus @default(ABSENT)
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedReason    String?
+  duration          Int?
+  notes             String?
+  isManualEntry     Boolean        @default(false)
+  isLate            Boolean        @default(false)
+  event             Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approver          User?          @relation("PresenceApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([eventId, userId])
+  @@map("event_presence")
+}
+
+model Announcement {
+  id          String              @id @default(cuid())
+  title       String
+  content     String              @db.Text
+  images      String[]
+  scope       AnnouncementScope   @default(GLOBAL)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdById String
+  createdBy   User                @relation("CreatedAnnouncements", fields: [createdById], references: [id])
+  courseId    String?
+  course      Course?             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  replies     AnnouncementReply[]
+
+  @@map("announcements")
+}
+
+model AnnouncementReply {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@index([announcementId])
+  @@index([userId])
+}
+
+model Scholarship {
+  id           String          @id @default(cuid())
+  title        String
+  description  String          @db.Text
+  provider     String
+  deadline     DateTime
+  link         String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  otherLinks   String[]
+  quota        Int?
+  benefits     String[]
+  requirements String[]
+  type         ScholarshipType @default(EXTERNAL)
+  createdById  String
+  createdBy    User            @relation("CreatedScholarships", fields: [createdById], references: [id])
+  image        String?
+
+  @@map("scholarships")
+}
+
+model JobVacancy {
+  id          String   @id @default(cuid())
+  title       String
+  company     String
+  position    String
+  eligibility String
+  streams     String[]
+  overview    String   @db.Text
+  timeline    String   @db.Text
+  applyLink   String
+  /// Display e.g. "Competitive" or "IDR 8–12M / month"
+  salaryLabel   String?
+  /// e.g. Intern, Junior, Mid, Senior
+  seniority     String?
+  /// e.g. Internship, Full-time, Contract
+  employmentType String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation("CreatedJobVacancies", fields: [createdById], references: [id])
+
+  @@map("job_vacancies")
+}
+
+model Tryout {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  duration    Int?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  courseId    String
+  questions   Question[]
+  attempts    UserAttempt[]
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("tryouts")
+}
+
+model Question {
+  id                String           @id @default(cuid())
+  tryoutId          String
+  type              QuestionType
+  question          String
+  points            Int              @default(1)
+  order             Int
+  required          Boolean          @default(true)
+  images            String[]         @default([])
+  explanation       String?          @db.Text
+  explanationImages String[]
+  shortAnswers      String[]         @default([])
+  tryout            Tryout           @relation(fields: [tryoutId], references: [id], onDelete: Cascade)
+  options           QuestionOption[]
+  answers           UserAnswer[]
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id          String   @id @default(cuid())
+  questionId  String
+  text        String
+  isCorrect   Boolean  @default(false)
+  order       Int
+  explanation String?  @db.Text
+  images      String[] @default([])
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("question_options")
+}
+
+model UserAttempt {
+  id          String       @id @default(cuid())
+  userId      String
+  tryoutId    String
+  score       Float        @default(0)
+  maxScore    Float        @default(0)
+  startedAt   DateTime     @default(now())
+  endedAt     DateTime?
+  isCompleted Boolean      @default(false)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tryout      Tryout       @relation(fields: [tryoutId], references: [id], onDelete: Cascade)
+  answers     UserAnswer[]
+
+  @@map("user_attempts")
+}
+
+model UserAnswer {
+  id         String      @id @default(cuid())
+  attemptId  String
+  questionId String
+  answer     String
+  points     Float       @default(0)
+  createdAt  DateTime    @default(now())
+  attempt    UserAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@map("user_answers")
+}
+
+model Resource {
+  id             String            @id @default(cuid())
+  title          String
+  description    String?
+  type           ResourceType
+  attachableId   String
+  attachableType AttachableType
+  category       ResourceCategory?
+  attachment     Attachment?
+  link           Link?
+  isActive       Boolean           @default(true)
+  uploadedById   String
+  uploadedBy     User              @relation("UploadedResources", fields: [uploadedById], references: [id])
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  accessLogs     ResourceAccess[]
+
+  @@index([attachableId, attachableType])
+  @@map("resources")
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  filename   String
+  key        String
+  mimeType   String
+  size       Int
+  resourceId String   @unique
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model Link {
+  id         String     @id @default(cuid())
+  url        String
+  source     LinkSource
+  resourceId String     @unique
+  resource   Resource   @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@map("links")
+}
+
+model ResourceAccess {
+  id         String     @id @default(cuid())
+  action     AccessType
+  ipAddress  String?
+  userAgent  String?
+  accessedAt DateTime   @default(now())
+  resourceId String
+  resource   Resource   @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User       @relation("ResourceAccesses", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("resource_access")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  nim           String    @unique
+  faculty       String?
+  program       String?
+  position      String?
+  role          Role      @default(STUDENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  emailVerified DateTime?
+  image         String?
+  coverImage    String?
+
+  sessions             Session[]
+  courses              Course[]
+  learningSessions     LearningSession[]
+  userAttempts         UserAttempt[]
+  rsvpResponses        EventRSVPResponse[] // <-- FIXED
+  presenceRecords      EventPresence[] // <-- FIXED
+  courseTestimonial    CourseTestimonial[]
+  pushSubscriptions    PushSubscription[]
+  createdEvents        Event[]             @relation("CreatedBy")
+  events               Event[]             @relation("UserEvents")
+  createdAnnouncements Announcement[]      @relation("CreatedAnnouncements")
+  createdScholarships  Scholarship[]       @relation("CreatedScholarships")
+  createdJobVacancies  JobVacancy[]        @relation("CreatedJobVacancies")
+  uploadedResources    Resource[]          @relation("UploadedResources")
+  resourceAccesses     ResourceAccess[]    @relation("ResourceAccesses")
+  rsvpApprovals        EventRSVPResponse[] @relation("RSVPApprover")
+  presenceApprovals    EventPresence[]     @relation("PresenceApprover")
+  form                 Form[]
+  formSubmission       FormSubmission[]
+  shortLink            ShortLink[]         @relation("CreatedShortLinks")
+  announcementReplies  AnnouncementReply[]
+  managedForms         Form[]              @relation("FormManagers")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Form {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  isPublished Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  creator     User     @relation(fields: [createdBy], references: [id])
+  type        FormType @default(NORMAL)
+
+  // Form settings
+  allowMultipleSubmissions Boolean @default(false)
+  requireAuth              Boolean @default(true)
+  showProgressBar          Boolean @default(true)
+  collectEmail             Boolean @default(true)
+
+  // Collaboration
+  isPublicToAdmins         Boolean         @default(false)
+  managers                 User[]          @relation("FormManagers")
+
+  // Relations
+  questions   FormQuestion[]
+  submissions FormSubmission[]
+
+  @@map("forms")
+}
+
+model FormQuestion {
+  id     String @id @default(cuid())
+  formId String
+  form   Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  type        FormQuestionType
+  required    Boolean          @default(false)
+  order       Int
+
+  // Question-specific settings (stored as JSON)
+  settings Json? // For options, validation rules, etc.
+
+  // Relations
+  answers FormAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("form_questions")
+}
+
+model FormSubmission {
+  id     String @id @default(cuid())
+  formId String
+  form   Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  submittedBy String? // Nullable for anonymous submissions
+  submitter   User?   @relation(fields: [submittedBy], references: [id])
+
+  submittedAt DateTime @default(now())
+  ipAddress   String?
+  userAgent   String?
+
+  // Relations
+  answers FormAnswer[]
+
+  @@map("form_submissions")
+}
+
+model FormAnswer {
+  id           String         @id @default(cuid())
+  questionId   String
+  question     FormQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  submissionId String
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  // Answer data (flexible storage)
+  textValue   String? // For text answers
+  numberValue Float? // For numeric answers
+  dateValue   DateTime? // For date/time answers
+  jsonValue   Json? // For complex answers (arrays, objects)
+  fileUrl     String? // For file uploads
+
+  createdAt DateTime @default(now())
+
+  @@map("form_answers")
+}
+
+// Link shortener model
+model ShortLink {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  originalUrl String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+
+  // Analytics
+  clicks Int @default(0)
+
+  // Relations
+  createdById String
+  createdBy   User   @relation("CreatedShortLinks", fields: [createdById], references: [id], onDelete: Cascade)
+
+  clickLogs ShortLinkClick[]
+
+  @@index([slug])
+  @@index([createdById])
+  @@map("short_links")
+}
+
+model ShortLinkClick {
+  id          String    @id @default(cuid())
+  shortLinkId String
+  shortLink   ShortLink @relation(fields: [shortLinkId], references: [id], onDelete: Cascade)
+
+  clickedAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  country   String?
+  city      String?
+
+  @@index([shortLinkId])
+  @@map("short_link_clicks")
+}

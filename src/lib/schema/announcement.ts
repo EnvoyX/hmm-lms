@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnnouncementScope } from "~/app/generated/prisma/client";
+import { AnnouncementScope } from "@prisma/client";
 
 export const announcementSchema_ = z.object({
   title: z.string().min(3, "Title is required"),
@@ -11,17 +11,17 @@ export const announcementSchema_ = z.object({
 });
 
 export const announcementSchema = announcementSchema_.refine(
-  (data) => {
-    if (data.scope === "COURSE" && !data.courseId) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Course ID is required for course-specific announcements",
-    path: ["courseId"],
-  },
-);
+    (data) => {
+      if (data.scope === "COURSE" && !data.courseId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Course ID is required for course-specific announcements",
+      path: ["courseId"],
+    },
+  );
 
 export const updateAnnouncementSchema = announcementSchema_.extend({
   id: z.string().cuid(),

@@ -1,4 +1,4 @@
-import { EventMode } from '~/app/generated/prisma/client';
+import { EventMode } from '@prisma/client';
 import z from 'zod';
 
 export const timelineItemSchema = z.object({

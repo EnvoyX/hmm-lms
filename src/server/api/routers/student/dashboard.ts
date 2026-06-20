@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { endOfDay, endOfWeek, getISOWeek, getISOWeekYear, startOfDay, startOfWeek, subDays } from "date-fns";
-import type { Prisma } from "~/app/generated/prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const studentDashboardRouter = createTRPCRouter({
   // Get enrolled courses with progress

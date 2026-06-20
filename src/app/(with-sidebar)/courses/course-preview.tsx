@@ -9,7 +9,7 @@ import {
   Star,
   BookMarked
 } from 'lucide-react';
-import type { Prisma } from '~/app/generated/prisma/client';
+import { type Prisma } from '@prisma/client';
 
 type CourseForPreview = Prisma.CourseGetPayload<{
   include: {

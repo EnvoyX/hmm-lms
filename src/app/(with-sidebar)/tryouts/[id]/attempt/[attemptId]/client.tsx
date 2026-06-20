@@ -33,7 +33,7 @@ import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import type { Tryout, UserAttempt, Question } from "~/lib/types/tryout";
 import MotionImageDialog from '~/components/motion/dialog';
-import type { QuestionOption } from "~/app/generated/prisma/client";
+import type { QuestionOption } from '@prisma/client';
 
 interface TryoutAttemptClientProps {
   attempt: UserAttempt;
@@ -322,19 +322,19 @@ export function TryoutAttemptClient({
             </div>
           </div>
           <div className="mt-3 space-y-4">
-            <div className="prose prose-sm max-w-none leading-relaxed dark:prose-invert">
-              <p>{currentQuestion.question}</p>
+          <div className="prose prose-sm max-w-none leading-relaxed dark:prose-invert">
+            <p>{currentQuestion.question}</p>
+          </div>
+
+          {currentQuestion.images && currentQuestion.images.length > 0 && (
+            <div className="flex h-36 flex-wrap gap-3 overflow-x-auto md:h-44">
+              {currentQuestion.images.map((imgUrl) => (
+                < MotionImageDialog key={imgUrl} layoutId={imgUrl + 'question'} src={imgUrl} alt="Question attachment" className="rounded-md border object-contain h-full w-max" width={1000} height={1000} />
+              ))}
             </div>
+          )}
 
-            {currentQuestion.images && currentQuestion.images.length > 0 && (
-              <div className="flex h-36 flex-wrap gap-3 overflow-x-auto md:h-44">
-                {currentQuestion.images.map((imgUrl) => (
-                  < MotionImageDialog key={imgUrl} layoutId={imgUrl + 'question'} src={imgUrl} alt="Question attachment" className="rounded-md border object-contain h-full w-max" width={1000} height={1000} />
-                ))}
-              </div>
-            )}
-
-            {renderQuestion()}
+          {renderQuestion()}
           </div>
         </section>
 

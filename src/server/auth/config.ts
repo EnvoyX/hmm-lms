@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import type { Role } from '~/app/generated/prisma/client';
+import type { Role } from '@prisma/client';
 import {
   type DefaultSession,
   type NextAuthConfig,

@@ -4,11 +4,12 @@
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 // User-related enums

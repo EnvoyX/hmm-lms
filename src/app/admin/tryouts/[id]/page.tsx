@@ -1,7 +1,7 @@
 // ~/app/admin/tryouts/[id]/page.tsx
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
-import { Role } from "~/app/generated/prisma/client";
+import { Role } from "@prisma/client";
 import { api } from "~/trpc/server";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -15,7 +15,7 @@ import {
   BarChart3
 } from "lucide-react";
 import TryoutStatistics from './analytics';
-import TryoutAttempts from './attemp';
+import TryoutAttempts from './attemp'; 
 import TryoutQuestions from './question';
 
 interface TryoutDetailsPageProps {

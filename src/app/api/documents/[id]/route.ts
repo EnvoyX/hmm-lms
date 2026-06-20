@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { Role, ResourceType, AccessType, AttachableType } from "~/app/generated/prisma/client";
+import { Role, ResourceType, AccessType, AttachableType } from "@prisma/client";
 import s3Client from "~/lib/s3-client";
 
 export async function GET(

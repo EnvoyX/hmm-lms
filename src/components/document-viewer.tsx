@@ -10,7 +10,7 @@ import {
 import { Button } from '~/components/ui/button';
 import { Link as LinkIcon, ExternalLink, FileText, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { ResourceType, LinkSource, type Prisma } from '~/app/generated/prisma/client';
+import { ResourceType, LinkSource, type Prisma } from '@prisma/client';
 import { getCdnUrl } from '~/lib/utils';
 
 // Define the type for the resource
@@ -117,44 +117,44 @@ export default function DocumentViewer({ resource, open, onOpenChange }: Documen
           </header>
 
           <div className="flex-1">
-            {showFallback ? (
-              // Fallback for non-embeddable links
-              <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-                <ExternalLink className="mb-4 h-12 w-12 text-muted-foreground" />
-                <p className="mb-2 text-lg font-medium">This link cannot be embedded.</p>
-                <p className="mb-4 text-sm text-muted-foreground">
-                  This viewer only supports YouTube and Google Drive links. Click the button below to open the URL in a new tab.
-                </p>
-                <Button asChild>
-                  <a href={resource.link?.url} target="_blank" rel="noopener noreferrer">
-                    Open Link <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-              </div>
-            ) : isImage ? (
-              // Render the Next.js Image component for images
-              <div className="relative flex h-full min-h-[70vh] items-center justify-center bg-muted/20 p-4">
-                <Image
-                  src={docUrl ?? ''}
-                  alt={resource.title}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  className="rounded-lg"
-                />
-              </div>
-            ) : (
-              // Render the iframe for all other document types (files, embeddable links)
-              <div className="relative h-[calc(100vh-74px)] w-full overflow-hidden">
-                <iframe
-                  src={docUrl ?? ''}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 'none' }}
-                  title={resource.title}
-                  allowFullScreen
-                />
-              </div>
-            )}
+        {showFallback ? (
+          // Fallback for non-embeddable links
+          <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+            <ExternalLink className="mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="mb-2 text-lg font-medium">This link cannot be embedded.</p>
+            <p className="mb-4 text-sm text-muted-foreground">
+              This viewer only supports YouTube and Google Drive links. Click the button below to open the URL in a new tab.
+            </p>
+            <Button asChild>
+              <a href={resource.link?.url} target="_blank" rel="noopener noreferrer">
+                Open Link <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        ) : isImage ? (
+          // Render the Next.js Image component for images
+          <div className="relative flex h-full min-h-[70vh] items-center justify-center bg-muted/20 p-4">
+            <Image
+              src={docUrl ?? ''}
+              alt={resource.title}
+              fill
+              style={{ objectFit: 'contain' }}
+              className="rounded-lg"
+            />
+          </div>
+        ) : (
+          // Render the iframe for all other document types (files, embeddable links)
+          <div className="relative h-[calc(100vh-74px)] w-full overflow-hidden">
+            <iframe
+              src={docUrl ?? ''}
+              width="100%"
+              height="100%"
+              style={{ border: 'none' }}
+              title={resource.title}
+              allowFullScreen
+            />
+          </div>
+        )}
           </div>
         </div>
       </DialogContent>

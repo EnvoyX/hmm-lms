@@ -30,7 +30,7 @@ import {
   LinkSource,
   ResourceCategory,
   ResourceType,
-} from '~/app/generated/prisma/client';
+} from '@prisma/client';
 import {
   AlertCircleIcon,
   FileArchiveIcon,

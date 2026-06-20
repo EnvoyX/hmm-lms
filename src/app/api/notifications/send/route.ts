@@ -4,7 +4,7 @@ import { auth } from '~/server/auth';
 import { db } from "~/server/db";
 import webpush from "web-push";
 import { env } from "~/env";
-import { Role } from "~/app/generated/prisma/client";
+import { Role } from "@prisma/client";
 
 // Configure web-push
 webpush.setVapidDetails(

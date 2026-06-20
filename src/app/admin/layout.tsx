@@ -1,7 +1,7 @@
 // ~/app/admin/layout.tsx
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
-import { Role } from "~/app/generated/prisma/client";
+import { Role } from "@prisma/client";
 import AdminNavbar from '~/components/admin/navbar';
 import { Suspense } from 'react';
 

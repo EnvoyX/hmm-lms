@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { QuestionType } from "~/app/generated/prisma/client";
+import { QuestionType } from "@prisma/client";
 import { api } from "~/trpc/react";
 import {
   createTryoutSchema,

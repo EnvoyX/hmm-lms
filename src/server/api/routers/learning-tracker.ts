@@ -4,7 +4,7 @@ import {
   protectedProcedure,
   adminProcedure,
 } from "~/server/api/trpc";
-import type { Prisma } from "~/app/generated/prisma/client";
+import type { Prisma } from "@prisma/client";
 import { TRPCError } from '@trpc/server';
 
 const HEARTBEAT_INTERVAL_SECONDS = 15;

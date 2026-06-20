@@ -1,7 +1,7 @@
 // ~/lib/schema/tryout.ts
 
 import { z } from "zod";
-import { QuestionType } from "~/app/generated/prisma/client";
+import { QuestionType } from "@prisma/client";
 
 // ⬇️ *** THIS IS THE CORRECTED VALIDATION LOGIC *** ⬇️
 const questionRefinement = (

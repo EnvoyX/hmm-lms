@@ -58,7 +58,7 @@ import {
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AnnouncementScope } from "~/app/generated/prisma/client";
+import { AnnouncementScope } from "@prisma/client";
 import type { RouterOutputs } from "~/trpc/react";
 import { X } from "lucide-react";
 import Link from "next/link";

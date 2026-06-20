@@ -4,8 +4,8 @@ import { Badge } from '~/components/ui/badge';
 import { CalendarDays, Clock, MapPin, User, GraduationCap, Globe, CheckSquare, BellRing } from 'lucide-react';
 import { format } from 'date-fns';
 import { type RouterOutputs } from '~/trpc/react';
+import { EventMode } from '@prisma/client';
 import GeometryBackground from '~/components/ui/background/geometry';
-import { EventMode } from '~/app/generated/prisma/client';
 
 interface EventItemProps {
   event: RouterOutputs['event']['getAllEvents'][number];

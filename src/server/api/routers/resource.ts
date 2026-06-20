@@ -1,7 +1,7 @@
 // ~/server/api/routers/resource.ts
 import { z } from "zod";
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
-import { AttachableType, ResourceCategory, ResourceType, LinkSource } from "~/app/generated/prisma/client";
+import { AttachableType, ResourceCategory, ResourceType, LinkSource } from "@prisma/client";
 
 export const resourceRouter = createTRPCRouter({
   create: adminProcedure

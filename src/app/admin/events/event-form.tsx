@@ -31,12 +31,12 @@ import {
 } from '~/components/ui/select';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { EventMode } from '~/app/generated/prisma/client';
+import { EventMode } from '@prisma/client';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { eventInputSchema, type timelineItemSchema } from '~/lib/schema/event';
-import type { JsonArray } from '~/app/generated/prisma/internal/prismaNamespace';
+import type { JsonArray } from '@prisma/client/runtime/library';
 
 type EventDetail = NonNullable<RouterOutputs['event']['getEventById']>;
 

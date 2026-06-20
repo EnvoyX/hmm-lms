@@ -6,7 +6,7 @@ import {
   superAdminProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "~/app/generated/prisma/client";
+import type { PrismaClient } from "@prisma/client";
 
 // Define model names as const for type safety
 const MODEL_NAMES = [

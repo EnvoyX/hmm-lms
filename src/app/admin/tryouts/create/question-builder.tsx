@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFieldArray } from "react-hook-form";
-import { QuestionType } from "~/app/generated/prisma/client";
+import { QuestionType } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";

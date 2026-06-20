@@ -30,11 +30,40 @@ export const announcementRouter = createTRPCRouter({
         createdById: ctx.session.user.id,
       },
     });
-    
+
     return data;
   }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
+    const userWithCourses = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { courses: { select: { id: true } } },
+    });
+
+    const userCourseIds = userWithCourses?.courses.map((c) => c.id) ?? [];
+
+    return ctx.db.announcement.findMany({
+      where: {
+        OR: [
+          { scope: AnnouncementScope.GLOBAL },
+          {
+            scope: AnnouncementScope.COURSE,
+            courseId: { in: userCourseIds },
+          },
+          {
+            scope: AnnouncementScope.MACHINING
+          }
+        ],
+      },
+      include: {
+        createdBy: { select: { name: true, image: true } },
+        course: { select: { title: true } },
+        _count: { select: { replies: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }),
+  getGlobalOnly: protectedProcedure.query(async ({ ctx }) => {
     const userWithCourses = await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },
       select: { courses: { select: { id: true } } },
@@ -60,7 +89,30 @@ export const announcementRouter = createTRPCRouter({
       orderBy: { createdAt: "desc" },
     });
   }),
+  getMachiningOnly: protectedProcedure.query(async ({ ctx }) => {
+    const userWithCourses = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { courses: { select: { id: true } } },
+    });
 
+    const userCourseIds = userWithCourses?.courses.map((c) => c.id) ?? [];
+
+    return ctx.db.announcement.findMany({
+      where: {
+        OR: [
+          {
+            scope: AnnouncementScope.MACHINING
+          }
+        ],
+      },
+      include: {
+        createdBy: { select: { name: true, image: true } },
+        course: { select: { title: true } },
+        _count: { select: { replies: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }),
   getById: protectedProcedure
     .input(announcementIdSchema)
     .query(async ({ ctx, input }) => {
@@ -107,7 +159,7 @@ export const announcementRouter = createTRPCRouter({
     .input(updateAnnouncementSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      
+
       const announcement = await ctx.db.announcement.update({
         where: { id },
         data,
@@ -211,7 +263,7 @@ async function handleAnnouncementNotification(
   }
 
   const payload = buildNotificationPayload(announcement, action);
-  
+
   const results = await sendNotificationToMultiple(
     subscriptions.map((sub) => ({
       endpoint: sub.endpoint,

@@ -5,12 +5,19 @@ import { InstallPrompt } from '~/components/install-prompt';
 import MainNavbar from '~/components/main/navbar';
 // import { NotificationPromptModal } from '~/components/notif-prompt-modal';
 import { auth } from '~/server/auth';
+import { Role } from "@prisma/client";
 
 export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
-  
+
+  const isMachining = session?.user && (session.user.role === Role.MACHINING);
+
+  if (isMachining) {
+    redirect("/machining/dashboard")
+  }
+
   if (!session) {
     redirect('/auth/sign-in');
   }

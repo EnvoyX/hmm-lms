@@ -17,6 +17,7 @@ enum Role {
   ADMIN
   STUDENT
   SUPERADMIN
+  MACHINING
 }
 
 // Resource system enums
@@ -74,6 +75,25 @@ enum EventColor {
 enum AnnouncementScope {
   GLOBAL
   COURSE
+  MACHINING
+}
+
+enum EventScope{
+GLOBAL
+COURSE
+PERSONAL
+MACHINING
+}
+
+enum CourseScope{
+GLOBAL
+MACHINING
+}
+
+enum CourseType{
+MANDATORY
+OPTIONAL
+MACHINING
 }
 
 enum ScholarshipType {
@@ -140,6 +160,8 @@ model Course {
   updatedAt       DateTime            @updatedAt
   syllabus        String?             @db.Text
   isActive        Boolean             @default(true)
+  scope           CourseScope         @default(GLOBAL)
+  type            CourseType          @default(MANDATORY)
   members         User[]
   learningSession LearningSession[]
   tryout          Tryout[]
@@ -211,6 +233,7 @@ model Event {
   user            User?               @relation("UserEvents", fields: [userId], references: [id])
   courseId        String?
   course          Course?             @relation("CourseEvents", fields: [courseId], references: [id])
+  scope           EventScope          @default(GLOBAL)
   rsvpForm        EventRSVPForm?
   rsvpResponses   EventRSVPResponse[]
   presenceRecords EventPresence[]

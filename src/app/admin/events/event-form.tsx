@@ -91,7 +91,7 @@ export default function EventForm({ event, mode }: EventFormProps) {
         location: event.location ?? '',
         hasTimeline: Boolean(event.timeline && (event.timeline as JsonArray).length > 0),
         timeline: (event.timeline as z.infer<typeof timelineItemSchema>[]) ?? [],
-        scope: event.courseId ? 'course' : event.userId ? 'personal' : 'global',
+        scope: event.courseId ? 'course' : event.userId ? 'personal' : event.scope === "GLOBAL" ? "global" : "machining",
         courseId: event.courseId ?? undefined,
         eventMode: event.eventMode ?? EventMode.ATTENDANCE_ONLY,
         rsvpDeadline: event.rsvpDeadline ? new Date(event.rsvpDeadline) : null,
@@ -306,6 +306,7 @@ export default function EventForm({ event, mode }: EventFormProps) {
                       <SelectItem value="global">Global</SelectItem>
                       <SelectItem value="course">Course</SelectItem>
                       <SelectItem value="personal">Personal</SelectItem>
+                      <SelectItem value="machining">Machining</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>

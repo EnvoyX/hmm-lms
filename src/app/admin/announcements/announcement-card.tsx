@@ -70,7 +70,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
           <h3 className="text-xl font-bold mb-2">{announcement.title}</h3>
 
           <div className="flex items-center gap-2 mb-3">
-            <Badge variant={announcement.scope === "GLOBAL" ? "default" : "secondary"}>
+            <Badge variant={announcement.scope === "GLOBAL" ? "default" : announcement.scope === "MACHINING" ? "destructive" : "secondary"}>
               {announcement.scope}
             </Badge>
             {announcement.course && (

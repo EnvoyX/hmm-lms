@@ -1,15 +1,17 @@
 import { cn } from '~/lib/utils';
 import Link, { type LinkProps } from 'next/link';
 import Image from 'next/image';
-import { FileSpreadsheet, SquarePlay, Star } from 'lucide-react';
+import { Tally5, Users2, Star } from 'lucide-react';
 import { Separator } from '~/components/ui/separator';
+import type { CourseType } from '@prisma/client';
 type CoursesItemProps = {
   id: string | number;
   title: string;
+  type: CourseType;
   image: string;
   subject: string;
-  numberOfMaterials: number;
-  numberOfVideos: number;
+  numberOfMembers: number;
+  numberOfTryouts: number;
   rating?: number;
   className?: string;
   orientation?: 'horizontal' | 'vertical';
@@ -18,10 +20,11 @@ type CoursesItemProps = {
 export default function CoursesItem({
   id,
   title,
+  type,
   image,
   subject,
-  numberOfMaterials,
-  numberOfVideos,
+  numberOfMembers,
+  numberOfTryouts,
   orientation = 'vertical',
   rating,
   className,
@@ -48,7 +51,11 @@ export default function CoursesItem({
           <div className="flex gap-4 items-center justify-between">
             <h6 className='text-muted-foreground text-2xs md:text-xs'>{subject}</h6>
             {orientation === 'vertical' && (
-              <div className="rounded-md bg-success px-2 py-0.5 text-[10px] text-white">Mandatory</div>
+              <>
+                {type === "MANDATORY" ? (
+                  <div className="rounded-md bg-primary px-2 py-0.5 text-[10px] text-white">Mandatory</div>
+                ) : type === "MACHINING" ? (<div className="rounded-md bg-success px-2 py-0.5 text-[10px] text-white">Machining</div>) : (<div className="rounded-md bg-primary/50 px-2 py-0.5 text-[10px] text-white">Optional</div>)}
+              </>
             )}
           </div>
           <h4 className={cn('text-xs md:text-sm font-medium text-ellipsis line-clamp-2 group-hover:text-primary transition-all', orientation === 'horizontal' && 'line-clamp-3')} title={title}>{title}</h4>
@@ -57,12 +64,12 @@ export default function CoursesItem({
           <Separator />
           <div className='flex justify-end gap-3 items-center md:text-sm self-end text-xs *:flex *:items-center *:gap-1'>
             <div className="">
-              <FileSpreadsheet size={10} />
-              <span>{numberOfMaterials}</span>
+              <Users2 size={10} />
+              <span>{numberOfMembers}</span>
             </div>
             <div className="">
-              <SquarePlay size={10} />
-              <span>{numberOfVideos}</span>
+              <Tally5 size={10} />
+              <span>{numberOfTryouts}</span>
             </div>
             <div className="">
               <Star size={10} className='' />

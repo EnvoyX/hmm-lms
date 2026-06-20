@@ -76,6 +76,7 @@ const adminSidebarTabs: {
       group: 'Quick Access',
       items: [
         { label: 'Back to App', href: '/dashboard', icon: BookOpen, tooltip: 'Back to Main App' },
+        { label: 'Back to Machining', href: '/machining/dashboard', icon: BookOpen, tooltip: 'Back to Machining App' },
       ],
     },
   ]

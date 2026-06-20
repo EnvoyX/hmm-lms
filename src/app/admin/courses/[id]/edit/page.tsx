@@ -85,6 +85,9 @@ export default async function CourseAdminPage({ params }: CourseAdminPageProps) 
               <Badge variant="outline">
                 {course.classCode}
               </Badge>
+              <Badge variant="outline">
+                {course.type.charAt(0) + course.type.slice(1).toLowerCase()}
+              </Badge>
             </div>
           </div>
           <div className="flex gap-2">

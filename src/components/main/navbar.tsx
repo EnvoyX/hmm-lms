@@ -30,6 +30,7 @@ import {
   Tally5,
   Phone,
   Trophy,
+  BookOpen
 } from "lucide-react";
 import { auth } from "~/server/auth";
 import ThemeSwitch from "../theme-switch";
@@ -53,106 +54,112 @@ const sidebarTabs: {
     tag?: string;
   }[];
 }[] = [
-  {
-    group: "General",
-    items: [
-      {
-        label: "Dashboard",
-        href: "/dashboard",
-        icon: Home,
-        tooltip: "Dashboard",
-      },
-      {
-        label: "Hall of Fame",
-        href: "/hall-of-fame",
-        icon: Trophy,
-        tooltip: "Hall of Fame",
-        tag: "new",
-      },
-      {
-        label: "Schedule",
-        href: "/schedule",
-        icon: Calendar,
-        tooltip: "Schedule",
-        dev: false,
-      },
-    ],
-  },
-  {
-    group: "Academics",
-    items: [
-      {
-        label: "Courses",
-        href: "/courses",
-        icon: GraduationCap,
-        tooltip: "Courses",
-      },
-      { label: "Tryouts", href: "/tryouts", icon: Tally5, tooltip: "Tryouts" },
-      {
-        label: "Scholarships",
-        href: "/scholarships",
-        icon: Banknote,
-        tooltip: "Scholarships",
-      },
-    ],
-  },
-  {
-    group: "Himpunan",
-    items: [
-      {
-        label: "Events",
-        href: "/events",
-        icon: Footprints,
-        tooltip: "Events",
-        dev: false,
-      },
-      {
-        label: "Announcements",
-        href: "/announcements",
-        icon: Megaphone,
-        tooltip: "Announcements",
-        dev: false,
-      },
-      {
-        label: "M-Opportunity",
-        href: "/loker",
-        icon: Briefcase,
-        tooltip: "M-Opportunity",
-        dev: false,
-      },
-      {
-        label: "Hotline",
-        href: "/hotline",
-        icon: Phone,
-        tooltip: "Hotline",
-        dev: false,
-      },
-    ],
-  },
-  {
-    group: "Preferences",
-    items: [
-      {
-        label: "Settings",
-        href: "/settings",
-        icon: Settings,
-        tooltip: "Settings",
-        dev: false,
-      },
-    ],
-  },
-  {
-    group: "Admin",
-    items: [
-      {
-        label: "Admin Panel",
-        href: "/admin",
-        icon: Home,
-        tooltip: "Admin Panel",
-      },
-    ],
-  },
-];
+    {
+      group: "General",
+      items: [
+        {
+          label: "Dashboard",
+          href: "/dashboard",
+          icon: Home,
+          tooltip: "Dashboard",
+        },
+        {
+          label: "Hall of Fame",
+          href: "/hall-of-fame",
+          icon: Trophy,
+          tooltip: "Hall of Fame",
+          tag: "new",
+        },
+        {
+          label: "Schedule",
+          href: "/schedule",
+          icon: Calendar,
+          tooltip: "Schedule",
+          dev: false,
+        },
+      ],
+    },
+    {
+      group: "Academics",
+      items: [
+        {
+          label: "Courses",
+          href: "/courses",
+          icon: GraduationCap,
+          tooltip: "Courses",
+        },
+        { label: "Tryouts", href: "/tryouts", icon: Tally5, tooltip: "Tryouts" },
+        {
+          label: "Scholarships",
+          href: "/scholarships",
+          icon: Banknote,
+          tooltip: "Scholarships",
+        },
+      ],
+    },
+    {
+      group: "Himpunan",
+      items: [
+        {
+          label: "Events",
+          href: "/events",
+          icon: Footprints,
+          tooltip: "Events",
+          dev: false,
+        },
+        {
+          label: "Announcements",
+          href: "/announcements",
+          icon: Megaphone,
+          tooltip: "Announcements",
+          dev: false,
+        },
+        {
+          label: "M-Opportunity",
+          href: "/loker",
+          icon: Briefcase,
+          tooltip: "M-Opportunity",
+          dev: false,
+        },
+        {
+          label: "Hotline",
+          href: "/hotline",
+          icon: Phone,
+          tooltip: "Hotline",
+          dev: false,
+        },
+      ],
+    },
+    {
+      group: "Preferences",
+      items: [
+        {
+          label: "Settings",
+          href: "/settings",
+          icon: Settings,
+          tooltip: "Settings",
+          dev: false,
+        },
+      ],
+    },
+    {
+      group: "Admin",
+      items: [
+        {
+          label: "Admin Panel",
+          href: "/admin",
+          icon: Home,
+          tooltip: "Admin Panel",
+        },
+        {
+          label: "Machining",
+          href: "/machining/dashboard",
+          icon: BookOpen,
+          tooltip: "Machining",
+        },
+      ],
+    },
+  ];
 
 export default async function MainNavbar({
   children,
@@ -162,19 +169,19 @@ export default async function MainNavbar({
   const defaultOpen = cookieStore.get(SIDEBAR_COOKIE_NAME)?.value === "true";
   const session = await auth();
 
-  const courses = (await getCourses()).map((course) => ({
+  const courses = (await getCourses()).filter((course) => course.scope !== "MACHINING").map((course) => ({
     id: course.id,
     title: course.title,
     classCode: course.classCode,
     totalLessons: course.totalLessons,
     totalVideos: course.totalVideos,
   }));
-  const announcements = (await getAnnoucements()).map((announcement) => ({
+  const announcements = (await getAnnoucements()).filter((announcement) => announcement.scope !== "MACHINING").map((announcement) => ({
     id: announcement.id,
     title: announcement.title,
     date: announcement.createdAt,
   }));
-  const events = (await getUserEvents(session?.user.id ?? "")).map((event) => ({
+  const events = (await getUserEvents(session?.user.id ?? "")).filter((event) => event.scope !== "MACHINING").map((event) => ({
     id: event.id,
     title: event.title,
     date: event.createdAt,

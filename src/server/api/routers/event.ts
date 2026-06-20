@@ -11,6 +11,7 @@ import {
   RSVPStatus,
   ApprovalStatus,
   PresenceStatus,
+  EventScope,
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { eventInputSchema } from '~/lib/schema/event';
@@ -23,7 +24,7 @@ export const eventRouter = createTRPCRouter({
   createDraft: adminProcedure.mutation(async ({ ctx }) => {
     const now = new Date();
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-    
+
     const data = await ctx.db.event.create({
       data: {
         title: "Untitled Event",
@@ -35,7 +36,7 @@ export const eventRouter = createTRPCRouter({
         eventMode: EventMode.BASIC,
       },
     });
-    
+
     return data;
   }),
 
@@ -94,7 +95,7 @@ export const eventRouter = createTRPCRouter({
     const courseIds = userCourses.map((course) => course.id);
     return ctx.db.event.findMany({
       where: {
-        OR: [{ courseId: null, userId: null }, { courseId: { in: courseIds } }],
+        OR: [{ courseId: null, userId: null, scope: "GLOBAL" }, { courseId: { in: courseIds } }],
       },
       include: {
         createdBy: {
@@ -107,7 +108,19 @@ export const eventRouter = createTRPCRouter({
       orderBy: { start: "desc" },
     });
   }),
-
+  getMachiningEvents: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.event.findMany({
+      where: {
+        courseId: null, userId: null, scope: "MACHINING"
+      },
+      include: {
+        createdBy: {
+          select: { name: true, email: true },
+        },
+      },
+      orderBy: { start: "desc" },
+    });
+  }),
   getEventById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -178,64 +191,64 @@ export const eventRouter = createTRPCRouter({
     }),
 
   getAllEventsAdmin: adminProcedure
-  .input(
-    z.object({
-      limit: z.number().min(1).max(100).default(20),
-      cursor: z.string().optional(),
-    })
-  )
-  .query(async ({ ctx, input }) => {
-    if (
-      ctx.session.user.role !== "ADMIN" &&
-      ctx.session.user.role !== "SUPERADMIN"
-    ) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        cursor: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (
+        ctx.session.user.role !== "ADMIN" &&
+        ctx.session.user.role !== "SUPERADMIN"
+      ) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
 
-    const { limit, cursor } = input;
+      const { limit, cursor } = input;
 
-    const items = await ctx.db.event.findMany({
-      take: limit + 1,
-      cursor: cursor ? { id: cursor } : undefined,
-      orderBy: [{ start: "desc" }, { createdAt: "desc" }],
-      include: {
-        course: {
-          select: {
-            title: true,
-            classCode: true,
+      const items = await ctx.db.event.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: [{ start: "desc" }, { createdAt: "desc" }],
+        include: {
+          course: {
+            select: {
+              title: true,
+              classCode: true,
+            },
+          },
+          user: {
+            select: {
+              name: true,
+            },
+          },
+          createdBy: {
+            select: {
+              name: true,
+            },
+          },
+          // ADD THIS _count field
+          _count: {
+            select: {
+              rsvpResponses: true,
+              presenceRecords: true,
+            },
           },
         },
-        user: {
-          select: {
-            name: true,
-          },
-        },
-        createdBy: {
-          select: {
-            name: true,
-          },
-        },
-        // ADD THIS _count field
-        _count: {
-          select: {
-            rsvpResponses: true,
-            presenceRecords: true,
-          },
-        },
-      },
-    });
+      });
 
-    let nextCursor: string | undefined = undefined;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor = nextItem?.id;
-    }
+      let nextCursor: string | undefined = undefined;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = nextItem?.id;
+      }
 
-    return {
-      items,
-      nextCursor,
-    };
-  }),
+      return {
+        items,
+        nextCursor,
+      };
+    }),
 
   createEvent: protectedProcedure
     .input(eventInputSchema)
@@ -260,6 +273,7 @@ export const eventRouter = createTRPCRouter({
         createdById: ctx.session.user.id,
         userId: scope === "personal" ? ctx.session.user.id : null,
         courseId: scope === "course" ? courseId : null,
+        scope: scope.toUpperCase() as EventScope,
         timeline:
           input.hasTimeline && input.timeline ? input.timeline : undefined,
       };
@@ -285,7 +299,12 @@ export const eventRouter = createTRPCRouter({
         eventUpdateData.courseId = scope === "course" ? courseId : null;
       }
 
-      return ctx.db.event.update({ where: { id }, data: eventUpdateData });
+      return ctx.db.event.update({
+        where: { id }, data: {
+          ...eventUpdateData,
+          scope: scope?.toUpperCase() as EventScope,
+        }
+      });
     }),
 
   deleteEvent: adminProcedure
@@ -298,93 +317,93 @@ export const eventRouter = createTRPCRouter({
     }),
 
   respondToRsvp: protectedProcedure
-  .input(
-    z.object({
-      eventId: z.string(),
-      status: rsvpStatusSchema,
-    })
-  )
-  .mutation(async ({ ctx, input }) => {
-    const event = await ctx.db.event.findUnique({
-      where: { id: input.eventId },
-    });
-
-    if (!event) throw new TRPCError({ code: "NOT_FOUND" });
-
-    // Check if RSVP deadline has passed
-    if (event.rsvpDeadline && new Date() > event.rsvpDeadline) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "RSVP deadline has passed",
+    .input(
+      z.object({
+        eventId: z.string(),
+        status: rsvpStatusSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const event = await ctx.db.event.findUnique({
+        where: { id: input.eventId },
       });
-    }
 
-    return ctx.db.eventRSVPResponse.upsert({
-      where: {
-        eventId_userId: {
+      if (!event) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // Check if RSVP deadline has passed
+      if (event.rsvpDeadline && new Date() > event.rsvpDeadline) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "RSVP deadline has passed",
+        });
+      }
+
+      return ctx.db.eventRSVPResponse.upsert({
+        where: {
+          eventId_userId: {
+            eventId: input.eventId,
+            userId: ctx.session.user.id,
+          },
+        },
+        update: {
+          status: input.status,
+          respondedAt: new Date(),
+          approvalStatus: ApprovalStatus.APPROVED, // Auto-approve
+        },
+        create: {
           eventId: input.eventId,
           userId: ctx.session.user.id,
+          status: input.status,
+          approvalStatus: ApprovalStatus.APPROVED, // Auto-approve
         },
-      },
-      update: { 
-        status: input.status, 
-        respondedAt: new Date(),
-        approvalStatus: ApprovalStatus.APPROVED, // Auto-approve
-      },
-      create: {
-        eventId: input.eventId,
-        userId: ctx.session.user.id,
-        status: input.status,
-        approvalStatus: ApprovalStatus.APPROVED, // Auto-approve
-      },
-    });
-  }),
-
-// Replace recordPresence mutation
-recordPresence: protectedProcedure
-  .input(z.object({ eventId: z.string() }))
-  .mutation(async ({ ctx, input }) => {
-    const event = await ctx.db.event.findUnique({
-      where: { id: input.eventId },
-    });
-
-    if (!event) throw new TRPCError({ code: "NOT_FOUND" });
-
-    const now = new Date();
-    
-    // Allow check-in from 15 minutes before until event ends
-    const allowedStartTime = new Date(event.start.getTime() - 15 * 60 * 1000);
-    
-    if (now < allowedStartTime || now > event.end) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Check-in is not available at this time",
       });
-    }
+    }),
 
-    const existingPresence = await ctx.db.eventPresence.findFirst({
-      where: { eventId: input.eventId, userId: ctx.session.user.id },
-    });
-
-    if (existingPresence) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "You have already checked in",
+  // Replace recordPresence mutation
+  recordPresence: protectedProcedure
+    .input(z.object({ eventId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const event = await ctx.db.event.findUnique({
+        where: { id: input.eventId },
       });
-    }
 
-    // Determine if user is late
-    const isLate = now > event.start;
+      if (!event) throw new TRPCError({ code: "NOT_FOUND" });
 
-    return ctx.db.eventPresence.create({
-      data: {
-        eventId: input.eventId,
-        userId: ctx.session.user.id,
-        status: isLate ? PresenceStatus.LATE : PresenceStatus.PRESENT,
-        checkedInAt: new Date(),
-        isLate,
-      },
-    });
+      const now = new Date();
+
+      // Allow check-in from 15 minutes before until event ends
+      const allowedStartTime = new Date(event.start.getTime() - 15 * 60 * 1000);
+
+      if (now < allowedStartTime || now > event.end) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Check-in is not available at this time",
+        });
+      }
+
+      const existingPresence = await ctx.db.eventPresence.findFirst({
+        where: { eventId: input.eventId, userId: ctx.session.user.id },
+      });
+
+      if (existingPresence) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You have already checked in",
+        });
+      }
+
+      // Determine if user is late
+      const isLate = now > event.start;
+
+      return ctx.db.eventPresence.create({
+        data: {
+          eventId: input.eventId,
+          userId: ctx.session.user.id,
+          status: isLate ? PresenceStatus.LATE : PresenceStatus.PRESENT,
+          checkedInAt: new Date(),
+          isLate,
+        },
+      });
     }),
 
   updateRsvpApproval: adminProcedure

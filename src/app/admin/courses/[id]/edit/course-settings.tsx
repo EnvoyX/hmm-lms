@@ -23,6 +23,8 @@ import { api } from '~/trpc/react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { type RouterOutputs } from '~/trpc/react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
+import type { CourseScope, CourseType } from '@prisma/client';
 
 type Course = RouterOutputs['course']['getCourseForAdmin'];
 
@@ -35,6 +37,8 @@ export default function CourseSettings({ course }: CourseSettingsProps) {
     title: course.title,
     description: course.description ?? '',
     classCode: course.classCode,
+    scope: course.scope,
+    type: course.type
   });
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -119,6 +123,39 @@ export default function CourseSettings({ course }: CourseSettingsProps) {
                 placeholder="Course description"
                 disabled={isUpdating}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
+              <Select onValueChange={(value) => setFormData(prev => ({
+                ...prev,
+                type: value as CourseType,
+              }))} value={formData.type}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select course type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MANDATORY">Mandatory</SelectItem>
+                  <SelectItem value="OPTIONAL">Optional</SelectItem>
+                  <SelectItem value="MACHINING">Machining</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="scope">Scope</Label>
+              <Select onValueChange={(value) => setFormData(prev => ({
+                ...prev,
+                scope: value as CourseScope,
+              }))} value={formData.scope}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select course scope" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GLOBAL">Global</SelectItem>
+                  <SelectItem value="MACHINING">Machining</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <Button type="submit" disabled={isUpdating}>

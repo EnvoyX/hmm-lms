@@ -24,7 +24,7 @@ export const createCourseSchema = z.object({
   classCode: z
     .string()
     .min(6, "Class code must be at least 6 characters")
-    .max(10),
+    .max(50),
 });
 
 export const unenrollCourseSchema = z.object({
@@ -33,6 +33,8 @@ export const unenrollCourseSchema = z.object({
 
 export const updateCourseSchema = createCourseSchema.extend({
   id: z.string().cuid(),
+  scope: z.enum(["GLOBAL", "MACHINING"]),
+  type: z.enum(["MANDATORY", "OPTIONAL", "MACHINING"]),
 });
 
 export const courseIdSchema = z.object({
@@ -106,7 +108,7 @@ export const courseRouter = createTRPCRouter({
 
       return data;
     }),
-  
+
   createDraft: adminProcedure.mutation(async ({ ctx }) => {
     const data = await ctx.db.course.create({
       data: {
@@ -115,7 +117,7 @@ export const courseRouter = createTRPCRouter({
         classCode: `DRAFT-${Date.now()}`, // Temporary unique code
       },
     });
-    
+
     return data;
   }),
 
@@ -278,9 +280,45 @@ export const courseRouter = createTRPCRouter({
       },
     }));
   }),
-    
+
   getAllCourses: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.course.findMany({
+      include: {
+        _count: {
+          select: {
+            members: true,
+            tryout: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
+  getGlobalCourses: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.course.findMany({
+      where: {
+        scope: "GLOBAL"
+      },
+      include: {
+        _count: {
+          select: {
+            members: true,
+            tryout: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
+  getMachiningCourses: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.course.findMany({
+      where: {
+        scope: "MACHINING"
+      },
       include: {
         _count: {
           select: {
@@ -596,7 +634,6 @@ export const courseRouter = createTRPCRouter({
         },
         orderBy: { createdAt: "desc" },
       });
-
       return {
         ...course,
         resources,

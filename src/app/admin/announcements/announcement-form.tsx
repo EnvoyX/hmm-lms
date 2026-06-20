@@ -214,7 +214,10 @@ export function AnnouncementForm({ courses, announcement }: AnnouncementFormProp
               <Label htmlFor="scope">Scope</Label>
               <Select
                 value={scope}
-                onValueChange={(value) => setScope(value as AnnouncementScope)}
+                onValueChange={(value) => {
+                  setScope(value as AnnouncementScope)
+                  console.log(value)
+                }}
               >
                 <SelectTrigger id="scope">
                   <SelectValue />
@@ -222,6 +225,9 @@ export function AnnouncementForm({ courses, announcement }: AnnouncementFormProp
                 <SelectContent>
                   <SelectItem value={AnnouncementScope.GLOBAL}>
                     Global (All Students)
+                  </SelectItem>
+                  <SelectItem value={AnnouncementScope.MACHINING}>
+                    Machining Only
                   </SelectItem>
                   <SelectItem value={AnnouncementScope.COURSE}>
                     Specific Course

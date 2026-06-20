@@ -134,9 +134,12 @@ export default function CoursesList({ courses: initialCourses }: CoursesListProp
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
+              <div className="flex justify-between items-center gap-2">
                 <Badge variant="outline">
                   {course.classCode}
+                </Badge>
+                <Badge variant="default">
+                  {course.type.charAt(0) + course.type.slice(1).toLowerCase()}
                 </Badge>
               </div>
 

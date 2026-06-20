@@ -2,10 +2,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import CoursesItem from './course-item';
 import { api } from '~/trpc/server';
 import { type RouterOutputs } from '~/trpc/react';
+import MyCoursesItem from './my-course-item';
 
 export default async function CoursesPage() {
   const myCourses = await api.course.getMyCourses();
-  const allCourses = await api.course.getAllCourses();
+  const allCourses = await api.course.getGlobalCourses();
 
   const images = ['/images/mesin.png', "/images/pengukuran.png", "/images/pipe_system.png", "/images/printer.png"];
 
@@ -35,11 +36,12 @@ export default async function CoursesPage() {
           <div
             className='grid md:grid-cols-3 lg:grid-cols-4 grid-cols-2 gap-x-4 gap-y-6 md:gap-x-5 lg:gap-x-6 md:gap-y-8 flex-1'>
             {myCourses.map((course: RouterOutputs['course']['getMyCourses'][number], i: number) => (
-              <CoursesItem
+              <MyCoursesItem
                 href={`/courses/${course.id}`}
                 key={course.id}
                 id={course.id}
                 title={course.title}
+                type={course.type}
                 image={images[i % 4]!}
                 subject={course.classCode}
                 numberOfMaterials={course._count.attachments}
@@ -56,16 +58,17 @@ export default async function CoursesPage() {
           )}
           <div
             className='grid md:grid-cols-3 lg:grid-cols-4 grid-cols-2 gap-x-4 gap-y-6 md:gap-x-5 lg:gap-x-6 md:gap-y-8 flex-1'>
-            {allCourses.map((course: RouterOutputs['course']['getAllCourses'][number], i: number) => (
+            {allCourses.map((course: RouterOutputs['course']['getGlobalCourses'][number], i: number) => (
               <CoursesItem
                 href={`/courses/${course.id}`}
                 key={course.id}
                 id={course.id}
                 title={course.title}
+                type={course.type}
                 image={images[i % 4]!}
                 subject={course.classCode}
-                numberOfMaterials={course._count.members}
-                numberOfVideos={course._count.tryout}
+                numberOfMembers={course._count.members}
+                numberOfTryouts={course._count.tryout}
               />
             ))}
           </div>

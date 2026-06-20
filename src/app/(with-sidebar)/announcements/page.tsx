@@ -3,7 +3,7 @@ import { AnnouncementCard } from "./annoucement-card";
 import { Card } from "~/components/ui/card";
 
 export default async function AnnouncementsPage() {
-  const announcements = await api.announcement.getAll();
+  const announcements = await api.announcement.getGlobalOnly();
 
   return (
     <div className="mx-auto w-full max-w-5xl">

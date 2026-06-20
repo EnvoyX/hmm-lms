@@ -91,6 +91,13 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
         variant: 'outline' as const,
         detail: event.user?.name
       };
+    if (event.scope === "MACHINING")
+      return {
+        text: 'Machining',
+        variant: 'destructive' as const,
+        detail: 'Only Machining users'
+      }
+
     return {
       text: 'Global',
       variant: 'default' as const,

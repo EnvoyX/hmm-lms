@@ -17,7 +17,7 @@ export const eventInputSchema = z.object({
   location: z.string().optional(),
   hasTimeline: z.boolean().default(false),
   timeline: z.array(timelineItemSchema).optional(),
-  scope: z.enum(["personal", "course", "global"]),
+  scope: z.enum(["personal", "course", "global", "machining"]),
   courseId: z.string().optional(),
   eventMode: z.nativeEnum(EventMode).default(EventMode.ATTENDANCE_ONLY),
   rsvpDeadline: z.date().optional().nullable(),

@@ -89,8 +89,18 @@ export const studentDashboardRouter = createTRPCRouter({
       };
     });
   }),
+  getMachiningAnnouncements: protectedProcedure.query(async ({ ctx }) => {
+    const announcements = await ctx.db.announcement.findMany({
+      where: {
+        scope: "MACHINING"
+      },
+      orderBy: {
+        createdAt: "desc",
+      }
+    })
 
-
+    return announcements
+  }),
   getWeeklyHallOfFame: protectedProcedure
     .input(
       z.object({

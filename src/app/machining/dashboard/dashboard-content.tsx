@@ -35,7 +35,7 @@ export function DashboardContent() {
     return <DashboardSkeleton />;
   }
 
-  const latestAnnouncement = announcements[0]
+  const latestAnnouncement = announcements?.[0];
   const parsedContent: string = typeof latestAnnouncement?.content === 'string' ? JSON.parse(latestAnnouncement?.content) as string : latestAnnouncement?.content as unknown as string;
 
   return (

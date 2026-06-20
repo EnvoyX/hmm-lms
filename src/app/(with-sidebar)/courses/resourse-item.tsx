@@ -4,7 +4,7 @@ import {
   File, Link as LinkIcon, Download, Youtube, FileText, Presentation, BookOpen, Video, FileQuestion, Star
 } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '~/app/generated/prisma/client';
 import { formatBytes } from '~/lib/utils';
 
 export type ResourceWithDetails = Prisma.ResourceGetPayload<{

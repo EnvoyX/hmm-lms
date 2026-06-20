@@ -8,7 +8,7 @@ import { api } from '~/trpc/react';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
-import { PresenceStatus } from '@prisma/client';
+import { PresenceStatus } from '~/app/generated/prisma/client';
 import { Download, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import {

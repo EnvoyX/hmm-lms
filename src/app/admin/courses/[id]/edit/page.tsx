@@ -21,7 +21,7 @@ import MembersManagement from './members-management';
 import DocumentsManagement from './documents-management';
 import CourseAnalytics from './course-analytics';
 import UploadDocument from './upload-document';
-import { ResourceType } from '@prisma/client';
+import { ResourceType } from '~/app/generated/prisma/client';
 
 interface CourseAdminPageProps {
   params: Promise<{

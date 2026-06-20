@@ -18,7 +18,7 @@ import {
 import { format } from "date-fns";
 import type { ResultsUserAnswer } from "~/lib/types/tryout";
 import type { JSX } from 'react';
-import type { QuestionOption } from '@prisma/client';
+import type { QuestionOption } from '~/app/generated/prisma/client';
 import MotionImageDialog from '~/components/motion/dialog';
 
 type ScoreBadgeVariant = "default" | "secondary" | "destructive";

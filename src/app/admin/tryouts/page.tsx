@@ -1,7 +1,7 @@
 // ~/app/admin/tryouts/page.tsx
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
-import { Role } from "@prisma/client";
+import { Role } from "~/app/generated/prisma/client";
 import { api } from "~/trpc/server";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";

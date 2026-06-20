@@ -55,7 +55,7 @@ import {
 } from '~/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
 import { Textarea } from '~/components/ui/textarea';
-import type { JsonValue } from '@prisma/client/runtime/library';
+import type { JsonValue } from '~/app/generated/prisma/internal/prismaNamespace';
 
 // Define a more specific type for a form question
 interface FormQuestion {

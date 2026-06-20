@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import { CheckCircle, Circle, FileText, MessageSquare } from "lucide-react";
-import { QuestionType } from "@prisma/client";
+import { QuestionType } from "~/app/generated/prisma/client";
 import type { RouterOutputs } from "~/trpc/react";
 
 type Question = RouterOutputs["tryout"]["getDetailedById"]["questions"][number];
@@ -74,8 +74,8 @@ export default function TryoutQuestions({ questions }: TryoutQuestionsProps) {
                     <div
                       key={option.id}
                       className={`flex items-start gap-3 p-3 rounded-lg border ${option.isCorrect
-                          ? "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
-                          : "bg-muted/30"
+                        ? "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
+                        : "bg-muted/30"
                         }`}
                     >
                       <div className="flex items-center gap-2 mt-0.5">

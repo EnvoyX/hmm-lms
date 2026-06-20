@@ -45,7 +45,8 @@
     "next.config.mjs",
     "prisma/seeds/main.ts",
     ".next/dev/types/**/*.ts",
-    ".next/dev/dev/types/**/*.ts"
+    ".next/dev/dev/types/**/*.ts",
+    "src/env.js"
   ],
   "exclude": [
     "node_modules",

@@ -5,7 +5,7 @@ import {
   sendNotificationToMultiple,
   type NotificationPayload,
 } from "~/lib/notifications";
-import { Role } from "@prisma/client";
+import { Role } from "~/app/generated/prisma/client";
 
 export const notificationsRouter = createTRPCRouter({
   subscribe: protectedProcedure
@@ -81,13 +81,13 @@ export const notificationsRouter = createTRPCRouter({
       const results = await sendNotificationToMultiple(
         subscriptions.map(
           (sub) =>
-            ({
-              endpoint: sub.endpoint,
-              keys: {
-                p256dh: sub.p256dh,
-                auth: sub.auth,
-              },
-            }),
+          ({
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          }),
         ),
         payload,
       );
@@ -108,7 +108,7 @@ export const notificationsRouter = createTRPCRouter({
         failed: results.filter((r) => !r.success).length,
       };
     }),
-  
+
   getSubscriptions: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.pushSubscription.findMany({
       where: {
@@ -162,13 +162,13 @@ export const notificationsRouter = createTRPCRouter({
       const results = await sendNotificationToMultiple(
         subscriptions.map(
           (sub) =>
-            ({
-              endpoint: sub.endpoint,
-              keys: {
-                p256dh: sub.p256dh,
-                auth: sub.auth,
-              },
-            }),
+          ({
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          }),
         ),
         payload,
       );

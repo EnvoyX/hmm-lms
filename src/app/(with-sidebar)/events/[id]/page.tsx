@@ -1,11 +1,11 @@
 import { api } from '~/trpc/server';
 import { notFound } from 'next/navigation';
 import { auth } from '~/server/auth';
-import { EventMode } from '@prisma/client';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import EventDetailView from './event-detail-view';
 import EventActions from './event-actions';
+import { EventMode } from '~/app/generated/prisma/client';
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();

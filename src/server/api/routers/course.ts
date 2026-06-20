@@ -13,7 +13,7 @@ import {
   LinkSource,
   ResourceType,
   type PrismaClient,
-} from "@prisma/client";
+} from "~/app/generated/prisma/client";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import s3Client from "~/lib/s3-client";
 import { NotificationTriggers } from "~/server/services/notification-triggers";
@@ -106,7 +106,7 @@ export const courseRouter = createTRPCRouter({
 
       return data;
     }),
-  
+
   createDraft: adminProcedure.mutation(async ({ ctx }) => {
     const data = await ctx.db.course.create({
       data: {
@@ -115,7 +115,7 @@ export const courseRouter = createTRPCRouter({
         classCode: `DRAFT-${Date.now()}`, // Temporary unique code
       },
     });
-    
+
     return data;
   }),
 
@@ -278,7 +278,7 @@ export const courseRouter = createTRPCRouter({
       },
     }));
   }),
-    
+
   getAllCourses: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.course.findMany({
       include: {

@@ -8,13 +8,13 @@ import {
   updateAnnouncementSchema,
   announcementIdSchema,
 } from "~/lib/schema/announcement";
-import { AnnouncementScope } from "@prisma/client";
+import { AnnouncementScope } from "~/app/generated/prisma/client";
 import { z } from "zod";
 import {
   sendNotificationToMultiple,
   type NotificationPayload,
 } from "~/lib/notifications";
-import type { PrismaClient, Announcement, Course, PushSubscription } from "@prisma/client";
+import type { PrismaClient, Announcement, Course, PushSubscription } from "~/app/generated/prisma/client";
 
 type AnnouncementWithCourse = Announcement & {
   course: Pick<Course, "title"> | null;
@@ -30,7 +30,7 @@ export const announcementRouter = createTRPCRouter({
         createdById: ctx.session.user.id,
       },
     });
-    
+
     return data;
   }),
 
@@ -107,7 +107,7 @@ export const announcementRouter = createTRPCRouter({
     .input(updateAnnouncementSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      
+
       const announcement = await ctx.db.announcement.update({
         where: { id },
         data,
@@ -211,7 +211,7 @@ async function handleAnnouncementNotification(
   }
 
   const payload = buildNotificationPayload(announcement, action);
-  
+
   const results = await sendNotificationToMultiple(
     subscriptions.map((sub) => ({
       endpoint: sub.endpoint,

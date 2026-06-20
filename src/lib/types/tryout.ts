@@ -1,5 +1,5 @@
 // ~/lib/types/tryout.ts
-import type { QuestionOption, QuestionType } from "@prisma/client";
+import type { QuestionOption, QuestionType } from "~/app/generated/prisma/client";
 
 export interface Question {
   id: string;

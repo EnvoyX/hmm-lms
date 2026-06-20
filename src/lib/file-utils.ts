@@ -1,5 +1,5 @@
 // ~/lib/file-utils.ts
-import { type AttachableType, ResourceCategory } from "@prisma/client";
+import { type AttachableType, ResourceCategory } from "~/app/generated/prisma/client";
 
 // Mapped to the new ResourceCategory enum
 export const ALLOWED_MIME_TYPES = {

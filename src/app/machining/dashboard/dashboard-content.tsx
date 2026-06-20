@@ -121,7 +121,7 @@ export function DashboardContent() {
                 courses.slice(0, 4).map((course) => (
                   <Link
                     key={course.id}
-                    href={`/courses/${course.id}`}
+                    href={`/machining/courses/${course.id}`}
                     className="border-border/70 bg-card hover:bg-accent/40 flex items-center justify-between gap-3 rounded-xl border p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-sm"
                   >
                     <div className="min-w-0 space-y-1.5">
@@ -147,7 +147,7 @@ export function DashboardContent() {
                     Start learning by enrolling in your first course.
                   </p>
                   <Button asChild className="mt-4">
-                    <Link href="/courses">Browse Courses</Link>
+                    <Link href="/machining/courses">Browse Courses</Link>
                   </Button>
                 </div>
               )}

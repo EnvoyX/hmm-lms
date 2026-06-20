@@ -55,6 +55,9 @@ export default async function DetailedCoursePage({ params }: CoursePageProps) {
                   <Badge variant="outline">
                     {course.classCode}
                   </Badge>
+                  <Badge variant="outline">
+                    {course.type.charAt(0) + course.type.slice(1).toLowerCase()}
+                  </Badge>
                 </div>
               </div>
               <div className="flex-shrink-0">
@@ -97,6 +100,7 @@ export default async function DetailedCoursePage({ params }: CoursePageProps) {
                   {course._count.tryout} tryouts
                 </Badge>
                 <Badge variant="outline" className="border-border/80 bg-background/80 text-foreground">{course.classCode}</Badge>
+                <Badge variant="outline" className="border-border/80 bg-background/80 text-foreground"> {course.type.charAt(0) + course.type.slice(1).toLowerCase()}</Badge>
               </div>
             </div>
             <div className="flex-shrink-0">

@@ -32,7 +32,7 @@ export default function CoursesItem({
 
   return (
     <Link
-      href={`/courses/${id}`}
+      href={`/machining/courses/${id}`}
       className={cn(
         'rounded-md shadow flex flex-col justify-end overflow-hidden cursor-pointer aspect-[4/5] md:aspect-[7/10] group lg:aspect-[8/10] bg-card transition-colors border',
         orientation === 'horizontal' && 'flex-row aspect-[16/9] lg:aspect-[16/10]',

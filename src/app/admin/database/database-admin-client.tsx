@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 // import { DatabaseStats } from './_components/database-stats';
 
 interface DatabaseAdminClientProps {
-  userRole: "ADMIN" | "SUPERADMIN" | "STUDENT";
+  userRole: "ADMIN" | "SUPERADMIN" | "STUDENT" | "MACHINING";
 }
 
 export function DatabaseAdminClient({ userRole }: DatabaseAdminClientProps) {

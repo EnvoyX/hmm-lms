@@ -50,7 +50,7 @@ import { ScrollArea, ScrollBar } from '~/components/ui/scroll-area';
 interface DatabaseTableProps {
   modelName: string;
   displayName: string;
-  userRole: "ADMIN" | "SUPERADMIN" | "STUDENT";
+  userRole: "ADMIN" | "SUPERADMIN" | "STUDENT" | "MACHINING";
   onDataChange: () => void;
 }
 

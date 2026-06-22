@@ -29,3 +29,8 @@ export default async function EditAnnouncementPage({
     </div>
   );
 }
+
+export const metadata = {
+  title: "Edit Announcement",
+  description: "Edit an announcement",
+};

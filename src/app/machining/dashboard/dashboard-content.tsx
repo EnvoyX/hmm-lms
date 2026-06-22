@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "~/trpc/react";
-import { DashboardChart } from "./dashboard-chart";
+// import { DashboardChart } from "./dashboard-chart";
 import { DashboardCalendar } from "./dashboard-calendar";
 import {
   Card,
@@ -226,7 +226,7 @@ export function DashboardContent() {
               )}
             </CardContent>
           </Card>
-          <DashboardChart />
+          {/* <DashboardChart /> */}
         </div>
         <div className="min-w-0 space-y-6 xl:col-span-4">
           <DashboardCalendar />

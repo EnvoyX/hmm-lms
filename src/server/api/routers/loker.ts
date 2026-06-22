@@ -1,6 +1,7 @@
 // ~/server/api/routers/job-vacancy.ts
 import { z } from "zod";
 import {
+  adminProcedure,
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
@@ -130,7 +131,7 @@ export const jobVacancyRouter = createTRPCRouter({
     }),
 
   // Admin procedures
-  getAllAdmin: protectedProcedure
+  getAllAdmin: adminProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(10),
@@ -140,13 +141,6 @@ export const jobVacancyRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (ctx.session.user.role !== "ADMIN") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Admin access required",
-        });
-      }
-
       const { limit, cursor, search, includeInactive } = input;
 
       const where = {
@@ -186,16 +180,9 @@ export const jobVacancyRouter = createTRPCRouter({
       };
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(createJobVacancySchema)
     .mutation(async ({ ctx, input }) => {
-      if (ctx.session.user.role !== "ADMIN") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Admin access required",
-        });
-      }
-
       return ctx.db.jobVacancy.create({
         data: {
           ...input,
@@ -204,16 +191,9 @@ export const jobVacancyRouter = createTRPCRouter({
       });
     }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(updateJobVacancySchema)
     .mutation(async ({ ctx, input }) => {
-      if (ctx.session.user.role !== "ADMIN") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Admin access required",
-        });
-      }
-
       const { id, ...data } = input;
 
       return ctx.db.jobVacancy.update({
@@ -222,32 +202,18 @@ export const jobVacancyRouter = createTRPCRouter({
       });
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.session.user.role !== "ADMIN") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Admin access required",
-        });
-      }
-
       return ctx.db.jobVacancy.update({
         where: { id: input.id },
         data: { isActive: false },
       });
     }),
 
-  toggleStatus: protectedProcedure
+  toggleStatus: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.session.user.role !== "ADMIN") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Admin access required",
-        });
-      }
-
       const jobVacancy = await ctx.db.jobVacancy.findUnique({
         where: { id: input.id },
         select: { isActive: true },

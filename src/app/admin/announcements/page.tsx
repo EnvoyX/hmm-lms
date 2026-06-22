@@ -38,3 +38,8 @@ export default async function AdminAnnouncementsPage() {
     </div>
   );
 }
+
+export const metadata = {
+  title: "Announcements",
+  description: "Manage announcements",
+};

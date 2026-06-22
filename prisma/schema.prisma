@@ -717,3 +717,12 @@ model ShortLinkClick {
   @@index([shortLinkId])
   @@map("short_link_clicks")
 }
+
+model Machining{
+  id           String @id @default(cuid())
+  currentBatch String @default("13125")
+
+
+
+  @@map("machining")
+}

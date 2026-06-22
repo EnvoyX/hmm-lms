@@ -142,4 +142,5 @@ export default async function TryoutDetailsPage({ params }: TryoutDetailsPagePro
 
 export const metadata = {
   title: "Tryout Details",
+  description: "View details of a specific tryout",
 };

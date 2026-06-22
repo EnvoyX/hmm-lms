@@ -29,3 +29,9 @@ export default async function AdminEventsPage() {
     </div>
   );
 }
+
+export const metadata = {
+  title: "Events",
+  description: "Manage events",
+};
+

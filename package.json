@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "dev": "next dev --webpack",
+    "dev-turbo": "next dev",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,md,mdx,json,yml,yaml}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,md,mdx,json,yml,yaml}\" --cache",
     "postinstall": "prisma generate",

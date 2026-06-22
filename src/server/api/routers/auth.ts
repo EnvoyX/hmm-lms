@@ -45,6 +45,28 @@ export const authRouter = createTRPCRouter({
       });
     }
 
+    const machining = await db.machining.findFirst()
+    const prefix = machining?.currentBatch
+
+    if (prefix){
+      const isMatchPrefix = email.startsWith(prefix)
+      const isMatchDomain = email.endsWith("@mahasiswa.itb.ac.id")
+      if (isMatchPrefix && isMatchDomain) {
+       console.log(`Match found for ${email}! Executing action...`);
+       await db.user.update({
+        where: {
+          id: newUser.id,
+        },
+        data: {
+          role: "MACHINING",
+        },
+       })
+      }
+      else {
+        console.log(`${email} did not match the pattern. Continuing...`);
+      }
+    }
+
     return {
       success: true,
       message: "Registration successful. You can now sign in.",

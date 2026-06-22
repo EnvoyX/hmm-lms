@@ -16,3 +16,8 @@ export default async function DatabaseAdminPage() {
     </div>
   );
 }
+
+export const metadata = {
+  title: "Database Admin",
+  description: "Manage database",
+};

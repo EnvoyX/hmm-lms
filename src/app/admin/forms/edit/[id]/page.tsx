@@ -10,6 +10,11 @@ interface EditFormPageProps {
   }>;
 }
 
+export const metadata = {
+  title: "Edit Form",
+  description: "Edit a form",
+};
+
 export default async function EditFormPage({ params }: EditFormPageProps) {
   const { id } = await params;
   const form = await api.form.getById({ id });

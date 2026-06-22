@@ -2,6 +2,11 @@ import { api } from "~/trpc/server";
 import { notFound } from "next/navigation";
 import ScholarshipSettings from "./scholarship-settings";
 
+export const metadata = {
+  title: "Edit Scholarship",
+  description: "Edit scholarship details",
+};
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

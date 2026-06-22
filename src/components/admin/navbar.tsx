@@ -22,7 +22,8 @@ import {
   Briefcase,
   TestTube,
   FormInput,
-  Link2
+  Link2,
+  Settings
 } from 'lucide-react';
 import { auth } from '~/server/auth';
 import ThemeSwitch from '../theme-switch';
@@ -63,6 +64,12 @@ const adminSidebarTabs: {
       group: 'User Management',
       items: [
         { label: 'Users', href: '/admin/users', icon: Users, tooltip: 'Manage Users', dev: false },
+      ],
+    },
+    {
+      group: 'Machining Management',
+      items: [
+        { label: 'Machining Batch', href: '/admin/machining-batch', icon: Settings, tooltip: 'Machining Batch', dev: false },
       ],
     },
     {

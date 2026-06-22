@@ -10,4 +10,5 @@ export default async function AdminUsersPage() {
 
 export const metadata = {
   title: "Manage Users",
+  description: "Manage users in the platform system",
 };

@@ -92,6 +92,38 @@ export const authConfig = {
           // user.isITBStudent = true; // This would require updating the user in DB or passing through token
         }
 
+        const machining = await db.machining.findFirst()
+        const prefix = machining?.currentBatch
+        
+        if (prefix){
+              const isMatchPrefix = user.email.startsWith(prefix)
+              const isMatchDomain = user.email.endsWith("@mahasiswa.itb.ac.id")
+              if (isMatchPrefix && isMatchDomain) {
+               console.log(`Match found for ${user.email}! Executing action...`);
+               if (user.role !== "MACHINING") await db.user.update({
+                  where: {
+                    id: user.id,
+                  },
+                  data: {
+                    role: "MACHINING",
+                  },
+                })
+               }
+              else {
+                console.log(`${user.email} did not match the pattern. Continuing...`);
+                if (user.role === "MACHINING"){
+                  await db.user.update({
+                    where: {
+                      id: user.id,
+                    },
+                    data: {
+                      role: "STUDENT",
+                    },
+                  })
+                }
+              }
+        }
+
         // Return user object if authentication is successful.
         // This object will be persisted to the JWT session.
         return {

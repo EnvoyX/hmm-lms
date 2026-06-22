@@ -37,4 +37,5 @@ export default async function AdminTryoutsPage() {
 
 export const metadata = {
   title: "Manage Tryouts",
+  description: "Manage tryouts for your courses",
 };

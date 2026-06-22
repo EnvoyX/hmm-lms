@@ -5,6 +5,11 @@ import { AdminJobVacancyHeader } from './loker-header';
 import { Card, CardContent } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
 
+export const metadata = {
+  title: "M-Oppurtunity",
+  description: "Manage job vacancies or loker",
+};
+
 export default function AdminJobVacancyPage() {
   return (
     <div className="space-y-6">

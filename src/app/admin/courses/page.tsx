@@ -18,3 +18,9 @@ export default async function AdminCoursesPage() {
     </div>
   );
 }
+
+export const metadata = {
+  title: "Courses",
+  description: "Manage courses",
+};
+

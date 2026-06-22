@@ -3,6 +3,11 @@ import { api } from "~/trpc/server";
 import { Badge } from "~/components/ui/badge";
 import { ResponsesClient } from "./responses-client";
 
+export const metadata = {
+  title: "Form Responses",
+  description: "View responses for a form",
+};
+
 export default async function FormResponsesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 

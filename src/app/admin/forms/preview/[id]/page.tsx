@@ -34,7 +34,7 @@ export default function AdminFormPreviewPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5 xl">
+    <div className="container mx-auto max-w-5xl">
       <div className="mb-6">
         <Button variant="ghost" onClick={() => router.back()} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Forms

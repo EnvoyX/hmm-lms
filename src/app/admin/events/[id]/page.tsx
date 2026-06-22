@@ -105,3 +105,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     </div>
   );
 }
+
+export const metadata = {
+  title: "Event Details",
+  description: "View and manage event details",
+};
+
+

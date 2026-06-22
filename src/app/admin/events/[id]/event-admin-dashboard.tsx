@@ -28,6 +28,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+import * as XLSX from 'xlsx';
+
 export default function EventAdminDashboard({ eventId }: { eventId: string }) {
   const { data, refetch } = api.event.getEventManagementData.useQuery({ eventId });
 
@@ -57,7 +59,52 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     };
   }, [data]);
 
-  const handleExportRsvps = () => {
+   const handleExportRsvps = () => {
+    if (!data) return;
+
+    const worksheetData = [
+      ['Name', 'NIM', 'Status', 'Responded At', 'Email', 'Notes'],
+      ...data.rsvpResponses.map(r => [
+        r.user?.name ?? 'N/A',
+        r.user?.nim ?? 'N/A',
+        r.status,
+        format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
+        r.user?.email ?? 'N/A',
+        r.notes ?? ''
+      ])
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'RSVPs');
+    XLSX.writeFile(workbook, `rsvps-${eventId}.xlsx`);
+    toast.success('RSVPs exported to Excel successfully');
+  };
+
+  const handleExportAttendance = () => {
+    if (!data) return;
+
+    const worksheetData = [
+      ['Name', 'NIM', 'Status', 'Checked In At', 'Checked Out At', 'Duration (min)', 'Notes'],
+      ...data.presenceRecords.map(p => [
+        p.user.name,
+        p.user.nim,
+        p.status,
+        p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A',
+        p.checkedOutAt ? format(new Date(p.checkedOutAt), 'yyyy-MM-dd HH:mm') : 'N/A',
+        p.duration ?? 'N/A',
+        p.notes ?? ''
+      ])
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+    XLSX.writeFile(workbook, `attendance-${eventId}.xlsx`);
+    toast.success('Attendance exported to Excel successfully');
+  };
+
+  const handleExportCSVRsvps = () => {
     if (!data) return;
 
     const csv = [
@@ -76,10 +123,10 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     a.href = url;
     a.download = `rsvps-${eventId}.csv`;
     a.click();
-    toast.success('RSVPs exported successfully');
+    toast.success('RSVPs exported to CSV successfully');
   };
 
-  const handleExportAttendance = () => {
+  const handleExportCSVAttendance = () => {
     if (!data) return;
 
     const csv = [
@@ -98,7 +145,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     a.href = url;
     a.download = `attendance-${eventId}.csv`;
     a.click();
-    toast.success('Attendance exported successfully');
+    toast.success('Attendance exported to CSV successfully');
   };
 
   return (
@@ -176,7 +223,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
 
             {/* Attendance Tab */}
             <TabsContent value="attendance" className="space-y-4">
-              <div className="flex justify-end">
+              <div className="flex max-sm:flex-col gap-2 justify-end">
                 <Button
                   variant="outline"
                   size="sm"
@@ -184,7 +231,16 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                   disabled={!data?.presenceRecords.length}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Export Attendance
+                  Export Attendance (Excel)
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSVAttendance}
+                  disabled={!data?.presenceRecords.length}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Attendance (CSV)
                 </Button>
               </div>
 
@@ -261,7 +317,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
 
             {/* RSVPs Tab */}
             <TabsContent value="rsvps" className="space-y-4">
-              <div className="flex justify-end">
+              <div className="flex max-sm:flex-col gap-2 justify-end">
                 <Button
                   variant="outline"
                   size="sm"
@@ -269,7 +325,16 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                   disabled={!data?.rsvpResponses.length}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Export RSVPs
+                  Export RSVPs (Excel)
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSVRsvps}
+                  disabled={!data?.rsvpResponses.length}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export RSVPs (CSV)
                 </Button>
               </div>
 

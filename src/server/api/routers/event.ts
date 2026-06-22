@@ -94,8 +94,32 @@ export const eventRouter = createTRPCRouter({
     });
     const courseIds = userCourses.map((course) => course.id);
     return ctx.db.event.findMany({
+      include: {
+        createdBy: {
+          select: { name: true, email: true },
+        },
+        course: {
+          select: { title: true, classCode: true },
+        },
+      },
+      orderBy: { start: "desc" },
+    });
+  }),
+  getNonMachiningEvents: protectedProcedure.query(async ({ ctx }) => {
+    const userCourses = await ctx.db.course.findMany({
       where: {
-        OR: [{ courseId: null, userId: null, scope: "GLOBAL" }, { courseId: { in: courseIds } }],
+        members: {
+          some: { id: ctx.session.user.id },
+        },
+      },
+      select: { id: true },
+    });
+    const courseIds = userCourses.map((course) => course.id);
+    return ctx.db.event.findMany({
+      where: {
+        NOT: {
+          scope: "MACHINING"
+        },
       },
       include: {
         createdBy: {
@@ -109,13 +133,25 @@ export const eventRouter = createTRPCRouter({
     });
   }),
   getMachiningEvents: protectedProcedure.query(async ({ ctx }) => {
+    const userCourses = await ctx.db.course.findMany({
+      where: {
+        members: {
+          some: { id: ctx.session.user.id },
+        },
+      },
+      select: { id: true },
+    });
+    const courseIds = userCourses.map((course) => course.id);
     return ctx.db.event.findMany({
       where: {
-        courseId: null, userId: null, scope: "MACHINING"
+        scope: "MACHINING"
       },
       include: {
         createdBy: {
           select: { name: true, email: true },
+        },
+        course: {
+          select: { title: true, classCode: true },
         },
       },
       orderBy: { start: "desc" },

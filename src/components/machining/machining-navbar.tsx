@@ -80,7 +80,7 @@ const sidebarTabs: {
           dev: false,
         },
         {
-          label: "Calendar",
+          label: "Schedule",
           href: "/machining/schedule",
           icon: Calendar,
           tooltip: "Schedule",

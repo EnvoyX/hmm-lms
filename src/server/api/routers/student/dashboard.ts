@@ -204,6 +204,9 @@ export const studentDashboardRouter = createTRPCRouter({
             gte: startDate,
             lte: endDate,
           },
+          NOT: {
+            scope: "MACHINING"
+          },
           OR: [
             { courseId: null, userId: null }, // Global events
             { courseId: { in: courseIds } }, // Course events
@@ -281,6 +284,163 @@ export const studentDashboardRouter = createTRPCRouter({
             gte: start,
             lte: end,
           },
+          NOT: {
+            scope: "MACHINING",
+          },
+          OR: [
+            { courseId: null, userId: null },
+            { courseId: { in: courseIds } },
+            { userId: ctx.session.user.id },
+          ],
+        },
+        include: {
+          course: {
+            select: { title: true, classCode: true },
+          },
+          createdBy: {
+            select: { name: true },
+          },
+          _count: {
+            select: {
+              rsvpResponses: {
+                where: { status: "YES" },
+              },
+            },
+          },
+          rsvpResponses: {
+            where: { userId: ctx.session.user.id },
+          },
+          presenceRecords: {
+            where: { userId: ctx.session.user.id },
+          },
+        },
+        orderBy: { start: "asc" },
+      });
+
+      return events.map((event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        start: event.start.toISOString(),
+        end: event.end.toISOString(),
+        allDay: event.allDay,
+        location: event.location,
+        color: event.color,
+        eventMode: event.eventMode,
+        course: event.course,
+        createdBy: event.createdBy,
+        rsvpCount: event._count.rsvpResponses,
+        userRsvp: event.rsvpResponses[0] ?? null,
+        userPresence: event.presenceRecords[0] ?? null,
+      }));
+    }),
+  getCalendarMachiningEvents: protectedProcedure
+    .input(
+      z.object({
+        month: z.number().min(0).max(11),
+        year: z.number(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const startDate = new Date(input.year, input.month, 1);
+      const endDate = new Date(input.year, input.month + 1, 0);
+
+      // Get user's courses
+      const userCourses = await ctx.db.course.findMany({
+        where: {
+          members: {
+            some: { id: ctx.session.user.id },
+          },
+        },
+        select: { id: true },
+      });
+
+      const courseIds = userCourses.map((course) => course.id);
+
+      // Get events for the month
+      const events = await ctx.db.event.findMany({
+        where: {
+          start: {
+            gte: startDate,
+            lte: endDate,
+          },
+          scope: "MACHINING",
+          OR: [
+            { courseId: null, userId: null }, // Global events
+            { courseId: { in: courseIds } }, // Course events
+            { userId: ctx.session.user.id }, // Personal events
+          ],
+        },
+        include: {
+          course: {
+            select: { title: true, classCode: true },
+          },
+          _count: {
+            select: {
+              rsvpResponses: {
+                where: { status: "YES" },
+              },
+            },
+          },
+          rsvpResponses: {
+            where: { userId: ctx.session.user.id },
+            select: {
+              status: true,
+            },
+          },
+          presenceRecords: {
+            where: { userId: ctx.session.user.id },
+            select: {
+              status: true,
+              checkedInAt: true,
+            },
+          },
+        },
+        orderBy: { start: "asc" },
+      });
+
+      return events.map((event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        start: event.start.toISOString(),
+        end: event.end.toISOString(),
+        allDay: event.allDay,
+        location: event.location,
+        color: event.color,
+        eventMode: event.eventMode,
+        course: event.course,
+        rsvpCount: event._count.rsvpResponses,
+        userRsvpStatus: event.rsvpResponses[0]?.status ?? null,
+        userPresenceStatus: event.presenceRecords[0]?.status ?? null,
+        hasCheckedIn: event.presenceRecords.length > 0,
+      }));
+    }),
+  getMachiningEventsForDate: protectedProcedure
+    .input(z.object({ date: z.date() }))
+    .query(async ({ ctx, input }) => {
+      const start = startOfDay(input.date);
+      const end = endOfDay(input.date);
+
+      // Get user's courses
+      const userCourses = await ctx.db.course.findMany({
+        where: {
+          members: {
+            some: { id: ctx.session.user.id },
+          },
+        },
+        select: { id: true },
+      });
+
+      const courseIds = userCourses.map((course) => course.id);
+
+      const events = await ctx.db.event.findMany({
+        where: {
+          start: {
+            gte: start,
+            lte: end,
+          },
+          scope: "MACHINING",
           OR: [
             { courseId: null, userId: null },
             { courseId: { in: courseIds } },

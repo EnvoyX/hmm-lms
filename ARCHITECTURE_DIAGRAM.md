@@ -1,0 +1,468 @@
+# HMM-LMS Architecture Diagram
+
+## System Overview
+
+HMM-LMS is a comprehensive Learning Management System and community platform for Himpunan Mahasiswa Mesin (HMM) Institut Teknologi Bandung.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            HMM-LMS Architecture                              │
+│                          Learning Management System                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Technology Stack
+
+### Core Framework
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **tRPC** - End-to-end typesafe APIs
+
+### Database & ORM
+- **Prisma** - Next-generation ORM
+- **PostgreSQL** - Primary database
+
+### Authentication
+- **NextAuth.js** - Authentication solution
+- Credentials provider with email/password
+
+### UI & Styling
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - Re-usable component library
+- **TipTap** - Rich text editor
+
+### Storage & Assets
+- **AWS S3** - Object storage for files and media
+
+### Development Tools
+- **Bun** - Fast JavaScript runtime and package manager
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+
+## High-Level Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT LAYER                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                     Next.js App Router (React)                          │ │
+│  │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐     │ │
+│  │  │   Student App    │  │   Admin Panel    │  │   Public Pages   │     │ │
+│  │  │  (with-sidebar)  │  │     /admin       │  │   /auth, /s      │     │ │
+│  │  └──────────────────┘  └──────────────────┘  └──────────────────┘     │ │
+│  │                                                                         │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │                    React Components                               │  │ │
+│  │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │  │ │
+│  │  │  │   UI     │  │  Forms   │  │  Events  │  │  Courses │       │  │ │
+│  │  │  │ Components│ │ Builder  │  │ Calendar │  │  Cards   │       │  │ │
+│  │  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                     tRPC Client (@tanstack/react-query)                  │ │
+│  │                    Type-safe API calls with caching                      │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              SERVER LAYER                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                         tRPC API Layer                                   │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │                     tRPC Router (root.ts)                         │  │ │
+│  │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │  │ │
+│  │  │  │   auth       │  │   course     │  │   event      │          │  │ │
+│  │  │  │   router     │  │   router     │  │   router     │          │  │ │
+│  │  │  └──────────────┘  └──────────────┘  └──────────────┘          │  │ │
+│  │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │  │ │
+│  │  │  │  tryout      │  │  form        │  │  short-link  │          │  │ │
+│  │  │  │  router      │  │  router      │  │  router      │          │  │ │
+│  │  │  └──────────────┘  └──────────────┘  └──────────────┘          │  │ │
+│  │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │  │ │
+│  │  │  │  announcement│  │  scholarship │  │  loker       │          │  │ │
+│  │  │  │  router      │  │  router      │  │  router      │          │  │ │
+│  │  │  └──────────────┘  └──────────────┘  └──────────────┘          │  │ │
+│  │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │  │ │
+│  │  │  │  user        │  │  analytics   │  │  dashboard   │          │  │ │
+│  │  │  │  router      │  │  router      │  │  router      │          │  │ │
+│  │  │  └──────────────┘  └──────────────┘  └──────────────┘          │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  │                                                                         │ │
+│  │  Procedure Types:                                                        │ │
+│  │  • publicProcedure    - Open to all (with session if logged in)       │ │
+│  │  • protectedProcedure - Requires authentication                        │ │
+│  │  • adminProcedure     - Requires ADMIN or SUPERADMIN role              │ │
+│  │  • superAdminProcedure - Requires SUPERADMIN role only                  │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                       Authentication Layer                                │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │                     NextAuth.js                                    │  │ │
+│  │  │  • Credentials Provider (email/password)                            │  │ │
+│  │  │  • JWT Session Strategy (7-day expiry)                             │  │ │
+│  │  │  • Prisma Adapter for session storage                              │  │ │
+│  │  │  • Role-based access control (STUDENT, ADMIN, SUPERADMIN, MACHINING)│ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                       Business Logic Layer                                │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │                     Services                                       │  │ │
+│  │  │  • File Upload (AWS S3 integration)                               │  │ │
+│  │  │  • Push Notifications (Web Push API)                              │  │ │
+│  │  │  • Google Sheets Integration (event data export)                  │  │ │
+│  │  │  • ICS Calendar Parsing                                           │  │ │
+│  │  │  • Analytics Export                                                │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              DATA LAYER                                      │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                         Prisma ORM                                       │ │
+│  │  • Type-safe database queries                                          │ │
+│  │  • Migration management                                                │ │
+│  │  • Transaction support (Serializable isolation)                        │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                       PostgreSQL Database                                │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │                         Data Models                                │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Core Entities                                              │ │  │ │
+│  │  │  │  • User (id, email, name, nim, role, faculty, program)      │ │  │ │
+│  │  │  │  • Session (sessionToken, userId, expires)                   │ │  │ │
+│  │  │  │  • PushSubscription (endpoint, p256dh, auth, userId)       │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Course Management                                           │ │  │ │
+│  │  │  │  • Course (title, description, classCode, scope, type)       │ │  │ │
+│  │  │  │  • LearningSession (userId, courseId, date, duration)       │ │  │ │
+│  │  │  │  • CourseTestimonial (userId, courseId, rating, comment)     │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Event System                                               │ │  │ │
+│  │  │  │  • Event (title, start, end, eventMode, scope)             │ │  │ │
+│  │  │  │  • EventRSVPForm (eventId, customFields)                    │ │  │ │
+│  │  │  │  • EventRSVPResponse (eventId, userId, status, approval)   │ │  │ │
+│  │  │  │  • EventPresence (eventId, userId, checkIn/Out, status)     │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Assessment System                                          │ │  │ │
+│  │  │  │  • Tryout (title, duration, courseId)                       │ │  │ │
+│  │  │  │  • Question (type, question, points, order)                 │ │  │ │
+│  │  │  │  • QuestionOption (text, isCorrect, explanation)           │ │  │ │
+│  │  │  │  • UserAttempt (userId, tryoutId, score, isCompleted)       │ │  │ │
+│  │  │  │  • UserAnswer (attemptId, questionId, answer, points)        │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Communication                                              │ │  │ │
+│  │  │  │  • Announcement (title, content, scope, images)              │ │  │ │
+│  │  │  │  • AnnouncementReply (userId, announcementId, content)       │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Forms System                                               │ │  │ │
+│  │  │  │  • Form (title, description, type, settings)               │ │  │ │
+│  │  │  │  • FormQuestion (formId, type, title, settings)             │ │  │ │
+│  │  │  │  • FormSubmission (formId, submittedBy, answers)            │ │  │ │
+│  │  │  │  • FormAnswer (questionId, submissionId, value)             │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Resources                                                   │ │  │ │
+│  │  │  │  • Resource (title, type, attachableType, category)          │ │  │ │
+│  │  │  │  • Attachment (filename, key, mimeType, size)               │ │  │ │
+│  │  │  │  • Link (url, source, resourceId)                           │ │  │ │
+│  │  │  │  • ResourceAccess (userId, resourceId, action, logs)         │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Opportunities                                               │ │  │ │
+│  │  │  │  • Scholarship (title, provider, deadline, type, benefits)    │ │  │ │
+│  │  │  │  • JobVacancy (title, company, position, salary, streams)   │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  │                                                                   │  │ │
+│  │  │  ┌─────────────────────────────────────────────────────────────┐ │  │ │
+│  │  │  │  Link Shortener                                             │ │  │ │
+│  │  │  │  • ShortLink (slug, originalUrl, clicks, expiresAt)        │ │  │ │
+│  │  │  │  • ShortLinkClick (shortLinkId, location, metadata)         │ │  │ │
+│  │  │  └─────────────────────────────────────────────────────────────┘ │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           EXTERNAL SERVICES                                   │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐          │
+│  │     AWS S3       │  │  Google Sheets   │  │  Web Push API    │          │
+│  │  File Storage    │  │  Data Export     │  │  Notifications   │          │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow
+
+### Authentication Flow
+```
+User → Login Form → NextAuth Credentials Provider → 
+Verify Email/Password → Create JWT Session → 
+Store in Database → Return Session → Client
+```
+
+### API Request Flow
+```
+Client Component → tRPC Client Call → 
+tRPC Router → Procedure (public/protected/admin) → 
+Context (session, db) → Business Logic → 
+Prisma Query → PostgreSQL → Return Data → 
+Transform with SuperJSON → Client
+```
+
+### File Upload Flow
+```
+User Uploads File → Client Component → 
+tRPC API → Generate S3 Presigned URL → 
+Direct Upload to AWS S3 → Save Metadata to Database → 
+Return File URL → Client
+```
+
+### Event RSVP Flow
+```
+User Views Event → RSVP Form → 
+tRPC API → Validate Form → Create RSVP Response → 
+(If approval required) → Admin Approval → 
+Google Sheets Sync → Notification → User
+```
+
+### Tryout Attempt Flow
+```
+User Starts Tryout → Create UserAttempt → 
+Fetch Questions → User Answers → 
+Submit Answers → Calculate Score → 
+Save UserAnswer Records → Update UserAttempt → 
+Return Results → Analytics
+```
+
+## Key Features & Components
+
+### 1. Course Management
+- **Router**: `course.ts`
+- **Pages**: `/admin/courses`, `/(with-sidebar)/courses`
+- **Features**: Course CRUD, enrollment, learning session tracking, testimonials
+
+### 2. Assessment System (Tryouts)
+- **Router**: `tryout.ts`
+- **Pages**: `/admin/tryouts`, `/(with-sidebar)/tryouts`
+- **Features**: Multiple question types, automated scoring, attempt history
+
+### 3. Event Management
+- **Router**: `event.ts`
+- **Pages**: `/admin/events`, `/(with-sidebar)/events`
+- **Features**: 4 event modes (Basic, RSVP-only, Attendance, Combined), calendar view, Google Sheets integration
+
+### 4. Announcements
+- **Router**: `announcement.ts`
+- **Pages**: `/admin/announcements`, `/(with-sidebar)/announcements`
+- **Features**: Rich text editor (TipTap), replies, image attachments, scope filtering
+
+### 5. Forms System
+- **Router**: `forms.ts`
+- **Pages**: `/admin/forms`, `/forms`
+- **Features**: Dynamic form builder, multiple question types, submission analytics
+
+### 6. Link Shortener
+- **Router**: `short-link.ts`
+- **Pages**: `/admin/shortlinks`, `/s/[slug]`
+- **Features**: Custom slugs, click analytics, geographic tracking
+
+### 7. Job Vacancies & Scholarships
+- **Routers**: `loker.ts`, `scholarship.ts`
+- **Pages**: `/admin/loker`, `/admin/scholarships`, `/(with-sidebar)/loker`, `/(with-sidebar)/scholarships`
+- **Features**: CRUD operations, filtering, deadline tracking
+
+### 8. Dashboard & Analytics
+- **Routers**: `dashboard.ts`, `analytics.ts`
+- **Pages**: `/admin/dashboard`, `/(with-sidebar)/dashboard`
+- **Features**: Role-based dashboards, performance metrics, data visualization
+
+### 9. Push Notifications
+- **Router**: `push.ts`, `notifications.ts`
+- **Components**: Service worker, VAPID keys
+- **Features**: Web push notifications, subscription management
+
+### 10. Resource Management
+- **Router**: `resource.ts`
+- **Features**: File/link attachments, access logging, S3 integration
+
+## Role-Based Access Control
+
+### Roles
+- **STUDENT**: Access to courses, events, tryouts, forms
+- **ADMIN**: Full access except user role management
+- **SUPERADMIN**: Complete access including user role management
+- **MACHINING**: Special role for machining-related content
+
+### Procedure Protection
+- `publicProcedure`: No authentication required
+- `protectedProcedure`: Requires valid session
+- `adminProcedure`: Requires ADMIN or SUPERADMIN role
+- `superAdminProcedure`: Requires SUPERADMIN role only
+
+## Project Structure
+
+```
+hmm-lms/
+├── prisma/
+│   ├── schema.prisma          # Database schema (generated from combined schemas)
+│   └── migrations/            # Database migrations
+├── public/
+│   ├── icons/                 # PWA icons
+│   └── manifest.json          # PWA manifest
+├── src/
+│   ├── app/                   # Next.js App Router pages
+│   │   ├── (with-sidebar)/    # Student-facing app with sidebar
+│   │   │   ├── courses/
+│   │   │   ├── events/
+│   │   │   ├── tryouts/
+│   │   │   ├── announcements/
+│   │   │   ├── forms/
+│   │   │   ├── loker/
+│   │   │   ├── scholarships/
+│   │   │   ├── dashboard/
+│   │   │   └── profile/
+│   │   ├── admin/             # Admin panel
+│   │   │   ├── courses/
+│   │   │   ├── events/
+│   │   │   ├── tryouts/
+│   │   │   ├── announcements/
+│   │   │   ├── forms/
+│   │   │   ├── users/
+│   │   │   ├── database/
+│   │   │   ├── analytics/
+│   │   │   └── dashboard/
+│   │   ├── auth/              # Authentication pages
+│   │   ├── forms/             # Public form submissions
+│   │   ├── machining/         # Machining-specific pages
+│   │   ├── s/                 # Short link redirects
+│   │   └── layout.tsx         # Root layout with providers
+│   ├── components/            # React components
+│   │   ├── ui/                # shadcn/ui components
+│   │   ├── admin/             # Admin-specific components
+│   │   ├── main/              # Main app components
+│   │   ├── event-calendar/    # Calendar component
+│   │   ├── providers/         # Context providers
+│   │   └── machining/         # Machining components
+│   ├── server/
+│   │   ├── api/              # tRPC routers
+│   │   │   ├── root.ts       # Main router
+│   │   │   ├── trpc.ts       # tRPC configuration
+│   │   │   └── routers/      # Feature-specific routers
+│   │   │       ├── auth.ts
+│   │   │       ├── course.ts
+│   │   │       ├── event.ts
+│   │   │       ├── tryout.ts
+│   │   │       ├── forms.ts
+│   │   │       ├── announcement.ts
+│   │   │       ├── short-link.ts
+│   │   │       ├── loker.ts
+│   │   │       ├── scholarship.ts
+│   │   │       ├── user.ts
+│   │   │       ├── analytics.ts
+│   │   │       ├── dashboard.ts
+│   │   │       └── ...
+│   │   ├── auth/             # NextAuth configuration
+│   │   │   ├── config.ts      # Auth config with credentials
+│   │   │   └── index.ts      # Auth export
+│   │   ├── db.ts             # Prisma client
+│   │   └── services/         # Business logic services
+│   ├── lib/                  # Utility functions
+│   │   ├── utils.ts          # General utilities
+│   │   ├── s3-client.ts      # AWS S3 client
+│   │   ├── notifications.ts  # Notification helpers
+│   │   ├── file-utils.ts     # File handling
+│   │   └── schema/           # Zod schemas
+│   ├── hooks/                # Custom React hooks
+│   │   ├── use-file-upload.ts
+│   │   ├── use-learning-session.ts
+│   │   ├── use-notifications.ts
+│   │   └── ...
+│   ├── trpc/                 # tRPC client configuration
+│   │   ├── server.ts         # Server-side caller
+│   │   ├── react.tsx         # React provider
+│   │   └── query-client.ts   # Query client
+│   └── styles/               # Global styles
+├── .env.example              # Environment variables template
+└── package.json              # Dependencies
+```
+
+## Environment Variables
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/hmm_lms"
+DIRECT_URL="postgresql://user:password@localhost:5432/hmm_lms"
+
+# NextAuth
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+
+# AWS S3
+AWS_ACCESS_KEY_ID="your-access-key"
+AWS_SECRET_ACCESS_KEY="your-secret-key"
+AWS_REGION="your-region"
+AWS_S3_BUCKET="your-bucket-name"
+
+# Web Push (VAPID)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY="your-public-vapid-key"
+VAPID_PRIVATE_KEY="your-private-vapid-key"
+
+# Optional: External Services
+GOOGLE_SHEETS_API_KEY="your-api-key"
+```
+
+## Deployment
+
+The application supports deployment on:
+- **Vercel** (Recommended)
+- **DigitalOcean / VPS**
+- **Docker**
+
+Live at: [hmmitb.com](https://hmmitb.com)
+
+## Key Integrations
+
+1. **AWS S3**: File storage for course materials, event images, form uploads
+2. **Google Sheets**: Event RSVP and attendance data export
+3. **Web Push API**: Real-time notifications via service workers
+4. **Google Analytics**: Usage tracking and analytics
+5. **ICS Parser**: Calendar event import functionality
+
+## Security Features
+
+- Role-based access control (RBAC)
+- JWT session management with 7-day expiry
+- Password hashing with bcrypt
+- Prisma transaction isolation (Serializable)
+- Input validation with Zod
+- Type-safe API with tRPC
+- Environment variable protection
+- SQL injection prevention (Prisma ORM)

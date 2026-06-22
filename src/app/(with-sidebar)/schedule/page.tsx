@@ -38,12 +38,12 @@ export default function SchedulePage() {
     global: true
   })
 
-  // Fetch events based on current user's access
+  // Fetch non-machining events based on current user's access
   const {
     data: allEventsData,
     isLoading: allEventsLoading,
     refetch: refetchAllEvents
-  } = api.event.getAllEvents.useQuery(undefined, {
+  } = api.event.getNonMachiningEvents.useQuery(undefined, {
     enabled: !!session
   })
 

@@ -38,14 +38,14 @@ export function DashboardCalendar() {
 
   // Get events for the current month
   const { data: calendarEvents } =
-    api.studentDashboard.getCalendarEvents.useQuery({
+    api.studentDashboard.getCalendarMachiningEvents.useQuery({
       month: date.getMonth(),
       year: date.getFullYear(),
     });
 
   // Get events for selected date
   const { data: dayEvents, isLoading: dayEventsLoading } =
-    api.studentDashboard.getEventsForDate.useQuery({
+    api.studentDashboard.getMachiningEventsForDate.useQuery({
       date: selectedDate,
     });
 
@@ -53,8 +53,8 @@ export function DashboardCalendar() {
   const rsvpMutation = api.event.respondToRsvp.useMutation({
     onSuccess: () => {
       toast.success("RSVP updated successfully");
-      void utils.studentDashboard.getCalendarEvents.invalidate();
-      void utils.studentDashboard.getEventsForDate.invalidate();
+      void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
+      void utils.studentDashboard.getMachiningEventsForDate.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -65,8 +65,8 @@ export function DashboardCalendar() {
   const attendanceMutation = api.event.recordPresence.useMutation({
     onSuccess: () => {
       toast.success("Attendance recorded successfully");
-      void utils.studentDashboard.getEventsForDate.invalidate();
-      void utils.studentDashboard.getCalendarEvents.invalidate();
+      void utils.studentDashboard.getMachiningEventsForDate.invalidate();
+      void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

@@ -13,6 +13,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -112,6 +113,9 @@ export default function MachiningBatchContent() {
                       <FormControl>
                         <Input placeholder="13125" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        Enter the batch number for machining students (e.g., 13125 for 2025 students)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -159,7 +159,7 @@ async function AdminSidebar() {
   }
 
   return (
-    <Sidebar collapsible='icon' className="border-r-2 border-r-orange-200 dark:border-r-orange-900">
+    <Sidebar collapsible='offcanvas' className="border-r-2 border-r-orange-200 dark:border-r-orange-900">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -176,7 +176,7 @@ async function AdminSidebar() {
                   className="h-full w-full object-contain"
                 />
               </div>
-              <div className="flex-1 text-left text-sm leading-tight ml-2">
+              <div className="flex-1 text-left text-sm leading-tight ml-2 group-data-[collapsible=icon]:hidden">
                 <h1 className="text-xl font-semibold truncate">HMM ITB</h1>
               </div>
             </SidebarMenuButton>

@@ -173,7 +173,7 @@ async function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border/60 border-r">
+    <Sidebar collapsible="offcanvas" className="border-sidebar-border/60 border-r">
       <SidebarHeader className="px-3 pt-3 group-data-[collapsible=icon]:px-1.5">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -190,7 +190,7 @@ async function AppSidebar() {
                   className="h-full w-full object-contain"
                 />
               </div>
-              <div className="ml-2 flex-1 text-left leading-tight">
+              <div className="ml-2 flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
                 <h1 className="truncate text-base font-semibold tracking-tight">
                   HMM ITB
                 </h1>

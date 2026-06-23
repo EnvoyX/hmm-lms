@@ -2,7 +2,11 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { endOfDay, endOfWeek, getISOWeek, getISOWeekYear, startOfDay, startOfWeek, subDays } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import type { Prisma } from "@prisma/client";
+
+
+const TIMEZONE = "Asia/Jakarta";
 
 export const studentDashboardRouter = createTRPCRouter({
   // Get enrolled courses with progress
@@ -263,8 +267,14 @@ export const studentDashboardRouter = createTRPCRouter({
   getEventsForDate: protectedProcedure
     .input(z.object({ date: z.date() }))
     .query(async ({ ctx, input }) => {
-      const start = startOfDay(input.date);
-      const end = endOfDay(input.date);
+
+      const zonedInputDate = toZonedTime(input.date, TIMEZONE);
+
+      const start = startOfDay(zonedInputDate);
+      const end = endOfDay(zonedInputDate);
+
+      const utcStart = fromZonedTime(start, TIMEZONE)
+      const utcEnd = fromZonedTime(end, TIMEZONE)
 
       // Get user's courses
       const userCourses = await ctx.db.course.findMany({
@@ -281,8 +291,8 @@ export const studentDashboardRouter = createTRPCRouter({
       const events = await ctx.db.event.findMany({
         where: {
           start: {
-            gte: start,
-            lte: end,
+            gte: utcStart,
+            lte: utcEnd,
           },
           NOT: {
             scope: "MACHINING",
@@ -419,8 +429,14 @@ export const studentDashboardRouter = createTRPCRouter({
   getMachiningEventsForDate: protectedProcedure
     .input(z.object({ date: z.date() }))
     .query(async ({ ctx, input }) => {
-      const start = startOfDay(input.date);
-      const end = endOfDay(input.date);
+
+      const zonedInputDate = toZonedTime(input.date, TIMEZONE);
+
+      const start = startOfDay(zonedInputDate);
+      const end = endOfDay(zonedInputDate);
+
+      const utcStart = fromZonedTime(start, TIMEZONE)
+      const utcEnd = fromZonedTime(end, TIMEZONE)
 
       // Get user's courses
       const userCourses = await ctx.db.course.findMany({
@@ -437,8 +453,8 @@ export const studentDashboardRouter = createTRPCRouter({
       const events = await ctx.db.event.findMany({
         where: {
           start: {
-            gte: start,
-            lte: end,
+            gte: utcStart,
+            lte: utcEnd,
           },
           scope: "MACHINING",
           OR: [

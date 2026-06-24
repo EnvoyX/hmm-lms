@@ -352,7 +352,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspiration from various open-source LMS platforms
 - Thanks to all contributors and the HMM ITB community for their support
 - Written mostly by [Adi Haditya Nursyam](https://instagram.com/adihnursyam) (GitHub: [@soezyxstt](https://github.com/soezyxstt)), (LinkedIn: [Adi Haditya Nursyam](https://www.linkedin.com/in/adihnursyam/))
-- Maintained by Muhamad Hanif Hafizhan & Rahmat Handaru Prayoga
+- Maintained by [Muhamad Hanif Hafizhan](https://www.instagram.com/nfzhn/) (GitHub: [@EnvoyX](https://github.com/EnvoyX)) (LinkedIn: [Muhamad Hanif Hafizhan](https://www.linkedin.com/in/muhamad-hanif-hafizhan-824313296/)) & [Rahmat Handaru Prayoga](https://www.instagram.com/rahmathandaru_p/) (GitHub: [@Handthere](https://github.com/Handthere)) (LinkedIn: [Rahmat Handaru Prayoga](https://www.linkedin.com/in/rahmat-handaru-prayoga-803973314/))
 
 ***
 

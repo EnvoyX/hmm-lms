@@ -30,7 +30,7 @@ export default async function EditFormPage({ params }: EditFormPageProps) {
 
   return (
     <div className="container mx-auto max-w-5xl">
-      <FormsBuilder mode="edit" initialData={{id: id, ...initialData}} />
+      <FormsBuilder mode="edit" initialData={{...initialData, id: id}} />
     </div>
   );
 }

@@ -136,8 +136,6 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
       })),
     };
 
-    console.log("Submitted Data: ", formattedData)
-
     if (mode === "create") {
       const formId = createId()
       createForm.mutate({
@@ -153,8 +151,8 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
     } else if (mode === "edit" && initialData?.id) {
       const formId = initialData.id
       updateForm.mutate({
-        id: formId,
         ...formattedData,
+        id: formId,
       });
       const submittedQuestions = formattedData.questions
       const initialQuestions = initialData.questions
@@ -199,6 +197,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
     append({
       id: crypto.randomUUID(),
       title: "",
+      description: "",
       type: "SHORT_ANSWER",
       required: false,
       order: fields.length,
@@ -369,6 +368,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                           <SelectContent>
                             <SelectItem value="NORMAL">Normal</SelectItem>
                             <SelectItem value="HOTLINE">Hotline</SelectItem>
+                            <SelectItem value="MACHINING">Machining</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>

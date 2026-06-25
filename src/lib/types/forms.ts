@@ -110,29 +110,13 @@ export const formSchema = z.object({
   id: z.string(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  type: z.enum(['NORMAL', 'HOTLINE']).default('NORMAL'),
+  type: z.enum(['NORMAL', 'HOTLINE', "MACHINING"]).default('NORMAL'),
   isPublished: z.boolean().default(false),
   isActive: z.boolean().default(true),
   allowMultipleSubmissions: z.boolean().default(false),
   requireAuth: z.boolean().default(true),
   showProgressBar: z.boolean().default(true),
   collectEmail: z.boolean().default(true),
-});
-
-export const createFormSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
-  type: z.enum(['NORMAL', 'HOTLINE']).default('NORMAL'),
-  isPublished: z.boolean().default(false),
-  isActive: z.boolean().default(true),
-  allowMultipleSubmissions: z.boolean().default(false),
-  requireAuth: z.boolean().default(true),
-  showProgressBar: z.boolean().default(true),
-  collectEmail: z.boolean().default(true),
-});
-
-export const updateFormSchema = createFormSchema.partial().extend({
-  id: z.string(),
 });
 
 // For the `form.createQuestion` procedure
@@ -166,7 +150,7 @@ export const submitFormSchema = z.object({
   answers: z.array(submitAnswerSchema),
 });
 
-export const formBuilderSchema = createFormSchema.extend({
+export const formBuilderSchema = formSchema.extend({
   questions: z.array(QuestionSchema),
 });
 export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;

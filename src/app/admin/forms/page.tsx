@@ -308,6 +308,11 @@ const FormCard: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }) =>
           >
             <div className="flex items-center gap-2">
               <Badge
+                variant={"outline"}
+              >
+                {form.type.charAt(0) + form.type.slice(1).toLowerCase()}
+              </Badge>
+              <Badge
                 variant={form.isPublished ? "default" : "secondary"}
               >
                 {form.isPublished ? "Published" : "Draft"}

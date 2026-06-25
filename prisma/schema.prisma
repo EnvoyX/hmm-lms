@@ -148,6 +148,7 @@ enum FormQuestionType {
 enum FormType {
   NORMAL
   HOTLINE
+  MACHINING
 }
 
 // Core LMS course models

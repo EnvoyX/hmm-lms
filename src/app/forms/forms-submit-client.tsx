@@ -37,6 +37,9 @@ const createSubmissionSchema = (form: FormWithQuestions) => {
         message: "This field is required.",
       });
     }
+    else {
+     answerShape[q.id] = z.any() 
+    }
   });
   return z.object({
     answers: z.object(answerShape),
@@ -89,7 +92,7 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
       toast.info("This is a preview. Submission is disabled.");
       return;
     }
-
+    
     const formattedAnswers = Object.entries(data.answers).map(([questionId, value]) => {
       const question = initialForm.questions.find(q => q.id === questionId);
       if (!question) return null;
@@ -165,7 +168,6 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
 
       return answer;
     }).filter((ans): ans is NonNullable<typeof ans> => ans !== null);
-
     // Process file uploads
     const finalAnswers: Answer[] = [];
     const hasFileUploads = formattedAnswers.some(item => isPendingFileUpload(item));
@@ -207,6 +209,7 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
         }
       }
 
+      
       if (hasFileUploads) {
         toast.dismiss("file-upload");
       }

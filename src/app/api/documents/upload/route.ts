@@ -1,4 +1,3 @@
-// app/api/upload/route.ts
 import { NextResponse } from "next/server";
 import { Upload } from "@aws-sdk/lib-storage";
 import s3Client from "~/lib/s3-client";

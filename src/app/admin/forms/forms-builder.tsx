@@ -5,7 +5,7 @@ import { useFieldArray, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Plus, Save, Trash2, ArrowLeft, Loader2 } from "lucide-react";
-
+import { createId } from "@paralleldrive/cuid2";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -93,6 +93,39 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
     },
   });
 
+  const createQuestion = api.form.createQuestion.useMutation({
+    onSuccess: () => {
+      toast.success("New question added to the form successfully");
+      router.push("/admin/forms");
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(`Error creating question: ${error.message}`);
+    },
+  });
+
+  const updateQuestion = api.form.updateQuestion.useMutation({
+    onSuccess: () => {
+      toast.success("Existing question in the form updated successfully");
+      router.push("/admin/forms");
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(`Error updating question: ${error.message}`);
+    },
+  });
+
+  const deleteQuestion = api.form.deleteQuestion.useMutation({
+    onSuccess: () => {
+      toast.success("Question that removed from the form is successfully deleted");
+      router.push("/admin/forms");
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(`Error deleting question: ${error.message}`);
+    },
+  });
+
   const onSubmit = (data: FormBuilderSchema) => {
     // Ensure questions have correct order
     const formattedData = {
@@ -103,13 +136,62 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
       })),
     };
 
+    console.log("Submitted Data: ", formattedData)
+
     if (mode === "create") {
-      createForm.mutate(formattedData);
+      const formId = createId()
+      createForm.mutate({
+        ...formattedData,
+        id: formId,
+      })
+      formattedData.questions.forEach((question) => {
+        createQuestion.mutate({
+          ...question,
+          formId
+        })
+      })
     } else if (mode === "edit" && initialData?.id) {
+      const formId = initialData.id
       updateForm.mutate({
-        id: initialData.id,
+        id: formId,
         ...formattedData,
       });
+      const submittedQuestions = formattedData.questions
+      const initialQuestions = initialData.questions
+
+      const submittedQuestionIds = new Set(submittedQuestions.map((question) => question.id))
+      const initialQuestionIds = new Set(initialQuestions.map((question) => question.id))
+
+      const newQuestions = submittedQuestions.filter((question) => !initialQuestionIds.has(question.id))
+      const updatedQuestions = submittedQuestions.filter((question) => initialQuestionIds.has(question.id))
+      const deletedQuestions = initialQuestions.filter((question) => !submittedQuestionIds.has(question.id))
+
+      // handle new questions
+      newQuestions.forEach((question) => {
+        createQuestion.mutate({
+          ...question,
+          formId
+        })
+      })
+
+      // handle updated questions
+      updatedQuestions.forEach((question) => {
+        updateQuestion.mutate({
+          ...question,
+        })
+      })
+
+      // handle deleted questions
+      deletedQuestions.forEach((question) => {
+        deleteQuestion.mutate({
+          id: question.id
+        })
+      })
+
+      console.log("New questions: ", newQuestions)
+      console.log("Updated questions: ", updatedQuestions)
+      console.log("Deleted questions: ", deletedQuestions)
+
     }
   };
 

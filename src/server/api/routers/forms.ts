@@ -7,8 +7,7 @@ import {
 } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import {
-  createFormSchema,
-  updateFormSchema,
+  formSchema,
   createQuestionSchema,
   updateQuestionSchema,
   submitFormSchema,
@@ -18,7 +17,7 @@ import { FormType } from "@prisma/client";
 export const formRouter = createTRPCRouter({
   // Form management
   create: protectedProcedure
-    .input(createFormSchema)
+    .input(formSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.form.create({
         data: {
@@ -38,7 +37,7 @@ export const formRouter = createTRPCRouter({
     }),
 
   update: protectedProcedure
-    .input(updateFormSchema)
+    .input(formSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
@@ -443,11 +442,11 @@ export const formRouter = createTRPCRouter({
       return ctx.db.user.findMany({
         where: input.search
           ? {
-              name: {
-                contains: input.search,
-                mode: "insensitive",
-              },
-            }
+            name: {
+              contains: input.search,
+              mode: "insensitive",
+            },
+          }
           : undefined,
         select: {
           id: true,
@@ -467,11 +466,11 @@ export const formRouter = createTRPCRouter({
           nim: { not: "" },
           ...(input.search
             ? {
-                OR: [
-                  { nim: { contains: input.search, mode: "insensitive" } },
-                  { name: { contains: input.search, mode: "insensitive" } },
-                ],
-              }
+              OR: [
+                { nim: { contains: input.search, mode: "insensitive" } },
+                { name: { contains: input.search, mode: "insensitive" } },
+              ],
+            }
             : {}),
         },
         select: {
@@ -492,13 +491,13 @@ export const formRouter = createTRPCRouter({
           isActive: true,
           ...(input.search
             ? {
-                OR: [
-                  { title: { contains: input.search, mode: "insensitive" } },
-                  {
-                    classCode: { contains: input.search, mode: "insensitive" },
-                  },
-                ],
-              }
+              OR: [
+                { title: { contains: input.search, mode: "insensitive" } },
+                {
+                  classCode: { contains: input.search, mode: "insensitive" },
+                },
+              ],
+            }
             : {}),
         },
         select: {
@@ -518,8 +517,8 @@ export const formRouter = createTRPCRouter({
         where: {
           ...(input.search
             ? {
-                title: { contains: input.search, mode: "insensitive" },
-              }
+              title: { contains: input.search, mode: "insensitive" },
+            }
             : {}),
         },
         select: {

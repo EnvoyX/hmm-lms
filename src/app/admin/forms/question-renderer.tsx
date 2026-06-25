@@ -1,5 +1,3 @@
-// ~/admin/forms/question-builder.tsx
-
 import React from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { format } from 'date-fns';
@@ -328,52 +326,90 @@ const FileUploadQuestion: React.FC<QuestionComponentProps> = ({ question, form, 
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-center w-full">
-        <label htmlFor={`${fieldName}-file`} className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <Upload className="w-8 h-8 mb-4 text-gray-500" />
-            <p className="mb-2 text-sm text-gray-500">
-              <span className="font-semibold">Click to upload</span> or drag and drop
-            </p>
-            {settings?.allowedFileTypes && (
-              <p className="text-xs text-gray-500">
-                {settings.allowedFileTypes.join(', ')}
-              </p>
-            )}
-          </div>
-          <input
-            id={`${fieldName}-file`}
-            type="file"
-            className="hidden"
-            multiple={settings?.maxFiles !== 1}
-            accept={settings?.allowedFileTypes?.join(',')}
-            onChange={handleFileChange}
-          />
-        </label>
-      </div>
-      {files.length > 0 && (
-        <div className="space-y-2">
-          {files.map((file, index) => (
-            <div key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded">
-              <span className="text-sm truncate">{file.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const newFiles = files.filter((_, i) => i !== index);
-                  setFiles(newFiles);
-                  form.setValue(fieldName, newFiles);
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+    <div className="space-y-5 text-zinc-200">
+  {/* drag & drop area */}
+  <div className="flex items-center justify-center w-full">
+    <label 
+      htmlFor={`${fieldName}-file`} 
+      className="group flex flex-col items-center justify-center w-full h-40 border border-dashed border-zinc-800 rounded-xl cursor-pointer bg-zinc-950/40 hover:bg-zinc-900/60 hover:border-indigo-500/50 transition-all duration-200 ease-in-out"
+    >
+      <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
+        {/* animated icon wrapper */}
+        <div className="p-3 mb-3 bg-zinc-900 group-hover:bg-indigo-500/10 rounded-xl border border-zinc-800 group-hover:border-indigo-500/20 transition-all duration-200">
+          <Upload className="w-5 h-5 text-zinc-400 group-hover:text-indigo-400 transition-colors" />
         </div>
-      )}
+        
+        <p className="mb-1.5 text-sm text-zinc-400">
+          <span className="font-medium text-zinc-200 group-hover:text-indigo-400 transition-colors">
+            Click to upload
+          </span>{" "}
+          or drag and drop
+        </p>
+        
+        {settings?.allowedFileTypes && (
+          <p className="text-xs text-zinc-500 tracking-wide font-mono">
+            {settings.allowedFileTypes.join(', ').toUpperCase()}
+          </p>
+        )}
+      </div>
+      
+      <input
+        id={`${fieldName}-file`}
+        type="file"
+        className="hidden"
+        multiple={settings?.maxFiles !== 1}
+        accept={settings?.allowedFileTypes?.join(',')}
+        onChange={handleFileChange}
+      />
+    </label>
+  </div>
+
+  {/* uploaded files queue */}
+  {files.length > 0 && (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between px-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          Attached Files ({files.length})
+        </span>
+      </div>
+      
+      <div className="space-y-2 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
+        {files.map((file, index) => (
+          <div 
+            key={index} 
+            className="group/item flex items-center justify-between p-3 bg-zinc-900/60 border border-zinc-800/80 rounded-xl hover:border-zinc-700 transition-colors"
+          >
+            <div className="flex items-center space-x-3 min-w-0">
+              {/* generic file icon thumbnail indicator */}
+              <div className="p-1.5 bg-zinc-800 rounded-lg text-zinc-400">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-zinc-300 truncate max-w-xs sm:max-w-md">
+                {file.name}
+              </span>
+            </div>
+            
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+              onClick={() => {
+                const newFiles = files.filter((_, i) => i !== index);
+                setFiles(newFiles);
+                form.setValue(fieldName, newFiles);
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
     </div>
+  )}
+</div>
   );
 };
 

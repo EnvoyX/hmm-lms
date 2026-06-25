@@ -104,6 +104,21 @@ export const QuestionSchema = z.discriminatedUnion('type', [
   baseQuestionSchema.extend({ type: z.literal('EVENT_SELECT'), settings: NoSettingsSchema }),
 ]);
 
+
+
+export const formSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  type: z.enum(['NORMAL', 'HOTLINE']).default('NORMAL'),
+  isPublished: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+  allowMultipleSubmissions: z.boolean().default(false),
+  requireAuth: z.boolean().default(true),
+  showProgressBar: z.boolean().default(true),
+  collectEmail: z.boolean().default(true),
+});
+
 export const createFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
@@ -122,13 +137,13 @@ export const updateFormSchema = createFormSchema.partial().extend({
 
 // For the `form.createQuestion` procedure
 export const createQuestionSchema = z.object({
-    formId: z.string(),
-    title: z.string().min(1, 'Question title is required'),
-    description: z.string().optional(),
-    type: z.enum(Object.keys(QUESTION_TYPE_CONFIG) as [FormQuestionType, ...FormQuestionType[]]),
-    required: z.boolean().default(false),
-    order: z.number(),
-    settings: z.any().optional(), // Prisma expects a JSON-compatible object for the `settings` field
+  formId: z.string(),
+  title: z.string().min(1, 'Question title is required'),
+  description: z.string().optional(),
+  type: z.enum(Object.keys(QUESTION_TYPE_CONFIG) as [FormQuestionType, ...FormQuestionType[]]),
+  required: z.boolean().default(false),
+  order: z.number(),
+  settings: z.any().optional(), // Prisma expects a JSON-compatible object for the `settings` field
 });
 
 // For the `form.updateQuestion` procedure. Allows partial updates.

@@ -168,8 +168,13 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
 
     // Process file uploads
     const finalAnswers: Answer[] = [];
+    const hasFileUploads = formattedAnswers.some(item => isPendingFileUpload(item));
 
     try {
+      if (hasFileUploads) {
+        toast.loading("Uploading attached files...", { id: "file-upload" });
+      }
+
       for (const item of formattedAnswers) {
         if (isPendingFileUpload(item)) {
           // It's a file upload item that needs processing
@@ -201,8 +206,13 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
           finalAnswers.push(item);
         }
       }
+
+      if (hasFileUploads) {
+        toast.dismiss("file-upload");
+      }
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to upload files. Please try again."));
+      toast.dismiss("file-upload");
+      toast.error(getErrorMessage(error, "Failed to upload files. Form submission cancelled."));
       return;
     }
 

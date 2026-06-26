@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { CheckCircle, Loader2, Eye, AlertCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -67,6 +68,8 @@ interface PendingFileUpload {
   files: File[];
   type: 'FILE_UPLOAD';
 }
+
+const TIMEZONE = 'Asia/Jakarta';
 
 function isPendingFileUpload(value: Answer | PendingFileUpload): value is PendingFileUpload {
   return 'type' in value && value.type === 'FILE_UPLOAD';
@@ -337,7 +340,8 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
             <AlertCircle className="w-12 h-12 mx-auto text-yellow-500" />
             <CardTitle className="mt-4">Form Not Available Yet</CardTitle>
             <CardDescription>
-              This form will be available starting {start.toLocaleDateString()}
+              This form will be available starting{' '}
+              {formatInTimeZone(start, TIMEZONE, 'MMMM d yyyy HH:mm')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -356,7 +360,7 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
             <AlertCircle className="w-12 h-12 mx-auto text-red-500" />
             <CardTitle className="mt-4">Form Period Ended</CardTitle>
             <CardDescription>
-              This form period has ended on {end.toLocaleDateString()}
+              This form period has ended on {formatInTimeZone(end, TIMEZONE, 'MMMM d yyyy HH:mm')}
             </CardDescription>
           </CardHeader>
           <CardContent>

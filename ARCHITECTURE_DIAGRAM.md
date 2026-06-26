@@ -14,30 +14,36 @@ HMM-LMS is a comprehensive Learning Management System and community platform for
 ## Technology Stack
 
 ### Core Framework
+
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **tRPC** - End-to-end typesafe APIs
 
 ### Database & ORM
+
 - **Prisma** - Next-generation ORM
 - **PostgreSQL** - Primary database
 
 ### Authentication
+
 - **NextAuth.js** - Authentication solution
 - Credentials provider with email/password
 
 ### UI & Styling
+
 - **Tailwind CSS** - Utility-first CSS framework
 - **shadcn/ui** - Re-usable component library
 - **TipTap** - Rich text editor
 
 ### Storage & Assets
+
 - **AWS S3** - Object storage for files and media
 
 ### Development Tools
+
 - **Bun** - Fast JavaScript runtime and package manager
-- **ESLint** - Code linting
-- **Prettier** - Code formatting
+- **Oxlint** - Code linting
+- **Oxfmt** - Code formatting
 
 ## High-Level Architecture
 
@@ -222,106 +228,123 @@ HMM-LMS is a comprehensive Learning Management System and community platform for
 ## Data Flow
 
 ### Authentication Flow
+
 ```
-User → Login Form → NextAuth Credentials Provider → 
-Verify Email/Password → Create JWT Session → 
+User → Login Form → NextAuth Credentials Provider →
+Verify Email/Password → Create JWT Session →
 Store in Database → Return Session → Client
 ```
 
 ### API Request Flow
+
 ```
-Client Component → tRPC Client Call → 
-tRPC Router → Procedure (public/protected/admin) → 
-Context (session, db) → Business Logic → 
-Prisma Query → PostgreSQL → Return Data → 
+Client Component → tRPC Client Call →
+tRPC Router → Procedure (public/protected/admin) →
+Context (session, db) → Business Logic →
+Prisma Query → PostgreSQL → Return Data →
 Transform with SuperJSON → Client
 ```
 
 ### File Upload Flow
+
 ```
-User Uploads File → Client Component → 
-tRPC API → Generate S3 Presigned URL → 
-Direct Upload to AWS S3 → Save Metadata to Database → 
+User Uploads File → Client Component →
+tRPC API → Generate S3 Presigned URL →
+Direct Upload to AWS S3 → Save Metadata to Database →
 Return File URL → Client
 ```
 
 ### Event RSVP Flow
+
 ```
-User Views Event → RSVP Form → 
-tRPC API → Validate Form → Create RSVP Response → 
-(If approval required) → Admin Approval → 
+User Views Event → RSVP Form →
+tRPC API → Validate Form → Create RSVP Response →
+(If approval required) → Admin Approval →
 Google Sheets Sync → Notification → User
 ```
 
 ### Tryout Attempt Flow
+
 ```
-User Starts Tryout → Create UserAttempt → 
-Fetch Questions → User Answers → 
-Submit Answers → Calculate Score → 
-Save UserAnswer Records → Update UserAttempt → 
+User Starts Tryout → Create UserAttempt →
+Fetch Questions → User Answers →
+Submit Answers → Calculate Score →
+Save UserAnswer Records → Update UserAttempt →
 Return Results → Analytics
 ```
 
 ## Key Features & Components
 
 ### 1. Course Management
+
 - **Router**: `course.ts`
 - **Pages**: `/admin/courses`, `/(with-sidebar)/courses`
 - **Features**: Course CRUD, enrollment, learning session tracking, testimonials
 
 ### 2. Assessment System (Tryouts)
+
 - **Router**: `tryout.ts`
 - **Pages**: `/admin/tryouts`, `/(with-sidebar)/tryouts`
 - **Features**: Multiple question types, automated scoring, attempt history
 
 ### 3. Event Management
+
 - **Router**: `event.ts`
 - **Pages**: `/admin/events`, `/(with-sidebar)/events`
 - **Features**: 4 event modes (Basic, RSVP-only, Attendance, Combined), calendar view, Google Sheets integration
 
 ### 4. Announcements
+
 - **Router**: `announcement.ts`
 - **Pages**: `/admin/announcements`, `/(with-sidebar)/announcements`
 - **Features**: Rich text editor (TipTap), replies, image attachments, scope filtering
 
 ### 5. Forms System
+
 - **Router**: `forms.ts`
 - **Pages**: `/admin/forms`, `/forms`
 - **Features**: Dynamic form builder, multiple question types, submission analytics
 
 ### 6. Link Shortener
+
 - **Router**: `short-link.ts`
 - **Pages**: `/admin/shortlinks`, `/s/[slug]`
 - **Features**: Custom slugs, click analytics, geographic tracking
 
 ### 7. Job Vacancies & Scholarships
+
 - **Routers**: `loker.ts`, `scholarship.ts`
 - **Pages**: `/admin/loker`, `/admin/scholarships`, `/(with-sidebar)/loker`, `/(with-sidebar)/scholarships`
 - **Features**: CRUD operations, filtering, deadline tracking
 
 ### 8. Dashboard & Analytics
+
 - **Routers**: `dashboard.ts`, `analytics.ts`
 - **Pages**: `/admin/dashboard`, `/(with-sidebar)/dashboard`
 - **Features**: Role-based dashboards, performance metrics, data visualization
 
 ### 9. Push Notifications
+
 - **Router**: `push.ts`, `notifications.ts`
 - **Components**: Service worker, VAPID keys
 - **Features**: Web push notifications, subscription management
 
 ### 10. Resource Management
+
 - **Router**: `resource.ts`
 - **Features**: File/link attachments, access logging, S3 integration
 
 ## Role-Based Access Control
 
 ### Roles
+
 - **STUDENT**: Access to courses, events, tryouts, forms
 - **ADMIN**: Full access except user role management
 - **SUPERADMIN**: Complete access including user role management
 - **MACHINING**: Special role for machining-related content
 
 ### Procedure Protection
+
 - `publicProcedure`: No authentication required
 - `protectedProcedure`: Requires valid session
 - `adminProcedure`: Requires ADMIN or SUPERADMIN role
@@ -442,6 +465,7 @@ GOOGLE_SHEETS_API_KEY="your-api-key"
 ## Deployment
 
 The application supports deployment on:
+
 - **Vercel** (Recommended)
 - **DigitalOcean / VPS**
 - **Docker**

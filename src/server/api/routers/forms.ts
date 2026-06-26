@@ -1,76 +1,85 @@
-import { z } from "zod";
-import {
-  adminProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "../trpc";
-import { TRPCError } from "@trpc/server";
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+
 import {
   formSchema,
   createQuestionSchema,
   updateQuestionSchema,
   submitFormSchema,
-} from "~/lib/types/forms";
-import { FormType } from "@prisma/client";
+} from '~/lib/types/forms';
+
+import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 
 export const formRouter = createTRPCRouter({
   // Form management
-  create: protectedProcedure
-    .input(formSchema)
-    .mutation(async ({ ctx, input }) => {
-      return ctx.db.form.create({
-        data: {
-          ...input,
-          createdBy: ctx.session.user.id,
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
-    }),
-
-  update: protectedProcedure
-    .input(formSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-
-      // Check if user owns the form
-      const existingForm = await ctx.db.form.findUnique({
-        where: { id },
-        select: { createdBy: true },
-      });
-
-      if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+  create: protectedProcedure.input(formSchema).mutation(async ({ ctx, input }) => {
+    if (input.start && input.end) {
+      if (input.end <= input.start) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only edit your own forms",
+          code: 'BAD_REQUEST',
+          message: 'End time must be after start time',
         });
       }
-
-      return ctx.db.form.update({
-        where: { id },
-        data,
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          questions: {
-            orderBy: { order: "asc" },
+    }
+    return ctx.db.form.create({
+      data: {
+        ...input,
+        createdBy: ctx.session.user.id,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
         },
+      },
+    });
+  }),
+
+  update: protectedProcedure.input(formSchema).mutation(async ({ ctx, input }) => {
+    const { id, ...data } = input;
+
+    if (input.start && input.end) {
+      if (input.end <= input.start) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'End time must be after start time',
+        });
+      }
+    }
+
+    // Check if user owns the form
+    const existingForm = await ctx.db.form.findUnique({
+      where: { id },
+      select: { createdBy: true },
+    });
+
+    if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You can only edit your own forms',
       });
-    }),
+    }
+
+    return ctx.db.form.update({
+      where: { id },
+      data,
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        questions: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+  }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -83,8 +92,8 @@ export const formRouter = createTRPCRouter({
 
       if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only delete your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only delete your own forms',
         });
       }
 
@@ -93,42 +102,40 @@ export const formRouter = createTRPCRouter({
       });
     }),
 
-  getById: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const form = await ctx.db.form.findUnique({
-        where: { id: input.id },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          questions: {
-            orderBy: { order: "asc" },
+  getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const form = await ctx.db.form.findUnique({
+      where: { id: input.id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
         },
+        questions: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!form) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Form not found',
       });
+    }
 
-      if (!form) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Form not found",
-        });
-      }
+    // If form is not published, only allow creator to view
+    if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'This form is not published',
+      });
+    }
 
-      // If form is not published, only allow creator to view
-      if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "This form is not published",
-        });
-      }
-
-      return form;
-    }),
+    return form;
+  }),
 
   getMyForms: protectedProcedure
     .input(
@@ -144,7 +151,7 @@ export const formRouter = createTRPCRouter({
         where: { createdBy: ctx.session.user.id },
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { updatedAt: "desc" },
+        orderBy: { updatedAt: 'desc' },
         include: {
           _count: {
             select: {
@@ -167,8 +174,6 @@ export const formRouter = createTRPCRouter({
       };
     }),
 
-
-
   getHotlineForms: protectedProcedure
     .input(
       z.object({
@@ -181,13 +186,13 @@ export const formRouter = createTRPCRouter({
 
       const forms = await ctx.db.form.findMany({
         where: {
-          type: "HOTLINE",
+          type: 'HOTLINE',
           isActive: true,
           isPublished: true,
         },
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { updatedAt: "desc" },
+        orderBy: { updatedAt: 'desc' },
         include: {
           _count: {
             select: {
@@ -222,8 +227,8 @@ export const formRouter = createTRPCRouter({
 
       if (!form || form.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only add questions to your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only add questions to your own forms',
         });
       }
 
@@ -245,8 +250,8 @@ export const formRouter = createTRPCRouter({
 
       if (!question || question.form.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only edit questions in your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only edit questions in your own forms',
         });
       }
 
@@ -267,8 +272,8 @@ export const formRouter = createTRPCRouter({
 
       if (!question || question.form.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only delete questions in your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only delete questions in your own forms',
         });
       }
 
@@ -293,8 +298,8 @@ export const formRouter = createTRPCRouter({
 
       if (!form || form.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only reorder questions in your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only reorder questions in your own forms',
         });
       }
 
@@ -312,63 +317,61 @@ export const formRouter = createTRPCRouter({
     }),
 
   // Form submission
-  submit: publicProcedure
-    .input(submitFormSchema)
-    .mutation(async ({ ctx, input }) => {
-      const form = await ctx.db.form.findUnique({
-        where: { id: input.formId },
-        include: { questions: true },
+  submit: publicProcedure.input(submitFormSchema).mutation(async ({ ctx, input }) => {
+    const form = await ctx.db.form.findUnique({
+      where: { id: input.formId },
+      include: { questions: true },
+    });
+
+    if (!form || !form.isActive) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Form not found or inactive',
       });
+    }
 
-      if (!form || !form.isActive) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Form not found or inactive",
-        });
-      }
+    if (form.requireAuth && !ctx.session?.user) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Authentication required for this form',
+      });
+    }
 
-      if (form.requireAuth && !ctx.session?.user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Authentication required for this form",
-        });
-      }
-
-      // Check for existing submissions if not allowed
-      if (!form.allowMultipleSubmissions && ctx.session?.user) {
-        const existingSubmission = await ctx.db.formSubmission.findFirst({
-          where: {
-            formId: input.formId,
-            submittedBy: ctx.session.user.id,
-          },
-        });
-
-        if (existingSubmission) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Multiple submissions not allowed for this form",
-          });
-        }
-      }
-
-      // Create submission with answers
-      return ctx.db.formSubmission.create({
-        data: {
+    // Check for existing submissions if not allowed
+    if (!form.allowMultipleSubmissions && ctx.session?.user) {
+      const existingSubmission = await ctx.db.formSubmission.findFirst({
+        where: {
           formId: input.formId,
-          submittedBy: ctx.session?.user?.id,
-          answers: {
-            create: input.answers,
-          },
-        },
-        include: {
-          answers: {
-            include: {
-              question: true,
-            },
-          },
+          submittedBy: ctx.session.user.id,
         },
       });
-    }),
+
+      if (existingSubmission) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Multiple submissions not allowed for this form',
+        });
+      }
+    }
+
+    // Create submission with answers
+    return ctx.db.formSubmission.create({
+      data: {
+        formId: input.formId,
+        submittedBy: ctx.session?.user?.id,
+        answers: {
+          create: input.answers,
+        },
+      },
+      include: {
+        answers: {
+          include: {
+            question: true,
+          },
+        },
+      },
+    });
+  }),
 
   // Get form submissions (for form creators)
   getSubmissions: protectedProcedure
@@ -388,8 +391,8 @@ export const formRouter = createTRPCRouter({
 
       if (!form || form.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only view submissions for your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only view submissions for your own forms',
         });
       }
 
@@ -399,7 +402,7 @@ export const formRouter = createTRPCRouter({
         where: { formId: input.formId },
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { submittedAt: "desc" },
+        orderBy: { submittedAt: 'desc' },
         include: {
           submitter: {
             select: {
@@ -442,11 +445,11 @@ export const formRouter = createTRPCRouter({
       return ctx.db.user.findMany({
         where: input.search
           ? {
-            name: {
-              contains: input.search,
-              mode: "insensitive",
-            },
-          }
+              name: {
+                contains: input.search,
+                mode: 'insensitive',
+              },
+            }
           : undefined,
         select: {
           id: true,
@@ -454,7 +457,7 @@ export const formRouter = createTRPCRouter({
           email: true,
         },
         take: 50,
-        orderBy: { name: "asc" },
+        orderBy: { name: 'asc' },
       });
     }),
 
@@ -463,14 +466,14 @@ export const formRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.user.findMany({
         where: {
-          nim: { not: "" },
+          nim: { not: '' },
           ...(input.search
             ? {
-              OR: [
-                { nim: { contains: input.search, mode: "insensitive" } },
-                { name: { contains: input.search, mode: "insensitive" } },
-              ],
-            }
+                OR: [
+                  { nim: { contains: input.search, mode: 'insensitive' } },
+                  { name: { contains: input.search, mode: 'insensitive' } },
+                ],
+              }
             : {}),
         },
         select: {
@@ -479,7 +482,7 @@ export const formRouter = createTRPCRouter({
           nim: true,
         },
         take: 50,
-        orderBy: { nim: "asc" },
+        orderBy: { nim: 'asc' },
       });
     }),
 
@@ -491,13 +494,13 @@ export const formRouter = createTRPCRouter({
           isActive: true,
           ...(input.search
             ? {
-              OR: [
-                { title: { contains: input.search, mode: "insensitive" } },
-                {
-                  classCode: { contains: input.search, mode: "insensitive" },
-                },
-              ],
-            }
+                OR: [
+                  { title: { contains: input.search, mode: 'insensitive' } },
+                  {
+                    classCode: { contains: input.search, mode: 'insensitive' },
+                  },
+                ],
+              }
             : {}),
         },
         select: {
@@ -506,7 +509,7 @@ export const formRouter = createTRPCRouter({
           classCode: true,
         },
         take: 50,
-        orderBy: { title: "asc" },
+        orderBy: { title: 'asc' },
       });
     }),
 
@@ -514,13 +517,11 @@ export const formRouter = createTRPCRouter({
     .input(z.object({ search: z.string().optional() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.event.findMany({
-        where: {
-          ...(input.search
-            ? {
-              title: { contains: input.search, mode: "insensitive" },
+        where: input.search
+          ? {
+              title: { contains: input.search, mode: 'insensitive' },
             }
-            : {}),
-        },
+          : {},
         select: {
           id: true,
           title: true,
@@ -528,7 +529,7 @@ export const formRouter = createTRPCRouter({
           location: true,
         },
         take: 50,
-        orderBy: { start: "desc" },
+        orderBy: { start: 'desc' },
       });
     }),
 
@@ -573,8 +574,8 @@ export const formRouter = createTRPCRouter({
 
       if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You can only duplicate your own forms",
+          code: 'FORBIDDEN',
+          message: 'You can only duplicate your own forms',
         });
       }
 

@@ -606,6 +606,8 @@ model Form {
   requireAuth              Boolean @default(true)
   showProgressBar          Boolean @default(true)
   collectEmail             Boolean @default(true)
+  start                    DateTime?
+  end                      DateTime?
 
   // Collaboration
   isPublicToAdmins         Boolean         @default(false)

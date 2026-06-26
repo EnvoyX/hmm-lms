@@ -1,12 +1,16 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useFieldArray, useForm, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Plus, Save, Trash2, ArrowLeft, Loader2 } from "lucide-react";
-import { createId } from "@paralleldrive/cuid2";
-import { Button } from "~/components/ui/button";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createId } from '@paralleldrive/cuid2';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { Plus, Save, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useFieldArray, useForm, type Resolver } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import {
   Form,
   FormControl,
@@ -15,65 +19,91 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { Switch } from "~/components/ui/switch";
+} from '~/components/ui/form';
+import { Input } from '~/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
+} from '~/components/ui/select';
+import { Separator } from '~/components/ui/separator';
+import { Switch } from '~/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { Textarea } from '~/components/ui/textarea';
+import { type FormBuilderSchema, formBuilderSchema } from '~/lib/types/forms';
+import { api } from '~/trpc/react';
 
-import { api } from "~/trpc/react";
-import {
-  type FormBuilderSchema,
-  formBuilderSchema,
-} from "~/lib/types/forms";
-import { QuestionBuilderItem } from "./question-builder";
-
-import { useState } from "react";
+import { QuestionBuilderItem } from './question-builder';
 
 interface FormsBuilderProps {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   initialData?: FormBuilderSchema & { id: string };
 }
 
+const TIMEZONE = 'Asia/Jakarta';
+
+// helper: format Date to 'YYYY-MM-DDTHH:mm' for datetime-local
+function toDateTimeLocalValue(date?: Date | null) {
+  if (!date) return '';
+  // Convert UTC date to target timezone
+  const zonedDate = toZonedTime(date, TIMEZONE);
+
+  const year = zonedDate.getFullYear();
+  const month = String(zonedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(zonedDate.getDate()).padStart(2, '0');
+  const hours = String(zonedDate.getHours()).padStart(2, '0');
+  const minutes = String(zonedDate.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// helper: parse input value from datetime-local back to Date
+function fromDateTimeLocalValue(value: string): Date {
+  if (!value) return new Date();
+  // value is "YYYY-MM-DDTHH:mm"
+  // Interpret this string as being in the target timezone, then convert to UTC
+  return fromZonedTime(value, TIMEZONE);
+}
+
 export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
-  const [activeTab, setActiveTab] = useState("questions");
+  const [activeTab, setActiveTab] = useState('questions');
   const router = useRouter();
   const utils = api.useUtils();
 
   const form = useForm<FormBuilderSchema>({
     resolver: zodResolver(formBuilderSchema) as Resolver<FormBuilderSchema>,
-    defaultValues: initialData ?? {
-      title: "",
-      description: "",
-      type: "NORMAL",
-      isPublished: false,
-      isActive: true,
-      allowMultipleSubmissions: false,
-      requireAuth: true,
-      showProgressBar: true,
-      collectEmail: true,
-      questions: [],
-    },
+    defaultValues: initialData
+      ? {
+          ...initialData,
+          start: initialData.start ? new Date(initialData.start) : (undefined as unknown as Date),
+          end: initialData.end ? new Date(initialData.end) : (undefined as unknown as Date),
+        }
+      : {
+          title: '',
+          description: '',
+          type: 'NORMAL',
+          isPublished: false,
+          isActive: true,
+          allowMultipleSubmissions: false,
+          requireAuth: true,
+          showProgressBar: true,
+          collectEmail: true,
+          start: undefined as unknown as Date,
+          end: undefined as unknown as Date,
+          questions: [],
+        },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "questions",
+    name: 'questions',
   });
 
   const createForm = api.form.create.useMutation({
     onSuccess: () => {
-      toast.success("Form created successfully");
-      router.push("/admin/forms");
+      toast.success('Form created successfully');
+      router.push('/admin/forms');
       router.refresh();
     },
     onError: (error) => {
@@ -83,9 +113,9 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
 
   const updateForm = api.form.update.useMutation({
     onSuccess: () => {
-      toast.success("Form updated successfully");
-      void utils.form.getById.invalidate({ id: initialData?.id ?? "" });
-      router.push("/admin/forms");
+      toast.success('Form updated successfully');
+      void utils.form.getById.invalidate({ id: initialData?.id ?? '' });
+      router.push('/admin/forms');
       router.refresh();
     },
     onError: (error) => {
@@ -95,8 +125,8 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
 
   const createQuestion = api.form.createQuestion.useMutation({
     onSuccess: () => {
-      toast.success("New question added to the form successfully");
-      router.push("/admin/forms");
+      toast.success('New question added to the form successfully');
+      router.push('/admin/forms');
       router.refresh();
     },
     onError: (error) => {
@@ -106,8 +136,8 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
 
   const updateQuestion = api.form.updateQuestion.useMutation({
     onSuccess: () => {
-      toast.success("Existing question in the form updated successfully");
-      router.push("/admin/forms");
+      toast.success('Existing question in the form updated successfully');
+      router.push('/admin/forms');
       router.refresh();
     },
     onError: (error) => {
@@ -117,8 +147,8 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
 
   const deleteQuestion = api.form.deleteQuestion.useMutation({
     onSuccess: () => {
-      toast.success("Question that removed from the form is successfully deleted");
-      router.push("/admin/forms");
+      toast.success('Question that removed from the form is successfully deleted');
+      router.push('/admin/forms');
       router.refresh();
     },
     onError: (error) => {
@@ -136,72 +166,77 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
       })),
     };
 
-    if (mode === "create") {
-      const formId = createId()
+    if (mode === 'create') {
+      const formId = createId();
       createForm.mutate({
         ...formattedData,
         id: formId,
-      })
+      });
       formattedData.questions.forEach((question) => {
         createQuestion.mutate({
           ...question,
-          formId
-        })
-      })
-    } else if (mode === "edit" && initialData?.id) {
-      const formId = initialData.id
+          formId,
+        });
+      });
+    } else if (mode === 'edit' && initialData?.id) {
+      const formId = initialData.id;
       updateForm.mutate({
         ...formattedData,
         id: formId,
       });
-      const submittedQuestions = formattedData.questions
-      const initialQuestions = initialData.questions
+      const submittedQuestions = formattedData.questions;
+      const initialQuestions = initialData.questions;
 
-      const submittedQuestionIds = new Set(submittedQuestions.map((question) => question.id))
-      const initialQuestionIds = new Set(initialQuestions.map((question) => question.id))
+      const submittedQuestionIds = new Set(submittedQuestions.map((question) => question.id));
+      const initialQuestionIds = new Set(initialQuestions.map((question) => question.id));
 
-      const newQuestions = submittedQuestions.filter((question) => !initialQuestionIds.has(question.id))
-      const updatedQuestions = submittedQuestions.filter((question) => initialQuestionIds.has(question.id))
-      const deletedQuestions = initialQuestions.filter((question) => !submittedQuestionIds.has(question.id))
+      const newQuestions = submittedQuestions.filter(
+        (question) => !initialQuestionIds.has(question.id),
+      );
+      const updatedQuestions = submittedQuestions.filter((question) =>
+        initialQuestionIds.has(question.id),
+      );
+      const deletedQuestions = initialQuestions.filter(
+        (question) => !submittedQuestionIds.has(question.id),
+      );
 
       // handle new questions
       newQuestions.forEach((question) => {
         createQuestion.mutate({
           ...question,
-          formId
-        })
-      })
+          formId,
+        });
+      });
 
       // handle updated questions
       updatedQuestions.forEach((question) => {
         updateQuestion.mutate({
           ...question,
-        })
-      })
+        });
+      });
 
       // handle deleted questions
       deletedQuestions.forEach((question) => {
         deleteQuestion.mutate({
-          id: question.id
-        })
-      })
+          id: question.id,
+        });
+      });
 
-      console.log("New questions: ", newQuestions)
-      console.log("Updated questions: ", updatedQuestions)
-      console.log("Deleted questions: ", deletedQuestions)
-
+      console.log('New questions: ', newQuestions);
+      console.log('Updated questions: ', updatedQuestions);
+      console.log('Deleted questions: ', deletedQuestions);
     }
   };
 
   const addQuestion = () => {
     append({
       id: crypto.randomUUID(),
-      title: "",
-      description: "",
-      type: "SHORT_ANSWER",
+      title: '',
+      description: '',
+      type: 'SHORT_ANSWER',
       required: false,
       order: fields.length,
-      settings: { placeholder: "" },
+      settings: { placeholder: '' },
     });
   };
 
@@ -221,18 +256,15 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {mode === "create" ? "Create New Form" : "Edit Form"}
+              {mode === 'create' ? 'Create New Form' : 'Edit Form'}
             </h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-          >
+          <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
-            {mode === "create" ? "Create Form" : "Save Changes"}
+            {mode === 'create' ? 'Create Form' : 'Save Changes'}
           </Button>
         </div>
       </div>
@@ -272,10 +304,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Describe the purpose of this form..."
-                            {...field}
-                          />
+                          <Textarea placeholder="Describe the purpose of this form..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -288,12 +317,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Questions</h2>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addQuestion}
-                  >
+                  <Button type="button" variant="outline" size="sm" onClick={addQuestion}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Question
                   </Button>
@@ -329,10 +353,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <QuestionBuilderItem
-                          form={form}
-                          questionIndex={index}
-                        />
+                        <QuestionBuilderItem form={form} questionIndex={index} />
                       </div>
                     ))}
                   </div>
@@ -356,10 +377,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Form Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select type" />
@@ -388,15 +406,10 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                         <div className="space-y-0.5">
                           <FormLabel>Published</FormLabel>
-                          <FormDescription>
-                            Make this form visible to users.
-                          </FormDescription>
+                          <FormDescription>Make this form visible to users.</FormDescription>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -409,15 +422,10 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                         <div className="space-y-0.5">
                           <FormLabel>Active</FormLabel>
-                          <FormDescription>
-                            Accept new submissions.
-                          </FormDescription>
+                          <FormDescription>Accept new submissions.</FormDescription>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -432,10 +440,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                           <FormLabel>Require Login</FormLabel>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -450,10 +455,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                           <FormLabel>Collect Email</FormLabel>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -468,10 +470,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                           <FormLabel>Multiple Submissions</FormLabel>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -486,14 +485,53 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                           <FormLabel>Progress Bar</FormLabel>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
                   />
+                  <Separator />
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="start"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Date & Time</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="datetime-local"
+                              value={toDateTimeLocalValue(field.value as unknown as Date)}
+                              onChange={(e) =>
+                                field.onChange(fromDateTimeLocalValue(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="end"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Date & Time</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="datetime-local"
+                              value={toDateTimeLocalValue(field.value as unknown as Date)}
+                              onChange={(e) =>
+                                field.onChange(fromDateTimeLocalValue(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -502,7 +540,7 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
       </Form>
 
       {/* Floating Add Question Button */}
-      {activeTab === "questions" && (
+      {activeTab === 'questions' && (
         <div className="fixed bottom-8 right-8 z-50">
           <Button
             type="button"

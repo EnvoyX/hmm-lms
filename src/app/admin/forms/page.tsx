@@ -367,6 +367,9 @@ const FormListItem: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground ml-4">
+          <Badge variant={"outline"}>
+            {form.type.charAt(0) + form.type.slice(1).toLowerCase()}
+          </Badge>
           <Badge variant={form.isPublished ? 'default' : 'secondary'} className="hidden md:flex">{form.isPublished ? 'Published' : 'Draft'}</Badge>
           <Switch
             checked={form.isPublished}

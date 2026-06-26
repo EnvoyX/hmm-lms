@@ -117,6 +117,8 @@ export const formSchema = z.object({
   requireAuth: z.boolean().default(true),
   showProgressBar: z.boolean().default(true),
   collectEmail: z.boolean().default(true),
+  start: z.date().optional(),
+  end: z.date().optional(),
 });
 
 // For the `form.createQuestion` procedure

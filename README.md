@@ -4,7 +4,7 @@ A comprehensive Learning Management System and community platform for **Himpunan
 
 🌐 **Live at:** [hmmitb.com](https://hmmitb.com)
 
-***
+---
 
 ## 📋 Table of Contents
 
@@ -17,7 +17,7 @@ A comprehensive Learning Management System and community platform for **Himpunan
 - [Deployment](#deployment)
 - [Contributing](#contributing)
 
-***
+---
 
 ## 🎯 About
 
@@ -25,7 +25,7 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 
 **Primary Use Case:** Mobile-first experience for students and members, with comprehensive admin panel for content management.
 
-***
+---
 
 ## ✨ Features
 
@@ -37,31 +37,28 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - Course testimonials and 5-star rating system
 - Student enrollment and progress tracking
 
-
 ### 📝 **Assessment \& Tryout System**
 
 - Practice exam platform with multiple question types:
-    - Multiple choice (single and multiple answers)
-    - Short answer questions
-    - Long answer (essay) questions
+  - Multiple choice (single and multiple answers)
+  - Short answer questions
+  - Long answer (essay) questions
 - Rich media support for questions and explanations
 - Automated scoring with detailed feedback
 - Performance analytics and history tracking
 - Image integration for visual questions
 
-
 ### 📅 **Event Management**
 
 - Flexible event system with multiple operational modes:
-    - **Basic Events:** Simple event listings without tracking
-    - **RSVP-only:** Event registration with custom form fields
-    - **Attendance Tracking:** Event check-in management
-    - **Combined Mode:** RSVP with attendance verification
+  - **Basic Events:** Simple event listings without tracking
+  - **RSVP-only:** Event registration with custom form fields
+  - **Attendance Tracking:** Event check-in management
+  - **Combined Mode:** RSVP with attendance verification
 - Timeline support for multi-stage events
 - Custom RSVP forms with configurable fields
 - Google Sheets integration for data export and analysis
 - Event calendar with timezone support (UTC+7)
-
 
 ### 📢 **Communication Hub**
 
@@ -71,7 +68,6 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - Image attachments and media embedding
 - Real-time push notifications for important updates
 
-
 ### 📋 **Dynamic Forms System**
 
 - Flexible form builder with multiple question types
@@ -80,14 +76,12 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - Response analytics and export capabilities
 - Integration with other platform features
 
-
 ### 🔗 **Link Shortener**
 
 - URL shortening service for easy sharing
 - Click analytics and tracking
 - Geographic location tracking for link clicks
 - Custom short codes support
-
 
 ### 💼 **Administrative Features**
 
@@ -97,7 +91,6 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - Resource library with access logging
 - Comprehensive dashboard with analytics
 
-
 ### 📱 **Progressive Web App (PWA)**
 
 - Installable on mobile devices
@@ -106,19 +99,18 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - Service worker integration
 - Web push notifications
 
-
 ### 🔔 **Push Notification System**
 
 - Real-time notifications for:
-    - New events and announcements
-    - Course updates and materials
-    - Tryout availability
-    - Form submissions and deadlines
-    - Administrative updates
+  - New events and announcements
+  - Course updates and materials
+  - Tryout availability
+  - Form submissions and deadlines
+  - Administrative updates
 - Service worker-based delivery
 - Customizable notification preferences
 
-***
+---
 
 ## 🛠 Tech Stack
 
@@ -128,18 +120,15 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
 - **[tRPC](https://trpc.io/)** - End-to-end typesafe APIs
 
-
 ### **Database \& ORM**
 
 - **[Prisma](https://www.prisma.io/)** - Next-generation ORM
 - **[PostgreSQL](https://www.postgresql.org/)** - Primary database
 
-
 ### **Authentication**
 
 - **[NextAuth.js](https://next-auth.js.org/)** - Authentication solution
 - Email/password authentication (SSO support planned)
-
 
 ### **UI \& Styling**
 
@@ -147,25 +136,22 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - **[shadcn/ui](https://ui.shadcn.com/)** - Re-usable component library
 - **[TipTap](https://tiptap.dev/)** - Rich text editor
 
-
 ### **Form \& Validation**
 
 - **[React Hook Form](https://react-hook-form.com/)** - Form management
 - **[Zod](https://zod.dev/)** - Schema validation
 
-
 ### **Storage \& Assets**
 
 - **[AWS S3](https://aws.amazon.com/s3/)** - Object storage for files and media
 
-
 ### **Development Tools**
 
 - **[Bun](https://bun.sh/)** - Fast JavaScript runtime and package manager
-- **[ESLint](https://eslint.org/)** - Code linting
-- **[Prettier](https://prettier.io/)** - Code formatting
+- **[Oxlint](https://oxc.rs/)** - Code linting
+- **[Oxfmt](https://oxc.rs/)** - Code formatting
 
-***
+---
 
 ## 🚀 Getting Started
 
@@ -174,7 +160,6 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - **Bun** >= 1.0 (or Node.js >= 18.0)
 - **PostgreSQL** >= 14
 - **AWS S3 account** (for file storage)
-
 
 ### Installation
 
@@ -197,8 +182,7 @@ bun install
 cp .env.example .env
 ```
 
-Fill in the required environment variables (see [Environment Variables](#environment-variables))
-4. **Set up the database**
+Fill in the required environment variables (see [Environment Variables](#environment-variables)) 4. **Set up the database**
 
 ```bash
 # Generate Prisma client
@@ -218,9 +202,9 @@ bun run dev
 ```
 
 6. **Open your browser**
-Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-***
+---
 
 ## 📁 Project Structure
 
@@ -246,8 +230,7 @@ hmm-lms/
 └── package.json              # Project dependencies
 ```
 
-
-***
+---
 
 ## 🔐 Environment Variables
 
@@ -275,8 +258,7 @@ VAPID_PRIVATE_KEY="your-private-vapid-key"
 GOOGLE_SHEETS_API_KEY="your-api-key"
 ```
 
-
-***
+---
 
 ## 🚢 Deployment
 
@@ -292,7 +274,6 @@ bun add -g vercel
 vercel
 ```
 
-
 ### **DigitalOcean / VPS**
 
 ```bash
@@ -302,7 +283,6 @@ bun run build
 # Start production server
 bun run start
 ```
-
 
 ### **Docker**
 
@@ -314,8 +294,7 @@ docker build -t hmm-lms .
 docker run -p 3000:3000 hmm-lms
 ```
 
-
-***
+---
 
 ## 🤝 Contributing
 
@@ -327,13 +306,13 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-***
+---
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-***
+---
 
 ## 👥 Contact
 
@@ -342,7 +321,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Website: [hmmitb.com](https://hmmitb.com)
 - Email: bccipionirberkarya@gmail.com
 
-***
+---
 
 ## 🙏 Acknowledgments
 
@@ -354,6 +333,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Written mostly by [Adi Haditya Nursyam](https://instagram.com/adihnursyam) (GitHub: [@soezyxstt](https://github.com/soezyxstt)), (LinkedIn: [Adi Haditya Nursyam](https://www.linkedin.com/in/adihnursyam/))
 - Maintained by [Muhamad Hanif Hafizhan](https://www.instagram.com/nfzhn/) (GitHub: [@EnvoyX](https://github.com/EnvoyX)) (LinkedIn: [Muhamad Hanif Hafizhan](https://www.linkedin.com/in/muhamad-hanif-hafizhan-824313296/)) & [Rahmat Handaru Prayoga](https://www.instagram.com/rahmathandaru_p/) (GitHub: [@Handthere](https://github.com/Handthere)) (LinkedIn: [Rahmat Handaru Prayoga](https://www.linkedin.com/in/rahmat-handaru-prayoga-803973314/))
 
-***
+---
 
 **Made with ❤️ for HMM ITB**

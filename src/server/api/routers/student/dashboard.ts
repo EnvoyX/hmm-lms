@@ -1,12 +1,20 @@
+import type { Prisma } from '@prisma/client';
+import {
+  endOfDay,
+  endOfWeek,
+  getISOWeek,
+  getISOWeekYear,
+  startOfDay,
+  startOfWeek,
+  subDays,
+} from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 // ~/server/api/routers/student-dashboard.ts
-import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { endOfDay, endOfWeek, getISOWeek, getISOWeekYear, startOfDay, startOfWeek, subDays } from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import type { Prisma } from "@prisma/client";
+import { z } from 'zod';
 
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
-const TIMEZONE = "Asia/Jakarta";
+const TIMEZONE = 'Asia/Jakarta';
 
 export const studentDashboardRouter = createTRPCRouter({
   // Get enrolled courses with progress
@@ -42,7 +50,7 @@ export const studentDashboardRouter = createTRPCRouter({
       // take: 6, // removed as requested
     });
 
-    const courseIds = courses.map(c => c.id);
+    const courseIds = courses.map((c) => c.id);
     if (courseIds.length === 0) {
       return [];
     }
@@ -55,7 +63,7 @@ export const studentDashboardRouter = createTRPCRouter({
         attachableId: { in: courseIds },
         type: 'LINK',
         isActive: true,
-        category: 'VIDEO'
+        category: 'VIDEO',
       },
       _count: { _all: true },
     });
@@ -67,19 +75,19 @@ export const studentDashboardRouter = createTRPCRouter({
         attachableType: 'COURSE',
         attachableId: { in: courseIds },
         category: {
-          not: 'VIDEO'
+          not: 'VIDEO',
         },
         isActive: true,
       },
       _count: { _all: true },
     });
 
-    const videoMap = new Map(videoCounts.map(r => [r.attachableId, r._count._all]));
+    const videoMap = new Map(videoCounts.map((r) => [r.attachableId, r._count._all]));
 
-    const fileMap = new Map(fileCounts.map(r => [r.attachableId, r._count._all]));
+    const fileMap = new Map(fileCounts.map((r) => [r.attachableId, r._count._all]));
 
     // 4) Shape final payload
-    return courses.map(course => {
+    return courses.map((course) => {
       const totalMinutes = course.learningSession.reduce((sum, s) => sum + s.duration, 0) / 60;
       return {
         id: course.id,
@@ -96,20 +104,22 @@ export const studentDashboardRouter = createTRPCRouter({
   getMachiningAnnouncements: protectedProcedure.query(async ({ ctx }) => {
     const announcements = await ctx.db.announcement.findMany({
       where: {
-        scope: "MACHINING"
+        scope: 'MACHINING',
       },
       orderBy: {
-        createdAt: "desc",
-      }
-    })
+        createdAt: 'desc',
+      },
+    });
 
-    return announcements
+    return announcements;
   }),
   getWeeklyHallOfFame: protectedProcedure
     .input(
-      z.object({
-        limit: z.number().min(3).max(50).default(20),
-      }).optional(),
+      z
+        .object({
+          limit: z.number().min(3).max(50).default(20),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const now = new Date();
@@ -124,7 +134,7 @@ export const studentDashboardRouter = createTRPCRouter({
       };
 
       const grouped = await ctx.db.learningSession.groupBy({
-        by: ["userId"],
+        by: ['userId'],
         where: whereClause,
         _sum: {
           duration: true,
@@ -134,7 +144,7 @@ export const studentDashboardRouter = createTRPCRouter({
         },
         orderBy: {
           _sum: {
-            duration: "desc",
+            duration: 'desc',
           },
         },
         take: input?.limit ?? 20,
@@ -143,13 +153,13 @@ export const studentDashboardRouter = createTRPCRouter({
       const userIds = grouped.map((item) => item.userId);
       const users = userIds.length
         ? await ctx.db.user.findMany({
-          where: { id: { in: userIds } },
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        })
+            where: { id: { in: userIds } },
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          })
         : [];
 
       const leaderboard = grouped.map((item, index) => {
@@ -157,7 +167,7 @@ export const studentDashboardRouter = createTRPCRouter({
         return {
           rank: index + 1,
           userId: item.userId,
-          userName: user?.name ?? "Anonymous Learner",
+          userName: user?.name ?? 'Anonymous Learner',
           userImage: user?.image ?? null,
           weeklyDurationSeconds: item._sum.duration ?? 0,
           totalSessions: item._count.id,
@@ -166,7 +176,7 @@ export const studentDashboardRouter = createTRPCRouter({
       });
 
       const currentUserRank = leaderboard.find((item) => item.isCurrentUser) ?? null;
-      const currentWeekKey = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, "0")}`;
+      const currentWeekKey = `${getISOWeekYear(now)}-W${String(getISOWeek(now)).padStart(2, '0')}`;
 
       return {
         currentWeekKey,
@@ -183,7 +193,7 @@ export const studentDashboardRouter = createTRPCRouter({
       z.object({
         month: z.number().min(0).max(11),
         year: z.number(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const startDate = new Date(input.year, input.month, 1);
@@ -209,7 +219,7 @@ export const studentDashboardRouter = createTRPCRouter({
             lte: endDate,
           },
           NOT: {
-            scope: "MACHINING"
+            scope: 'MACHINING',
           },
           OR: [
             { courseId: null, userId: null }, // Global events
@@ -224,7 +234,7 @@ export const studentDashboardRouter = createTRPCRouter({
           _count: {
             select: {
               rsvpResponses: {
-                where: { status: "YES" },
+                where: { status: 'YES' },
               },
             },
           },
@@ -242,7 +252,7 @@ export const studentDashboardRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: { start: "asc" },
+        orderBy: { start: 'asc' },
       });
 
       return events.map((event) => ({
@@ -267,14 +277,13 @@ export const studentDashboardRouter = createTRPCRouter({
   getEventsForDate: protectedProcedure
     .input(z.object({ date: z.date() }))
     .query(async ({ ctx, input }) => {
-
       const zonedInputDate = toZonedTime(input.date, TIMEZONE);
 
       const start = startOfDay(zonedInputDate);
       const end = endOfDay(zonedInputDate);
 
-      const utcStart = fromZonedTime(start, TIMEZONE)
-      const utcEnd = fromZonedTime(end, TIMEZONE)
+      const utcStart = fromZonedTime(start, TIMEZONE);
+      const utcEnd = fromZonedTime(end, TIMEZONE);
 
       // Get user's courses
       const userCourses = await ctx.db.course.findMany({
@@ -295,7 +304,7 @@ export const studentDashboardRouter = createTRPCRouter({
             lte: utcEnd,
           },
           NOT: {
-            scope: "MACHINING",
+            scope: 'MACHINING',
           },
           OR: [
             { courseId: null, userId: null },
@@ -313,7 +322,7 @@ export const studentDashboardRouter = createTRPCRouter({
           _count: {
             select: {
               rsvpResponses: {
-                where: { status: "YES" },
+                where: { status: 'YES' },
               },
             },
           },
@@ -324,7 +333,7 @@ export const studentDashboardRouter = createTRPCRouter({
             where: { userId: ctx.session.user.id },
           },
         },
-        orderBy: { start: "asc" },
+        orderBy: { start: 'asc' },
       });
 
       return events.map((event) => ({
@@ -344,12 +353,68 @@ export const studentDashboardRouter = createTRPCRouter({
         userPresence: event.presenceRecords[0] ?? null,
       }));
     }),
+  getFormsForDate: protectedProcedure
+    .input(z.object({ date: z.date() }))
+    .query(async ({ ctx, input }) => {
+      const zonedInputDate = toZonedTime(input.date, TIMEZONE);
+
+      const start = startOfDay(zonedInputDate);
+      const end = endOfDay(zonedInputDate);
+
+      const utcStart = fromZonedTime(start, TIMEZONE);
+      const utcEnd = fromZonedTime(end, TIMEZONE);
+
+      // get forms on selected date
+
+      const forms = await ctx.db.form.findMany({
+        where: {
+          start: {
+            gte: utcStart,
+            lte: utcEnd,
+          },
+          NOT: {
+            type: 'MACHINING',
+          },
+        },
+        orderBy: { start: 'asc' },
+      });
+
+      return forms;
+    }),
+  getCalendarForms: protectedProcedure
+    .input(
+      z.object({
+        month: z.number().min(0).max(11),
+        year: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const startDate = new Date(input.year, input.month, 1);
+      const endDate = new Date(input.year, input.month + 1, 0);
+
+      // get forms for the month
+      const forms = await ctx.db.form.findMany({
+        where: {
+          start: {
+            gte: startDate,
+            lte: endDate,
+          },
+          NOT: {
+            type: 'MACHINING',
+          },
+        },
+
+        orderBy: { start: 'asc' },
+      });
+
+      return forms;
+    }),
   getCalendarMachiningEvents: protectedProcedure
     .input(
       z.object({
         month: z.number().min(0).max(11),
         year: z.number(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const startDate = new Date(input.year, input.month, 1);
@@ -374,7 +439,7 @@ export const studentDashboardRouter = createTRPCRouter({
             gte: startDate,
             lte: endDate,
           },
-          scope: "MACHINING",
+          scope: 'MACHINING',
           OR: [
             { courseId: null, userId: null }, // Global events
             { courseId: { in: courseIds } }, // Course events
@@ -388,7 +453,7 @@ export const studentDashboardRouter = createTRPCRouter({
           _count: {
             select: {
               rsvpResponses: {
-                where: { status: "YES" },
+                where: { status: 'YES' },
               },
             },
           },
@@ -406,7 +471,7 @@ export const studentDashboardRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: { start: "asc" },
+        orderBy: { start: 'asc' },
       });
 
       return events.map((event) => ({
@@ -429,14 +494,13 @@ export const studentDashboardRouter = createTRPCRouter({
   getMachiningEventsForDate: protectedProcedure
     .input(z.object({ date: z.date() }))
     .query(async ({ ctx, input }) => {
-
       const zonedInputDate = toZonedTime(input.date, TIMEZONE);
 
       const start = startOfDay(zonedInputDate);
       const end = endOfDay(zonedInputDate);
 
-      const utcStart = fromZonedTime(start, TIMEZONE)
-      const utcEnd = fromZonedTime(end, TIMEZONE)
+      const utcStart = fromZonedTime(start, TIMEZONE);
+      const utcEnd = fromZonedTime(end, TIMEZONE);
 
       // Get user's courses
       const userCourses = await ctx.db.course.findMany({
@@ -456,7 +520,7 @@ export const studentDashboardRouter = createTRPCRouter({
             gte: utcStart,
             lte: utcEnd,
           },
-          scope: "MACHINING",
+          scope: 'MACHINING',
           OR: [
             { courseId: null, userId: null },
             { courseId: { in: courseIds } },
@@ -473,7 +537,7 @@ export const studentDashboardRouter = createTRPCRouter({
           _count: {
             select: {
               rsvpResponses: {
-                where: { status: "YES" },
+                where: { status: 'YES' },
               },
             },
           },
@@ -484,7 +548,7 @@ export const studentDashboardRouter = createTRPCRouter({
             where: { userId: ctx.session.user.id },
           },
         },
-        orderBy: { start: "asc" },
+        orderBy: { start: 'asc' },
       });
 
       return events.map((event) => ({
@@ -504,52 +568,103 @@ export const studentDashboardRouter = createTRPCRouter({
         userPresence: event.presenceRecords[0] ?? null,
       }));
     }),
+  getMachiningFormsForDate: protectedProcedure
+    .input(z.object({ date: z.date() }))
+    .query(async ({ ctx, input }) => {
+      const zonedInputDate = toZonedTime(input.date, TIMEZONE);
+
+      const start = startOfDay(zonedInputDate);
+      const end = endOfDay(zonedInputDate);
+
+      const utcStart = fromZonedTime(start, TIMEZONE);
+      const utcEnd = fromZonedTime(end, TIMEZONE);
+
+      // get forms on selected date
+
+      const forms = await ctx.db.form.findMany({
+        where: {
+          start: {
+            gte: utcStart,
+            lte: utcEnd,
+          },
+          type: 'MACHINING',
+        },
+        orderBy: { start: 'asc' },
+      });
+
+      return forms;
+    }),
+  getCalendarMachiningForms: protectedProcedure
+    .input(
+      z.object({
+        month: z.number().min(0).max(11),
+        year: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const startDate = new Date(input.year, input.month, 1);
+      const endDate = new Date(input.year, input.month + 1, 0);
+
+      // get forms for the month
+      const forms = await ctx.db.form.findMany({
+        where: {
+          start: {
+            gte: startDate,
+            lte: endDate,
+          },
+          type: 'MACHINING',
+        },
+
+        orderBy: { start: 'asc' },
+      });
+
+      return forms;
+    }),
 
   // Get dashboard stats
   getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
     const today = startOfDay(new Date());
     const last7Days = subDays(today, 7);
 
-    const [totalCourses, todaySessions, weekSessions, upcomingEvents] =
-      await Promise.all([
-        ctx.db.course.count({
-          where: {
-            members: {
-              some: { id: ctx.session.user.id },
-            },
-            isActive: true,
+    const [totalCourses, todaySessions, weekSessions, upcomingEvents] = await Promise.all([
+      ctx.db.course.count({
+        where: {
+          members: {
+            some: { id: ctx.session.user.id },
           },
-        }),
-        ctx.db.learningSession.count({
-          where: {
-            userId: ctx.session.user.id,
-            date: { gte: today },
-          },
-        }),
-        ctx.db.learningSession.aggregate({
-          where: {
-            userId: ctx.session.user.id,
-            date: { gte: last7Days },
-          },
-          _sum: { duration: true },
-        }),
-        ctx.db.event.count({
-          where: {
-            start: { gte: new Date() },
-            OR: [
-              { courseId: null, userId: null },
-              {
-                course: {
-                  members: {
-                    some: { id: ctx.session.user.id },
-                  },
+          isActive: true,
+        },
+      }),
+      ctx.db.learningSession.count({
+        where: {
+          userId: ctx.session.user.id,
+          date: { gte: today },
+        },
+      }),
+      ctx.db.learningSession.aggregate({
+        where: {
+          userId: ctx.session.user.id,
+          date: { gte: last7Days },
+        },
+        _sum: { duration: true },
+      }),
+      ctx.db.event.count({
+        where: {
+          start: { gte: new Date() },
+          OR: [
+            { courseId: null, userId: null },
+            {
+              course: {
+                members: {
+                  some: { id: ctx.session.user.id },
                 },
               },
-              { userId: ctx.session.user.id },
-            ],
-          },
-        }),
-      ]);
+            },
+            { userId: ctx.session.user.id },
+          ],
+        },
+      }),
+    ]);
 
     return {
       totalCourses,

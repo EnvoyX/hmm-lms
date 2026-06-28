@@ -1,19 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
-import { Calendar } from "~/components/ui/calendar";
-import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Separator } from "~/components/ui/separator";
-import { api } from "~/trpc/react";
-import Link from "next/link";
+import cn from 'cnfast';
+import { isAfter, isBefore } from 'date-fns';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import {
   Calendar as CalendarIcon,
   MapPin,
@@ -21,38 +10,55 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
-} from "lucide-react";
-import { toast } from "sonner";
+  CalendarOff,
+} from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
+import { toast } from 'sonner';
 
-const TIMEZONE = "Asia/Jakarta"; // UTC+7 (WIB)
+import { Badge } from '~/components/ui/badge';
+import { Button, buttonVariants } from '~/components/ui/button';
+import { Calendar } from '~/components/ui/calendar';
+import { Card, CardContent, CardFooter } from '~/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { Separator } from '~/components/ui/separator';
+import { api } from '~/trpc/react';
+
+const TIMEZONE = 'Asia/Jakarta'; // UTC+7 (WIB)
 
 export function DashboardCalendar() {
-  const [date, setDate] = React.useState<Date>(
-    toZonedTime(new Date(), TIMEZONE),
-  );
-  const [selectedDate, setSelectedDate] = React.useState<Date>(
-    toZonedTime(new Date(), TIMEZONE),
-  );
+  const [date, setDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
+  const [selectedDate, setSelectedDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
 
   const utils = api.useUtils();
 
-  // Get events for the current month
-  const { data: calendarEvents } =
-    api.studentDashboard.getCalendarMachiningEvents.useQuery({
-      month: date.getMonth(),
-      year: date.getFullYear(),
-    });
+  // get machining events for the current month
+  const { data: calendarEvents } = api.studentDashboard.getCalendarMachiningEvents.useQuery({
+    month: date.getMonth(),
+    year: date.getFullYear(),
+  });
 
-  // Get events for selected date
+  // get machining events for selected date
   const { data: dayEvents, isLoading: dayEventsLoading } =
     api.studentDashboard.getMachiningEventsForDate.useQuery({
+      date: selectedDate,
+    });
+
+  // get machining forms for the current month
+  const { data: calendarForms } = api.studentDashboard.getCalendarMachiningForms.useQuery({
+    month: date.getMonth(),
+    year: date.getFullYear(),
+  });
+  // get machining forms for selected date
+  const { data: dayForms, isLoading: dayFormsLoading } =
+    api.studentDashboard.getMachiningFormsForDate.useQuery({
       date: selectedDate,
     });
 
   // RSVP mutation
   const rsvpMutation = api.event.respondToRsvp.useMutation({
     onSuccess: () => {
-      toast.success("RSVP updated successfully");
+      toast.success('RSVP updated successfully');
       void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
       void utils.studentDashboard.getMachiningEventsForDate.invalidate();
     },
@@ -64,7 +70,7 @@ export function DashboardCalendar() {
   // Attendance mutation
   const attendanceMutation = api.event.recordPresence.useMutation({
     onSuccess: () => {
-      toast.success("Attendance recorded successfully");
+      toast.success('Attendance recorded successfully');
       void utils.studentDashboard.getMachiningEventsForDate.invalidate();
       void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
     },
@@ -76,10 +82,19 @@ export function DashboardCalendar() {
   // Get dates that have events
   const eventDates = React.useMemo(() => {
     if (!calendarEvents) return [];
-    return calendarEvents.map((event) =>
-      toZonedTime(new Date(event.start), TIMEZONE),
-    );
+    return calendarEvents.map((event) => toZonedTime(new Date(event.start), TIMEZONE));
   }, [calendarEvents]);
+
+  // Get dates that have forms
+  const formDates = React.useMemo(() => {
+    if (!calendarForms) return [];
+    return calendarForms
+      .map((form) => {
+        if (!form.start) return null;
+        return toZonedTime(new Date(form.start), TIMEZONE);
+      })
+      .filter((date) => date !== null);
+  }, [calendarForms]);
 
   const handleDateSelect = (newDate: Date | undefined) => {
     if (newDate) {
@@ -87,7 +102,7 @@ export function DashboardCalendar() {
     }
   };
 
-  const handleRsvp = (eventId: string, status: "YES" | "NO" | "MAYBE") => {
+  const handleRsvp = (eventId: string, status: 'YES' | 'NO' | 'MAYBE') => {
     rsvpMutation.mutate({ eventId, status });
   };
 
@@ -105,12 +120,18 @@ export function DashboardCalendar() {
           onMonthChange={setDate}
           modifiers={{
             hasEvent: eventDates,
+            hasForm: formDates,
           }}
           modifiersStyles={{
             hasEvent: {
-              fontWeight: "bold",
-              textDecoration: "underline",
-              textDecorationColor: "hsl(var(--primary))",
+              fontWeight: 'bold',
+              textDecoration: 'underline',
+              textDecorationColor: 'hsl(var(--primary))',
+            },
+            hasForm: {
+              fontWeight: 'bold',
+              textDecoration: 'underline',
+              textDecorationColor: 'hsl(var(--primary))',
             },
           }}
           className="mx-auto w-full rounded-md border-0"
@@ -120,7 +141,7 @@ export function DashboardCalendar() {
 
         <div className="space-y-2.5">
           <h3 className="text-sm font-semibold tracking-tight">
-            {formatInTimeZone(selectedDate, TIMEZONE, "d MMMM yyyy")}
+            {formatInTimeZone(selectedDate, TIMEZONE, 'd MMMM yyyy')}
           </h3>
 
           {dayEventsLoading ? (
@@ -141,17 +162,13 @@ export function DashboardCalendar() {
                               {event.title}
                             </p>
                             <p className="text-muted-foreground text-[11px]">
-                              {formatInTimeZone(eventStart, TIMEZONE, "HH:mm")}{" "}
-                              - {formatInTimeZone(eventEnd, TIMEZONE, "HH:mm")}
+                              {formatInTimeZone(eventStart, TIMEZONE, 'HH:mm')} -{' '}
+                              {formatInTimeZone(eventEnd, TIMEZONE, 'HH:mm')}
                             </p>
                           </div>
                           {event.userRsvp && (
                             <Badge
-                              variant={
-                                event.userRsvp.status === "YES"
-                                  ? "default"
-                                  : "secondary"
-                              }
+                              variant={event.userRsvp.status === 'YES' ? 'default' : 'secondary'}
                               className="ml-2 text-xs"
                             >
                               {event.userRsvp.status}
@@ -175,20 +192,23 @@ export function DashboardCalendar() {
                         </div>
 
                         {event.description && (
-                          <p className="text-muted-foreground text-sm">
-                            {event.description}
-                          </p>
+                          <p className="text-muted-foreground text-sm">{event.description}</p>
                         )}
 
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2">
                             <CalendarIcon className="text-muted-foreground h-4 w-4" />
                             <span>
-                              {formatInTimeZone(eventStart, TIMEZONE, "PPp")} -{" "}
-                              {formatInTimeZone(eventEnd, TIMEZONE, "p")}
+                              {formatInTimeZone(eventStart, TIMEZONE, 'MMMM d yyyy,  HH:mm')}{' '}
+                              (Start)
                             </span>
                           </div>
-
+                          <div className="flex items-center gap-2">
+                            <CalendarOff className="text-muted-foreground h-4 w-4" />
+                            <span>
+                              {formatInTimeZone(eventEnd, TIMEZONE, 'MMMM d yyyy,  HH:mm')} (End)
+                            </span>
+                          </div>
                           {event.location && (
                             <div className="flex items-center gap-2">
                               <MapPin className="text-muted-foreground h-4 w-4" />
@@ -208,8 +228,7 @@ export function DashboardCalendar() {
                               <CheckCircle className="h-4 w-4 text-green-600" />
                               <span className="text-green-600">
                                 Checked in
-                                {event.userPresence.status === "LATE" &&
-                                  " (Late)"}
+                                {event.userPresence.status === 'LATE' && ' (Late)'}
                               </span>
                             </div>
                           )}
@@ -218,59 +237,44 @@ export function DashboardCalendar() {
                         <Separator />
 
                         {/* RSVP Section */}
-                        {event.eventMode !== "BASIC" &&
-                          event.eventMode !== "ATTENDANCE_ONLY" && (
-                            <div className="space-y-2">
-                              <p className="text-sm font-medium">
-                                RSVP Status:
-                              </p>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant={
-                                    event.userRsvp?.status === "YES"
-                                      ? "default"
-                                      : "outline"
-                                  }
-                                  onClick={() => handleRsvp(event.id, "YES")}
-                                  disabled={rsvpMutation.isPending}
-                                  className="flex-1"
-                                >
-                                  Going
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant={
-                                    event.userRsvp?.status === "MAYBE"
-                                      ? "default"
-                                      : "outline"
-                                  }
-                                  onClick={() => handleRsvp(event.id, "MAYBE")}
-                                  disabled={rsvpMutation.isPending}
-                                  className="flex-1"
-                                >
-                                  Maybe
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant={
-                                    event.userRsvp?.status === "NO"
-                                      ? "default"
-                                      : "outline"
-                                  }
-                                  onClick={() => handleRsvp(event.id, "NO")}
-                                  disabled={rsvpMutation.isPending}
-                                  className="flex-1"
-                                >
-                                  Can&apos;t Go
-                                </Button>
-                              </div>
+                        {event.eventMode !== 'BASIC' && event.eventMode !== 'ATTENDANCE_ONLY' && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">RSVP Status:</p>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant={event.userRsvp?.status === 'YES' ? 'default' : 'outline'}
+                                onClick={() => handleRsvp(event.id, 'YES')}
+                                disabled={rsvpMutation.isPending}
+                                className="flex-1"
+                              >
+                                Going
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={event.userRsvp?.status === 'MAYBE' ? 'default' : 'outline'}
+                                onClick={() => handleRsvp(event.id, 'MAYBE')}
+                                disabled={rsvpMutation.isPending}
+                                className="flex-1"
+                              >
+                                Maybe
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={event.userRsvp?.status === 'NO' ? 'default' : 'outline'}
+                                onClick={() => handleRsvp(event.id, 'NO')}
+                                disabled={rsvpMutation.isPending}
+                                className="flex-1"
+                              >
+                                Can&apos;t Go
+                              </Button>
                             </div>
-                          )}
+                          </div>
+                        )}
 
                         {/* Attendance Section */}
-                        {event.eventMode !== "BASIC" &&
-                          event.eventMode !== "RSVP_ONLY" &&
+                        {event.eventMode !== 'BASIC' &&
+                          event.eventMode !== 'RSVP_ONLY' &&
                           !event.userPresence && (
                             <div className="space-y-2">
                               <p className="text-sm font-medium">Attendance:</p>
@@ -289,12 +293,7 @@ export function DashboardCalendar() {
                             </div>
                           )}
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full"
-                          asChild
-                        >
+                        <Button variant="ghost" size="sm" className="w-full" asChild>
                           <Link href={`/events/${event.id}`}>
                             <ExternalLink className="mr-2 h-4 w-4" />
                             View Details
@@ -308,6 +307,108 @@ export function DashboardCalendar() {
             </div>
           ) : (
             <p className="text-muted-foreground text-sm">No events today</p>
+          )}
+
+          <Separator className="my-4" />
+
+          {dayFormsLoading ? (
+            <p className="text-muted-foreground text-sm">Loading tasks...</p>
+          ) : dayForms && dayForms.length > 0 ? (
+            <div className="space-y-2">
+              {dayForms.map((form) => {
+                const formStart = form.start ? toZonedTime(new Date(form.start), TIMEZONE) : null;
+                const formEnd = form.end ? toZonedTime(new Date(form.end), TIMEZONE) : null;
+                const currentDate = toZonedTime(new Date(), TIMEZONE);
+                const isBeforeForm = formStart && isBefore(currentDate, formStart);
+                const isAfterForm = formEnd && isAfter(currentDate, formEnd);
+                const isDisabled =
+                  isBeforeForm || isAfterForm || !form.isPublished || !form.isActive;
+
+                return (
+                  <Popover key={form.id}>
+                    <PopoverTrigger asChild>
+                      <button className="border-border/70 bg-background/70 hover:bg-accent/40 w-full rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm leading-5 font-semibold">{form.title}</p>
+                          {formEnd && (
+                            <span className="text-muted-foreground text-[11px]">
+                              Due {formatInTimeZone(formEnd, TIMEZONE, 'MMM d, yyyy')} at{' '}
+                              {formatInTimeZone(formEnd, TIMEZONE, 'HH:mm')}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[min(20rem,calc(100vw-2rem))] **:text-xs"
+                      align="end"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold">{form.title}</h4>
+                          <Badge variant="default" className="text-xs">
+                            Form
+                          </Badge>
+                        </div>
+
+                        {form.description && (
+                          <p className="text-muted-foreground text-sm">{form.description}</p>
+                        )}
+
+                        <div className="space-y-2 text-sm">
+                          {formStart && (
+                            <div className="flex items-center gap-2">
+                              <CalendarIcon className="text-muted-foreground h-4 w-4" />
+                              <span>
+                                {formatInTimeZone(formStart, TIMEZONE, 'MMMM d yyyy, HH:mm')}{' '}
+                                (Start)
+                              </span>
+                            </div>
+                          )}
+                          {formEnd && (
+                            <div className="flex items-center gap-2">
+                              <CalendarOff className="text-muted-foreground h-4 w-4" />
+                              <span>
+                                {formatInTimeZone(formEnd, TIMEZONE, 'MMMM d yyyy, HH:mm')} (End)
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <Separator />
+
+                        <Button asChild>
+                          <Link
+                            href={`/forms/${form.id}`}
+                            className={buttonVariants({
+                              variant: 'ghost',
+                              className: cn(
+                                'w-full',
+                                isDisabled && 'opacity-50 cursor-not-allowed pointer-events-none',
+                              ),
+                              size: 'sm',
+                            })}
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            {!form.isActive
+                              ? 'Form Inactive'
+                              : !form.isPublished
+                                ? 'Form Unavailable'
+                                : isBeforeForm
+                                  ? 'Not Started'
+                                  : isAfterForm
+                                    ? 'Form Ended'
+                                    : 'Fill Form'}
+                          </Link>
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">No tasks today</p>
           )}
         </div>
       </CardContent>

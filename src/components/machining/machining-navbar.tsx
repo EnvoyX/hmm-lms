@@ -27,6 +27,7 @@ import {
   Megaphone,
   Settings,
   BookOpen,
+  ListChecks
 } from "lucide-react";
 import { auth } from "~/server/auth";
 import ThemeSwitch from "../theme-switch";
@@ -70,6 +71,13 @@ const sidebarTabs: {
           href: "/machining/events",
           icon: Footprints,
           tooltip: "Events",
+          dev: false,
+        },
+        {
+          label: "Assignments",
+          href: "/machining/assignments",
+          icon: ListChecks,
+          tooltip: "Assignments",
           dev: false,
         },
         {

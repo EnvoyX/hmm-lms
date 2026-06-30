@@ -25,6 +25,35 @@ import { EditorProvider } from '~/components/ui/shadcn-io/editor';
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
 const TIMEZONE = "Asia/Jakarta"; // UTC+7 (WIB)
+const assignments = [
+  {
+    title: "Tes Kenal",
+    from: "2025-06-12T09:00:00",
+    deadline: "2025-06-12T10:00:00",
+  },
+  {
+    title: "Merdeka",
+    from: "2025-06-12T11:30:00",
+    deadline: "2025-06-12T12:30:00",
+  },
+  {
+    title: "Lagu Lari",
+    from: "2025-06-12T14:00:00",
+    deadline: "2025-06-12T15:00:00",
+  },
+];
+
+function formatDeadline(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
 export function DashboardContent() {
   const { data: announcements, isLoading: announcementsLoading } =
     api.studentDashboard.getMachiningAnnouncements.useQuery();
@@ -112,10 +141,10 @@ export function DashboardContent() {
               <div className="flex items-center justify-between gap-3">
                 <div className="space-y-1">
                   <CardTitle className="text-xl tracking-tight">
-                    Continue Your Courses
+                    To-Do List
                   </CardTitle>
                   <CardDescription className="text-sm">
-                    Your active classes in one clean list
+                    Upcoming assignments and tasks
                   </CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" asChild>
@@ -124,38 +153,29 @@ export function DashboardContent() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {courses && courses.length > 0 ? (
-                courses.slice(0, 4).map((course) => (
-                  <Link
-                    key={course.id}
-                    href={`/machining/courses/${course.id}`}
+              {assignments && assignments.length > 0 ? (
+                assignments.slice(0, 4).map((assignment) => (
+                  <div
                     className="border-border/70 bg-card hover:bg-accent/40 flex items-center justify-between gap-3 rounded-xl border p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-sm"
                   >
                     <div className="min-w-0 space-y-1.5">
                       <p className="truncate text-[15px] leading-5 font-semibold">
-                        {course.title}
+                        {assignment.title}
                       </p>
                       <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-[11px] font-medium tracking-wide">
-                        <span>{course.classCode}</span>
-                        <span aria-hidden>•</span>
-                        <span>{course.videoCount} videos</span>
-                        <span aria-hidden>•</span>
-                        <span>{course.attachmentsCount} materials</span>
+                        <Badge variant="destructive"> Deadline: {formatDeadline(assignment.deadline)}</Badge>
                       </div>
                     </div>
                     <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0" />
-                  </Link>
+                  </div>
                 ))
               ) : (
                 <div className="rounded-xl border border-dashed p-8 text-center">
                   <BookOpen className="text-muted-foreground mx-auto mb-2 h-10 w-10" />
-                  <h3 className="font-semibold">No courses yet</h3>
+                  <h3 className="font-semibold">No assignments yet</h3>
                   <p className="text-muted-foreground text-sm">
-                    Start learning by enrolling in your first course.
+                    Stay tuned for upcoming assignments and tasks.
                   </p>
-                  <Button asChild className="mt-4">
-                    <Link href="/machining/courses">Browse Courses</Link>
-                  </Button>
                 </div>
               )}
             </CardContent>

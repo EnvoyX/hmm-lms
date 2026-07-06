@@ -26,11 +26,13 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import { EditorProvider } from '~/components/ui/shadcn-io/editor';
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import {} from "date-fns"
+import { useIsMobile } from "~/hooks/use-mobile";
 
 
 
 const TIMEZONE = "Asia/Jakarta"; // UTC+7 (WIB)
 export function DashboardContent() {
+  const isMobile = useIsMobile()
   const { data: announcements, isLoading: announcementsLoading } =
     api.studentDashboard.getMachiningAnnouncements.useQuery();
 
@@ -224,7 +226,7 @@ export function DashboardContent() {
                           {assignment.title}
                         </p>
                         <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-[11px] font-medium tracking-wide">
-                          {assignment.end ? (<Badge variant={statusBadge.variant} className="flex items-center">   <StatusIcon className="h-3 w-3" /> {statusBadge.label} : {formatInTimeZone(assignment.end, TIMEZONE, 'MMMM d yyyy, HH:mm')}</Badge>) : (<Badge variant="default">No Deadline</Badge>)}
+                          {assignment.end ? (<Badge variant={statusBadge.variant} className="flex items-center">   <StatusIcon className="h-3 w-3" /> {statusBadge.label} {(statusBadge.label !== "Submitted" && !isMobile) && ` : ${formatInTimeZone(assignment.end, TIMEZONE, 'MMMM d yyyy, HH:mm')}`}</Badge>) : (<Badge variant="default">No Deadline</Badge>)}
 
                         </div>
                       </div>

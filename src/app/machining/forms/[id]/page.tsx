@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
-import { FormSubmitClient } from "~/app/forms/forms-submit-client";
+import { FormSubmitClient } from "~/app/machining/forms/forms-submit-client";
 
 interface AssignmentSubmitPageProps {
   params: Promise<{

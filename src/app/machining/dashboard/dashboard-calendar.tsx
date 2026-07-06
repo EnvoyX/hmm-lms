@@ -379,7 +379,7 @@ export function DashboardCalendar() {
 
                         <Button asChild>
                           <Link
-                            href={`/forms/${form.id}`}
+                            href={`/machining/forms/${form.id}`}
                             className={buttonVariants({
                               variant: 'ghost',
                               className: cn(

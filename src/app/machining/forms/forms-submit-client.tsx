@@ -26,14 +26,7 @@ type FormWithQuestions = RouterOutputs['form']['getById'];
 interface FormSubmitClientProps {
   form: FormWithQuestions;
   isPreview?: boolean;
-  /**
-   * Base path used for redirects (e.g. after submit, or the "Go to Dashboard"
-   * buttons below). Defaults to "/forms" to preserve existing behavior.
-   * Pass "/machining/assignments" when rendering this inside the machining
-   * section so users stay within /machining/* instead of being sent to /forms/*.
-   */
   basePath?: string;
-  /** Where "Go to Dashboard" buttons should point. Defaults to "/dashboard". */
   dashboardHref?: string;
 }
 

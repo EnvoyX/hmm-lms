@@ -22,7 +22,7 @@ export default async function AssignmentSubmitPage({
     <div className="container mx-auto max-w-5xl px-4 md:py-6">
       <FormSubmitClient
         form={form}
-        basePath="/machining/assignments"
+        basePath="/machining/forms"
         dashboardHref="/machining/dashboard"
       />
     </div>

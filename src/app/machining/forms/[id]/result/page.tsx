@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react";
 
 export default function FormResultPage() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted">
+    <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-md text-center">
         <CardHeader>
           <CheckCircle className="w-16 h-16 mx-auto text-green-500" />

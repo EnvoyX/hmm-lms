@@ -400,6 +400,7 @@ model Tryout {
   description String?
   duration    Int?
   isActive    Boolean       @default(true)
+  allowMultipleAttempts Boolean @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   courseId    String

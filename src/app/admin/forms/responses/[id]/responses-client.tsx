@@ -87,7 +87,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'responses');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Responses');
     XLSX.writeFile(workbook, `Responses-${form.title}.xlsx`);
     toast.success('Responses exported to Excel successfully');
   };

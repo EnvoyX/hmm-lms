@@ -1,10 +1,12 @@
 // ~/app/admin/tryouts/_components/tryout-attempts.tsx
 'use client';
 
-import { formatDistanceToNow } from 'date-fns';
-import { Eye, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Eye, Clock, CheckCircle, XCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
@@ -19,7 +21,6 @@ import {
   TableRow,
 } from '~/components/ui/table';
 import type { RouterOutputs } from '~/trpc/react';
-
 type Attempt = RouterOutputs['tryout']['getDetailedById']['attempts'][number];
 
 interface TryoutAttemptsProps {
@@ -29,6 +30,37 @@ interface TryoutAttemptsProps {
 export default function TryoutAttempts({ attempts }: TryoutAttemptsProps) {
   const [showAll, setShowAll] = useState(false);
   const displayedAttempts = showAll ? attempts : attempts.slice(0, 10);
+
+  const handleExportAttempts = () => {
+    if (!attempts) return;
+
+    const worksheetData = [
+      ['Name', 'NIM', 'Email', 'Status', 'Score', 'Started At', 'Ended At', 'Duration'],
+      ...attempts.map((attempt) => [
+        attempt.user?.name ?? 'N/A',
+        attempt.user?.nim ?? 'N/A',
+        attempt.user?.email ?? 'N/A',
+        attempt.isCompleted ? 'Completed' : 'In Progress',
+        `${attempt.maxScore > 0 ? Math.round((attempt.score / attempt.maxScore) * 100) : 0}% (${attempt.score}/${attempt.maxScore})`,
+        format(new Date(attempt.startedAt), 'yyyy-MM-dd HH:mm'),
+        attempt.endedAt ? format(new Date(attempt.endedAt), 'yyyy-MM-dd HH:mm') : 'N/A',
+        `${
+          attempt.endedAt
+            ? Math.round(
+                (new Date(attempt.endedAt).getTime() - new Date(attempt.startedAt).getTime()) /
+                  (1000 * 60),
+              )
+            : null
+        }m`,
+      ]),
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tryout Attempts');
+    XLSX.writeFile(workbook, `tryout-attempts.xlsx`);
+    toast.success('Tryout attempts exported to Excel successfully');
+  };
 
   if (attempts.length === 0) {
     return (
@@ -51,8 +83,18 @@ export default function TryoutAttempts({ attempts }: TryoutAttemptsProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex max-sm:flex-col items-center sm:flex-row sm:justify-between gap-2">
         <CardTitle>Recent Attempts ({attempts.length})</CardTitle>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportAttempts}
+          disabled={!attempts.length}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export Attempts
+        </Button>
         {attempts.length > 10 && (
           <Button variant="outline" size="sm" onClick={() => setShowAll(!showAll)}>
             {showAll ? 'Show Less' : 'Show All'}

@@ -1,7 +1,7 @@
 // ~/lib/schema/tryout.ts
 
-import { z } from "zod";
-import { QuestionType } from "@prisma/client";
+import { QuestionType } from '@prisma/client';
+import { z } from 'zod';
 
 // ⬇️ *** THIS IS THE CORRECTED VALIDATION LOGIC *** ⬇️
 const questionRefinement = (
@@ -21,8 +21,8 @@ const questionRefinement = (
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Multiple choice questions must have at least 2 options.",
-      path: ["options"],
+      message: 'Multiple choice questions must have at least 2 options.',
+      path: ['options'],
     });
   } // Rule 2: Single choice questions must have exactly one correct answer (Unchanged)
 
@@ -31,9 +31,8 @@ const questionRefinement = (
     if (correctAnswers !== 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          "Single choice questions must have exactly one correct option.",
-        path: ["options"],
+        message: 'Single choice questions must have exactly one correct option.',
+        path: ['options'],
       });
     }
   } // FIX: Rule 3 is now updated to validate the array of objects
@@ -43,13 +42,12 @@ const questionRefinement = (
     if (
       !data.shortAnswers ||
       data.shortAnswers.length === 0 ||
-      data.shortAnswers.some((ans) => ans.value.trim() === "")
+      data.shortAnswers.some((ans) => ans.value.trim() === '')
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          "Short answer questions must have at least one non-empty correct answer.",
-        path: ["shortAnswers"],
+        message: 'Short answer questions must have at least one non-empty correct answer.',
+        path: ['shortAnswers'],
       });
     }
   }
@@ -57,7 +55,7 @@ const questionRefinement = (
 
 export const questionOptionSchema = z.object({
   id: z.string().cuid().optional(),
-  text: z.string().min(1, "Option text cannot be empty"),
+  text: z.string().min(1, 'Option text cannot be empty'),
   isCorrect: z.boolean(),
   explanation: z.string().nullable().optional(),
   images: z.array(z.string().url()).optional(), // Added .url() for better validation
@@ -67,8 +65,8 @@ export const questionSchema = z
   .object({
     id: z.string().cuid().optional(), // Added ID for consistency with update schema
     type: z.nativeEnum(QuestionType),
-    question: z.string().min(1, "Question text cannot be empty."),
-    points: z.number().min(1, "Points must be at least 1."),
+    question: z.string().min(1, 'Question text cannot be empty.'),
+    points: z.number().min(1, 'Points must be at least 1.'),
     required: z.boolean(),
     images: z.array(z.string().url()).optional(), // Added .url()
     options: z.array(questionOptionSchema).optional(),
@@ -79,28 +77,25 @@ export const questionSchema = z
   .superRefine(questionRefinement);
 
 export const createTryoutSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  duration: z.number().int().min(1, "Duration must be at least 1 minute"),
-  courseId: z.string().cuid("Course is required"),
-  questions: z
-    .array(questionSchema)
-    .min(1, "At least one question is required"),
+  duration: z.number().int().min(1, 'Duration must be at least 1 minute'),
+  courseId: z.string().cuid('Course is required'),
+  allowMultipleAttempts: z.boolean().default(true),
+  questions: z.array(questionSchema).min(1, 'At least one question is required'),
 });
 
 export const updateTryoutSchema = z.object({
   id: z.string().cuid(),
-  title: z
-    .string()
-    .min(3, "Title must be at least 3 characters long.")
-    .optional(),
+  title: z.string().min(3, 'Title must be at least 3 characters long.').optional(),
   description: z.string().optional(),
-  duration: z.number().min(1, "Duration must be at least 1 minute.").optional(),
+  duration: z.number().min(1, 'Duration must be at least 1 minute.').optional(),
   isActive: z.boolean().optional(),
-  courseId: z.string().cuid("Please select a valid course.").optional(),
+  allowMultipleAttempts: z.boolean().default(true),
+  courseId: z.string().cuid('Please select a valid course.').optional(),
   questions: z
     .array(questionSchema) // Re-using the base question schema is cleaner
-    .min(1, "At least one question is required.")
+    .min(1, 'At least one question is required.')
     .optional(),
 });
 

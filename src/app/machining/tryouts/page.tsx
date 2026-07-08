@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation';
 
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-// ~/app/(student)/tryouts/page.tsx
 import { auth } from '~/server/auth';
 import { api } from '~/trpc/server';
 
@@ -129,7 +128,7 @@ function TryoutCard({ tryout, session }: TryoutCardProps) {
 
       <Button asChild size="sm" className="mt-4 w-full" disabled={isDisabled}>
         <Link
-          href={`/tryouts/${tryout.id}`}
+          href={`/machining/tryouts/${tryout.id}`}
           className={cn(isDisabled ? 'pointer-events-none opacity-50' : '')}
         >
           <PlayCircle className="h-4 w-4 mr-2" />

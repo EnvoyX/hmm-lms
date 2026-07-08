@@ -57,7 +57,7 @@ export default async function TryoutDetailPage({ params }: TryoutDetailPageProps
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/tryouts">
+            <Link href="/machining/tryouts">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Link>
@@ -119,7 +119,7 @@ export default async function TryoutDetailPage({ params }: TryoutDetailPageProps
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button asChild className="flex-1">
-                    <Link href={`/tryouts/${id}/attempt/${activeAttempt.id}`}>
+                    <Link href={`/machining/tryouts/${id}/attempt/${activeAttempt.id}`}>
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Continue Attempt
                     </Link>
@@ -255,7 +255,7 @@ export default async function TryoutDetailPage({ params }: TryoutDetailPageProps
             it.
           </p>
           <Button asChild>
-            <Link href="/tryouts">
+            <Link href="/machining/tryouts">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Tryouts
             </Link>

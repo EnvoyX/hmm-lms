@@ -174,7 +174,7 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
     const attempt = await api.tryout.getAttemptResults({ attemptId });
 
     if (!attempt) {
-      redirect(`/tryouts/${id}`);
+      redirect(`/machining/tryouts/${id}`);
     }
 
     const isDisabled = !attempt.tryout.allowMultipleAttempts;
@@ -188,7 +188,7 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/tryouts/${id}`}>
+            <Link href={`/machining/tryouts/${id}`}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Link>
@@ -361,7 +361,7 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
               {!isDisabled && (
                 <Button asChild className="flex-1" disabled={isDisabled}>
                   <Link
-                    href={`/tryouts/${id}`}
+                    href={`/machining/tryouts/${id}`}
                     className={cn(isDisabled ? 'pointer-events-none opacity-50' : '')}
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
@@ -370,7 +370,7 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
                 </Button>
               )}
               <Button variant="outline" asChild className="flex-1">
-                <Link href="/tryouts">View All Tryouts</Link>
+                <Link href="/machining/tryouts">View All Tryouts</Link>
               </Button>
             </div>
           </CardContent>
@@ -390,7 +390,7 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
               them.
             </p>
             <Button asChild>
-              <Link href={`/tryouts/${id}`}>
+              <Link href={`/machining/tryouts/${id}`}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Tryout
               </Link>

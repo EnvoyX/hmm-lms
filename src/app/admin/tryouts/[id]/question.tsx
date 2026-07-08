@@ -1,14 +1,15 @@
 // ~/app/admin/tryouts/_components/tryout-questions.tsx
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Separator } from "~/components/ui/separator";
-import { CheckCircle, Circle, FileText, MessageSquare } from "lucide-react";
-import { QuestionType } from "@prisma/client";
-import type { RouterOutputs } from "~/trpc/react";
+import { QuestionType } from '@prisma/client';
+import { CheckCircle, Circle, FileText, MessageSquare } from 'lucide-react';
 
-type Question = RouterOutputs["tryout"]["getDetailedById"]["questions"][number];
+import { Badge } from '~/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Separator } from '~/components/ui/separator';
+import type { RouterOutputs } from '~/trpc/react';
+
+type Question = RouterOutputs['tryout']['getDetailedById']['questions'][number];
 
 interface TryoutQuestionsProps {
   questions: Question[];
@@ -30,13 +31,13 @@ export default function TryoutQuestions({ questions }: TryoutQuestionsProps) {
   const getQuestionTypeLabel = (type: QuestionType) => {
     switch (type) {
       case QuestionType.MULTIPLE_CHOICE_SINGLE:
-        return "Single Choice";
+        return 'Single Choice';
       case QuestionType.MULTIPLE_CHOICE_MULTIPLE:
-        return "Multiple Choice";
+        return 'Multiple Choice';
       case QuestionType.SHORT_ANSWER:
-        return "Short Answer";
+        return 'Short Answer';
       case QuestionType.LONG_ANSWER:
-        return "Long Answer";
+        return 'Long Answer';
     }
   };
 
@@ -57,11 +58,10 @@ export default function TryoutQuestions({ questions }: TryoutQuestionsProps) {
                 </Badge>
                 <Badge variant="outline">{question.points} pts</Badge>
                 {question.required && (
-                  <Badge variant="destructive" className="text-xs">Required</Badge>
+                  <Badge variant="destructive" className="text-xs">
+                    Required
+                  </Badge>
                 )}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {question._count.answers} responses
               </div>
             </div>
 
@@ -73,18 +73,17 @@ export default function TryoutQuestions({ questions }: TryoutQuestionsProps) {
                   {question.options.map((option, optionIndex) => (
                     <div
                       key={option.id}
-                      className={`flex items-start gap-3 p-3 rounded-lg border ${option.isCorrect
-                          ? "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
-                          : "bg-muted/30"
-                        }`}
+                      className={`flex items-start gap-3 p-3 rounded-lg border ${
+                        option.isCorrect
+                          ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800'
+                          : 'bg-muted/30'
+                      }`}
                     >
                       <div className="flex items-center gap-2 mt-0.5">
                         <Badge variant="outline" className="text-xs">
                           {String.fromCharCode(65 + optionIndex)}
                         </Badge>
-                        {option.isCorrect && (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        )}
+                        {option.isCorrect && <CheckCircle className="w-4 h-4 text-green-600" />}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm">{option.text}</p>

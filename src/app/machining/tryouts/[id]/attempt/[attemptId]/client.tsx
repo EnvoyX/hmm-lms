@@ -88,6 +88,7 @@ export function TryoutAttemptClient({ attempt, tryout, tryoutId }: TryoutAttempt
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tryout.duration, attempt.startedAt]);
 
   const formatTime = (ms: number): string => {
@@ -123,7 +124,7 @@ export function TryoutAttemptClient({ attempt, tryout, tryoutId }: TryoutAttempt
         attemptId: attempt.id,
       });
       toast.success('Tryout submitted automatically due to time limit');
-      router.push(`/tryouts/${tryoutId}/results/${attempt.id}`);
+      router.push(`/machining/tryouts/${tryoutId}/results/${attempt.id}`);
     } catch {
       toast.error('Failed to submit tryout');
       setIsSubmitting(false);
@@ -137,7 +138,7 @@ export function TryoutAttemptClient({ attempt, tryout, tryoutId }: TryoutAttempt
         attemptId: attempt.id,
       });
       toast.success('Tryout submitted successfully!');
-      router.push(`/tryouts/${tryoutId}/results/${attempt.id}`);
+      router.push(`/machining/tryouts/${tryoutId}/results/${attempt.id}`);
     } catch {
       toast.error('Failed to submit tryout');
       setIsSubmitting(false);

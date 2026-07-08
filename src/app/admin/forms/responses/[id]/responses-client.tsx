@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
+import { ChevronLeft, ChevronRight, User, MessageSquare, Download } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -12,24 +13,34 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+
+import { Avatar, AvatarFallback } from '~/components/ui/avatar';
+import { Button } from '~/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card';
+import { ScrollArea } from '~/components/ui/scroll-area';
 import {
-  ChevronLeft,
-  ChevronRight,
-  User,
-  MessageSquare,
-} from 'lucide-react';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select';
+import { Separator } from '~/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '~/components/ui/tabs';
+import type { RouterOutputs } from '~/trpc/react';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "~/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
-import { ScrollArea } from "~/components/ui/scroll-area";
-
-import type { RouterOutputs } from "~/trpc/react";
-
-type FormWithQuestions = RouterOutputs["form"]["getById"];
-type Submission = RouterOutputs["form"]["getSubmissions"]["submissions"][number];
+type FormWithQuestions = RouterOutputs['form']['getById'];
+type Submission = RouterOutputs['form']['getSubmissions']['submissions'][number];
 
 interface ResponsesClientProps {
   form: FormWithQuestions;
@@ -39,13 +50,53 @@ interface ResponsesClientProps {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
-  const [activeTab, setActiveTab] = useState("summary");
+  const [activeTab, setActiveTab] = useState('summary');
+  const handleExportResponses = () => {
+    if (!submissions) return;
+
+    const questions = form.questions.map((q) => q.title);
+
+    const worksheetData = [
+      ['Name', 'NIM', 'Email', 'Submitted At', ...questions],
+      ...submissions.map((s) => [
+        s.submitter?.name ?? 'N/A',
+        s.submitter?.email ?? 'N/A',
+        s.submitter?.nim ?? 'N/A',
+        format(new Date(s.submittedAt), 'yyyy-MM-dd HH:mm'),
+        ...form.questions.map((question) => {
+          const answers = s.answers.filter((a) => a.questionId === question.id);
+
+          let textAnswers: string[] = [];
+
+          textAnswers = answers.map((a) => {
+            let jsonValuesArray: string[] = [];
+            if (a.textValue) return a.textValue;
+            else if (a.dateValue) return format(new Date(a.dateValue), 'PPP');
+            else if (a.numberValue !== null && a.numberValue !== undefined)
+              return a.numberValue.toString();
+            else if (a.jsonValue && Array.isArray(a.jsonValue)) {
+              jsonValuesArray = a.jsonValue as string[];
+              return jsonValuesArray.join(', ');
+            }
+            return 'No answer';
+          });
+          return textAnswers;
+        }),
+      ]),
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'responses');
+    XLSX.writeFile(workbook, `Responses-${form.title}.xlsx`);
+    toast.success('Responses exported to Excel successfully');
+  };
 
   // --- Summary Tab Logic ---
   const summaryData = useMemo(() => {
-    return form.questions.map(question => {
-      const answers = submissions.flatMap(s => 
-        s.answers.filter(a => a.questionId === question.id)
+    return form.questions.map((question) => {
+      const answers = submissions.flatMap((s) =>
+        s.answers.filter((a) => a.questionId === question.id),
       );
 
       let chartData: { name: string; value: number }[] = [];
@@ -53,7 +104,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
 
       if (['MULTIPLE_CHOICE', 'RATING', 'MULTIPLE_SELECT'].includes(question.type)) {
         const counts: Record<string, number> = {};
-        answers.forEach(a => {
+        answers.forEach((a) => {
           let values: string[] = [];
           if (a.jsonValue && Array.isArray(a.jsonValue)) {
             values = a.jsonValue as string[];
@@ -61,20 +112,22 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
             values = [a.textValue];
           } else if (a.numberValue !== null && a.numberValue !== undefined) {
             values = [String(a.numberValue)];
+          } else if (a.fileUrl) {
+            values = [a.fileUrl];
           }
 
-          values.forEach(v => {
+          values.forEach((v) => {
             counts[v] = (counts[v] ?? 0) + 1;
           });
         });
 
         chartData = Object.entries(counts).map(([name, value]) => ({ name, value }));
       } else {
-        textAnswers = answers.map(a => {
-            if (a.textValue) return a.textValue;
-            if (a.dateValue) return format(new Date(a.dateValue), 'PPP');
-            if (a.jsonValue) return JSON.stringify(a.jsonValue);
-            return "No answer";
+        textAnswers = answers.map((a) => {
+          if (a.textValue) return a.textValue;
+          if (a.dateValue) return format(new Date(a.dateValue), 'PPP');
+          if (a.jsonValue) return JSON.stringify(a.jsonValue);
+          return 'No answer';
         });
       }
 
@@ -93,30 +146,31 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
 
   const handleNextSubmission = () => {
     if (currentSubmissionIndex < submissions.length - 1) {
-      setCurrentSubmissionIndex(prev => prev + 1);
+      setCurrentSubmissionIndex((prev) => prev + 1);
     }
   };
 
   const handlePrevSubmission = () => {
     if (currentSubmissionIndex > 0) {
-      setCurrentSubmissionIndex(prev => prev - 1);
+      setCurrentSubmissionIndex((prev) => prev - 1);
     }
   };
 
   // --- Question Tab Logic ---
-  const [selectedQuestionId, setSelectedQuestionId] = useState<string>(form.questions[0]?.id ?? "");
-  const selectedQuestion = form.questions.find(q => q.id === selectedQuestionId);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>(form.questions[0]?.id ?? '');
+  const selectedQuestion = form.questions.find((q) => q.id === selectedQuestionId);
   const selectedQuestionAnswers = useMemo(() => {
     if (!selectedQuestionId) return [];
-    return submissions.map(s => {
-      const answer = s.answers.find(a => a.questionId === selectedQuestionId);
-      return {
-        submission: s,
-        answer,
-      };
-    }).filter(item => item.answer); // Only show submissions that have an answer? Or show all? Let's show all for context.
+    return submissions
+      .map((s) => {
+        const answer = s.answers.find((a) => a.questionId === selectedQuestionId);
+        return {
+          submission: s,
+          answer,
+        };
+      })
+      .filter((item) => item.answer);
   }, [submissions, selectedQuestionId]);
-
 
   if (submissions.length === 0) {
     return (
@@ -133,13 +187,13 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
           <TabsTrigger value="summary">Summary</TabsTrigger>
           <TabsTrigger value="question">Question</TabsTrigger>
           <TabsTrigger value="individual">Individual</TabsTrigger>
+          <TabsTrigger value="responses">Responses</TabsTrigger>
         </TabsList>
 
-        {/* SUMMARY TAB */}
         <TabsContent value="summary" className="space-y-8 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <Card>
@@ -153,7 +207,6 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                 </div>
               </CardContent>
             </Card>
-            {/* Add more stats if needed */}
           </div>
 
           {summaryData.map((item) => (
@@ -166,12 +219,20 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                 {item.chartData.length > 0 ? (
                   <div className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={item.chartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <BarChart
+                        data={item.chartData}
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                         <XAxis type="number" allowDecimals={false} />
                         <YAxis dataKey="name" type="category" width={150} />
-                        <Tooltip 
-                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '8px',
+                            border: 'none',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          }}
                           cursor={{ fill: 'transparent' }}
                         />
                         <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]}>
@@ -190,7 +251,9 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                           {ans}
                         </div>
                       ))}
-                      {item.textAnswers.length === 0 && <p className="text-muted-foreground italic">No text answers.</p>}
+                      {item.textAnswers.length === 0 && (
+                        <p className="text-muted-foreground italic">No text answers.</p>
+                      )}
                     </div>
                   </ScrollArea>
                 )}
@@ -199,7 +262,6 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
           ))}
         </TabsContent>
 
-        {/* QUESTION TAB */}
         <TabsContent value="question" className="space-y-6 mt-6">
           <div className="flex items-center gap-4">
             <Select value={selectedQuestionId} onValueChange={setSelectedQuestionId}>
@@ -207,7 +269,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                 <SelectValue placeholder="Select a question" />
               </SelectTrigger>
               <SelectContent>
-                {form.questions.map(q => (
+                {form.questions.map((q) => (
                   <SelectItem key={q.id} value={q.id}>
                     {q.title}
                   </SelectItem>
@@ -223,23 +285,33 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
             <Card>
               <CardHeader>
                 <CardTitle>{selectedQuestion.title}</CardTitle>
-                {selectedQuestion.description && <CardDescription>{selectedQuestion.description}</CardDescription>}
+                {selectedQuestion.description && (
+                  <CardDescription>{selectedQuestion.description}</CardDescription>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 {selectedQuestionAnswers.map((item, i) => {
-                  const val = item.answer 
-                    ? (item.answer.textValue ?? (item.answer.numberValue !== null ? String(item.answer.numberValue) : null) ?? (item.answer.dateValue ? format(new Date(item.answer.dateValue), 'PPP') : null) ?? (item.answer.jsonValue ? JSON.stringify(item.answer.jsonValue) : "No answer"))
-                    : "Skipped";
-                  
+                  const val = item.answer
+                    ? (item.answer.textValue ??
+                      (item.answer.numberValue !== null ? String(item.answer.numberValue) : null) ??
+                      (item.answer.dateValue
+                        ? format(new Date(item.answer.dateValue), 'PPP')
+                        : null) ??
+                      (item.answer.jsonValue ? JSON.stringify(item.answer.jsonValue) : 'No answer'))
+                    : 'Skipped';
+
                   return (
-                    <div key={i} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div
+                      key={i}
+                      className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-semibold text-sm text-muted-foreground">
-                            {item.submission.submitter?.name ?? "Anonymous"}
+                            {item.submission.submitter?.name ?? 'Anonymous'}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(item.submission.submittedAt), "MMM d, p")}
+                            {format(new Date(item.submission.submittedAt), 'MMM d, p')}
                           </span>
                         </div>
                         <p className="text-foreground">{val}</p>
@@ -252,17 +324,26 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
           )}
         </TabsContent>
 
-        {/* INDIVIDUAL TAB */}
         <TabsContent value="individual" className="space-y-6 mt-6">
           <div className="flex items-center justify-between bg-card p-4 rounded-lg border shadow-sm">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={handlePrevSubmission} disabled={currentSubmissionIndex === 0}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePrevSubmission}
+                disabled={currentSubmissionIndex === 0}
+              >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <span className="text-sm font-medium">
                 {currentSubmissionIndex + 1} of {submissions.length}
               </span>
-              <Button variant="outline" size="icon" onClick={handleNextSubmission} disabled={currentSubmissionIndex === submissions.length - 1}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNextSubmission}
+                disabled={currentSubmissionIndex === submissions.length - 1}
+              >
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
@@ -279,31 +360,134 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                     <User className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle>{currentSubmission.submitter?.name ?? "Anonymous"}</CardTitle>
-                    <CardDescription>{currentSubmission.submitter?.email ?? "No email"}</CardDescription>
+                    <CardTitle>{currentSubmission.submitter?.name ?? 'Anonymous'}</CardTitle>
+                    <CardDescription>
+                      {currentSubmission.submitter?.email ?? 'No email'}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <Separator />
               <CardContent className="pt-6 space-y-6">
-                {form.questions.map(question => {
-                  const answer = currentSubmission.answers.find(a => a.questionId === question.id);
-                  const val = answer 
-                    ? (answer.textValue ?? (answer.numberValue !== null ? String(answer.numberValue) : null) ?? (answer.dateValue ? format(new Date(answer.dateValue), 'PPP') : null) ?? (answer.jsonValue ? (Array.isArray(answer.jsonValue) ? (answer.jsonValue as string[]).join(', ') : JSON.stringify(answer.jsonValue)) : "No answer"))
-                    : <span className="text-muted-foreground italic">Skipped</span>;
+                {form.questions.map((question) => {
+                  const answer = currentSubmission.answers.find(
+                    (a) => a.questionId === question.id,
+                  );
+                  const val = answer ? (
+                    (answer.textValue ??
+                    (answer.numberValue !== null ? String(answer.numberValue) : null) ??
+                    (answer.dateValue ? format(new Date(answer.dateValue), 'PPP') : null) ??
+                    (answer.jsonValue
+                      ? Array.isArray(answer.jsonValue)
+                        ? (answer.jsonValue as string[]).join(', ')
+                        : JSON.stringify(answer.jsonValue)
+                      : 'No answer'))
+                  ) : (
+                    <span className="text-muted-foreground italic">Skipped</span>
+                  );
 
                   return (
                     <div key={question.id} className="space-y-2">
-                      <h4 className="font-medium text-sm text-muted-foreground">{question.title}</h4>
-                      <div className="p-3 bg-muted/30 rounded-md border text-sm">
-                        {val}
-                      </div>
+                      <h4 className="font-medium text-sm text-muted-foreground">
+                        {question.title}
+                      </h4>
+                      <div className="p-3 bg-muted/30 rounded-md border text-sm">{val}</div>
                     </div>
                   );
                 })}
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+        <TabsContent value="responses" className="space-y-6 mt-6">
+          <div className="flex flex-col">
+            <div className="flex max-sm:flex-col max-sm:gap-2 items-center sm:flex-row sm:justify-between mb-3">
+              <h2 className="text-2xl font-bold">All Responses</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportResponses}
+                disabled={!submissions.length}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Responses
+              </Button>
+            </div>
+            {submissions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">No responses yet.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Respondent</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>NIM</TableHead>
+                    <TableHead>Responded At</TableHead>
+                    {submissions.slice(0, 1).map((row) => {
+                      return row.answers?.map((answer) => {
+                        return (
+                          <TableHead key={answer.question?.id}>{answer.question?.title}</TableHead>
+                        );
+                      });
+                    })}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {submissions.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>{row.submitter?.name?.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{row.submitter?.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {row.submitter?.email}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{row.submitter?.nim}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(row.submittedAt), 'MMM d, yyyy • HH:mm')}
+                      </TableCell>
+                      {row.answers?.map((answer) => {
+                        let jsonValuesArray: string[] = [];
+                        if (answer.jsonValue && Array.isArray(answer.jsonValue)) {
+                          jsonValuesArray = answer.jsonValue as string[];
+                        }
+                        return (
+                          <TableCell key={answer.question?.id}>
+                            {answer.textValue ? (
+                              answer.textValue
+                            ) : answer.numberValue &&
+                              answer.numberValue !== null &&
+                              answer.numberValue !== undefined ? (
+                              answer.numberValue.toString()
+                            ) : answer.jsonValue && Array.isArray(answer.jsonValue) ? (
+                              jsonValuesArray.map((value) => value).join(', ')
+                            ) : answer.dateValue ? (
+                              format(new Date(answer.dateValue), 'PPP')
+                            ) : answer.fileUrl ? (
+                              <a
+                                href={answer.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                View
+                              </a>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

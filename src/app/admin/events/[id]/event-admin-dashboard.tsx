@@ -1,24 +1,44 @@
 // ~/app/(admin)/admin/events/[id]/event-admin-dashboard.tsx
 'use client';
 
-import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { api } from '~/trpc/react';
-import { Avatar, AvatarFallback } from '~/components/ui/avatar';
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { PresenceStatus } from '@prisma/client';
-import { Download, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import { Download, Users, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+import { z } from 'zod';
+
+import { Avatar, AvatarFallback } from '~/components/ui/avatar';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '~/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { format } from 'date-fns';
+} from '~/components/ui/select';
 import {
   Table,
   TableBody,
@@ -26,9 +46,79 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from '~/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { Textarea } from '~/components/ui/textarea';
+import { updateNoteSchema, type UpdateNoteForm } from '~/lib/schema/event';
+import { api } from '~/trpc/react';
 
-import * as XLSX from 'xlsx';
+function UpdateNoteDialog({
+  presenceId,
+  currentNotes,
+  onUpdate,
+  isPending,
+  type,
+}: {
+  presenceId: string;
+  currentNotes: string | null;
+  onUpdate: (data: { presenceId: string; notes: string; type: 'attendance' | 'rsvp' }) => void;
+  isPending: boolean;
+  type: 'attendance' | 'rsvp';
+}) {
+  const [open, setOpen] = useState(false);
+  const form = useForm<UpdateNoteForm>({
+    resolver: zodResolver(updateNoteSchema),
+    defaultValues: {
+      notes: currentNotes || '',
+    },
+  });
+
+  const handleSubmit = (values: UpdateNoteForm) => {
+    onUpdate({ presenceId, notes: values.notes, type });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <FileText className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Update Notes</DialogTitle>
+          <DialogDescription>Add or update notes for this attendance record.</DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Enter notes..." className="min-h-[100px]" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Saving...' : 'Save Notes'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function EventAdminDashboard({ eventId }: { eventId: string }) {
   const { data, refetch } = api.event.getEventManagementData.useQuery({ eventId });
@@ -36,19 +126,28 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
   const { mutate: updatePresence, isPending: isUpdatingPresence } =
     api.event.updatePresenceStatus.useMutation({
       onSuccess: async () => {
-        toast.success("Presence status updated");
+        toast.success('Presence status updated');
         await refetch();
       },
-      onError: (err) => toast.error(err.message)
+      onError: (err) => toast.error(err.message),
+    });
+
+  const { mutate: updatePresenceNote, isPending: isUpdatingNote } =
+    api.event.updatePresenceNote.useMutation({
+      onSuccess: async () => {
+        toast.success('Note updated successfully');
+        await refetch();
+      },
+      onError: (err) => toast.error(err.message),
     });
 
   // Calculate statistics
   const stats = useMemo(() => {
     if (!data) return { totalRsvps: 0, yesRsvps: 0, totalPresence: 0, presentCount: 0 };
 
-    const yesRsvps = data.rsvpResponses.filter(r => r.status === 'YES').length;
-    const presentCount = data.presenceRecords.filter(p =>
-      p.status === PresenceStatus.PRESENT || p.status === PresenceStatus.LATE
+    const yesRsvps = data.rsvpResponses.filter((r) => r.status === 'YES').length;
+    const presentCount = data.presenceRecords.filter(
+      (p) => p.status === PresenceStatus.PRESENT || p.status === PresenceStatus.LATE,
     ).length;
 
     return {
@@ -59,19 +158,19 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     };
   }, [data]);
 
-   const handleExportRsvps = () => {
+  const handleExportRsvps = () => {
     if (!data) return;
 
     const worksheetData = [
       ['Name', 'NIM', 'Status', 'Responded At', 'Email', 'Notes'],
-      ...data.rsvpResponses.map(r => [
+      ...data.rsvpResponses.map((r) => [
         r.user?.name ?? 'N/A',
         r.user?.nim ?? 'N/A',
         r.status,
         format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
         r.user?.email ?? 'N/A',
-        r.notes ?? ''
-      ])
+        r.notes ?? '',
+      ]),
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -86,15 +185,15 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
 
     const worksheetData = [
       ['Name', 'NIM', 'Status', 'Checked In At', 'Checked Out At', 'Duration (min)', 'Notes'],
-      ...data.presenceRecords.map(p => [
+      ...data.presenceRecords.map((p) => [
         p.user.name,
         p.user.nim,
         p.status,
         p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A',
         p.checkedOutAt ? format(new Date(p.checkedOutAt), 'yyyy-MM-dd HH:mm') : 'N/A',
         p.duration ?? 'N/A',
-        p.notes ?? ''
-      ])
+        p.notes ?? '',
+      ]),
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -109,12 +208,14 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
 
     const csv = [
       ['Name', 'NIM', 'Status', 'Responded At'].join(','),
-      ...data.rsvpResponses.map(r => [
-        r.user?.name ?? 'N/A',
-        r.user?.nim ?? 'N/A',
-        r.status,
-        format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm')
-      ].join(','))
+      ...data.rsvpResponses.map((r) =>
+        [
+          r.user?.name ?? 'N/A',
+          r.user?.nim ?? 'N/A',
+          r.status,
+          format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
+        ].join(','),
+      ),
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -131,12 +232,14 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
 
     const csv = [
       ['Name', 'NIM', 'Status', 'Checked In At'].join(','),
-      ...data.presenceRecords.map(p => [
-        p.user.name,
-        p.user.nim,
-        p.status,
-        p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A'
-      ].join(','))
+      ...data.presenceRecords.map((p) =>
+        [
+          p.user.name,
+          p.user.nim,
+          p.status,
+          p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A',
+        ].join(','),
+      ),
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -159,9 +262,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalRsvps}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.yesRsvps} confirmed
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.yesRsvps} confirmed</p>
           </CardContent>
         </Card>
 
@@ -172,9 +273,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.yesRsvps}</div>
-            <p className="text-xs text-muted-foreground">
-              Going to attend
-            </p>
+            <p className="text-xs text-muted-foreground">Going to attend</p>
           </CardContent>
         </Card>
 
@@ -185,9 +284,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalPresence}</div>
-            <p className="text-xs text-muted-foreground">
-              Total attendees
-            </p>
+            <p className="text-xs text-muted-foreground">Total attendees</p>
           </CardContent>
         </Card>
 
@@ -199,7 +296,10 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
           <CardContent>
             <div className="text-2xl font-bold">{stats.presentCount}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.yesRsvps > 0 ? `${Math.round((stats.presentCount / stats.yesRsvps) * 100)}%` : '0%'} of confirmed
+              {stats.yesRsvps > 0
+                ? `${Math.round((stats.presentCount / stats.yesRsvps) * 100)}%`
+                : '0%'}{' '}
+              of confirmed
             </p>
           </CardContent>
         </Card>
@@ -216,9 +316,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
               <TabsTrigger value="attendance">
                 Attendance ({data?.presenceRecords.length})
               </TabsTrigger>
-              <TabsTrigger value="rsvps">
-                RSVPs ({data?.rsvpResponses.length})
-              </TabsTrigger>
+              <TabsTrigger value="rsvps">RSVPs ({data?.rsvpResponses.length})</TabsTrigger>
             </TabsList>
 
             {/* Attendance Tab */}
@@ -254,9 +352,11 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                     <TableRow>
                       <TableHead>Participant</TableHead>
                       <TableHead>NIM</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Check-in Time</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>Notes</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -271,24 +371,46 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{p.user.nim}</TableCell>
+                        <TableCell className="text-muted-foreground">{p.user.email}</TableCell>
                         <TableCell className="text-sm">
-                          {p.checkedInAt ? format(new Date(p.checkedInAt), 'MMM d, HH:mm') : 'Not checked in'}
+                          {p.checkedInAt
+                            ? format(new Date(p.checkedInAt), 'MMM d, HH:mm')
+                            : 'Not checked in'}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={
-                            p.status === PresenceStatus.PRESENT ? 'default' :
-                              p.status === PresenceStatus.LATE ? 'secondary' :
-                                'outline'
-                          }>
+                          <Badge
+                            variant={
+                              p.status === PresenceStatus.PRESENT
+                                ? 'default'
+                                : p.status === PresenceStatus.LATE
+                                  ? 'secondary'
+                                  : 'outline'
+                            }
+                          >
                             {p.status.replace(/_/g, ' ')}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <UpdateNoteDialog
+                            presenceId={p.id}
+                            currentNotes={p.notes}
+                            onUpdate={updatePresenceNote}
+                            // onUpdate={(data) =>
+                            //   updatePresenceNote({
+                            //     presenceId: data.presenceId,
+                            //     notes: data.notes,
+                            //   })
+                            // }
+                            isPending={isUpdatingNote}
+                            type="attendance"
+                          />
                         </TableCell>
                         <TableCell className="text-right">
                           <Select
                             onValueChange={(val) =>
                               updatePresence({
                                 presenceId: p.id,
-                                status: val as PresenceStatus
+                                status: val as PresenceStatus,
                               })
                             }
                             defaultValue={p.status}
@@ -299,10 +421,10 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                             </SelectTrigger>
                             <SelectContent>
                               {Object.values(PresenceStatus)
-                                .filter(s => s !== 'PENDING_APPROVAL' && s !== 'REJECTED')
-                                .map(s => (
+                                .filter((s) => s !== 'PENDING_APPROVAL' && s !== 'REJECTED')
+                                .map((s) => (
                                   <SelectItem key={s} value={s}>
-                                    {s.replace(/_/g, " ")}
+                                    {s.replace(/_/g, ' ')}
                                   </SelectItem>
                                 ))}
                             </SelectContent>
@@ -339,16 +461,16 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
               </div>
 
               {data?.rsvpResponses.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No RSVP responses yet.
-                </div>
+                <div className="text-center py-8 text-muted-foreground">No RSVP responses yet.</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Participant</TableHead>
                       <TableHead>NIM</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Response</TableHead>
+                      <TableHead>Notes</TableHead>
                       <TableHead>Responded At</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -364,20 +486,40 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{r.user?.nim}</TableCell>
+                        <TableCell className="text-muted-foreground">{r.user?.email}</TableCell>
                         <TableCell>
-                          <Badge variant={
-                            r.status === 'YES' ? 'default' :
-                              r.status === 'MAYBE' ? 'secondary' :
-                                'outline'
-                          }>
+                          <Badge
+                            variant={
+                              r.status === 'YES'
+                                ? 'default'
+                                : r.status === 'MAYBE'
+                                  ? 'secondary'
+                                  : 'outline'
+                            }
+                          >
                             {r.status === 'YES' ? (
-                              <><CheckCircle className="h-3 w-3 mr-1" /> Going</>
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-1" /> Going
+                              </>
                             ) : r.status === 'MAYBE' ? (
-                              <><Clock className="h-3 w-3 mr-1" /> Maybe</>
+                              <>
+                                <Clock className="h-3 w-3 mr-1" /> Maybe
+                              </>
                             ) : (
-                              <><XCircle className="h-3 w-3 mr-1" /> Can&apos;t Go</>
+                              <>
+                                <XCircle className="h-3 w-3 mr-1" /> Can&apos;t Go
+                              </>
                             )}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          <UpdateNoteDialog
+                            presenceId={r.id}
+                            currentNotes={r.notes}
+                            onUpdate={updatePresenceNote}
+                            isPending={isUpdatingNote}
+                            type="rsvp"
+                          />
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(r.respondedAt), 'MMM d, yyyy • HH:mm')}

@@ -67,7 +67,7 @@ export function DashboardContent() {
                 Latest Announcement
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(latestAnnouncement?.createdAt as Date), { addSuffix: true })}
+                {latestAnnouncement?.createdAt ? formatDistanceToNow(new Date(latestAnnouncement?.createdAt as Date), { addSuffix: true }) : null}
               </span>
             </div>
 

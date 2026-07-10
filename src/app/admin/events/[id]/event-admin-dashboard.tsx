@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PresenceStatus, RSVPStatus } from '@prisma/client';
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
 import { Download, Users, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -183,7 +183,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
               : r.status === 'MAYBE'
                 ? 'Mungkin Hadir'
                 : 'No RSVP response',
-        formatInTimeZone(toZonedTime(new Date(r.respondedAt), TIMEZONE), TIMEZONE ,'yyyy-MM-dd HH:mm'),
+        formatInTimeZone(r.respondedAt, TIMEZONE ,'yyyy-MM-dd HH:mm'),
         r.user?.email ?? 'N/A',
         r.notes ?? '',
       ]),
@@ -205,7 +205,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
         p.user.name,
         p.user.nim,
         p.status,
-        p.checkedInAt ? formatInTimeZone(toZonedTime(new Date(p.checkedInAt), TIMEZONE), TIMEZONE, 'yyyy-MM-dd HH:mm') : 'N/A',
+        p.checkedInAt ? formatInTimeZone(p.checkedInAt, TIMEZONE, 'yyyy-MM-dd HH:mm') : 'N/A',
         p.duration ?? 'N/A',
         p.notes ?? '',
       ]),
@@ -380,7 +380,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                         <TableCell className="text-muted-foreground">{p.user.email}</TableCell>
                         <TableCell className="text-sm">
                           {p.checkedInAt
-                            ? formatInTimeZone(toZonedTime(new Date(p.checkedInAt), TIMEZONE), TIMEZONE, 'MMM d, HH:mm')
+                            ? formatInTimeZone(p.checkedInAt, TIMEZONE, 'MMM d, HH:mm')
                             : 'Not checked in'}
                         </TableCell>
                         <TableCell>
@@ -526,7 +526,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                           />
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {formatInTimeZone(toZonedTime(new Date(r.respondedAt), TIMEZONE), TIMEZONE, 'MMM d, yyyy • HH:mm')}
+                          {formatInTimeZone(r.respondedAt, TIMEZONE, 'MMM d, yyyy • HH:mm')}
                         </TableCell>
                         <TableCell>
                           <Select

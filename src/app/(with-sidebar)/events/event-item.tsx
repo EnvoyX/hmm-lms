@@ -14,9 +14,9 @@ interface EventItemProps {
 }
 
 export default function EventItem({ event, href }: EventItemProps) {
-  const startDate = toZonedTime(new Date(event.start), TIMEZONE);
-  const endDate = toZonedTime(new Date(event.end), TIMEZONE);
-  const currentDate = toZonedTime(new Date(), TIMEZONE);
+  const startDate = new Date(event.start);
+  const endDate = new Date(event.end);
+  const currentDate = new Date()
 
   const isOngoing = startDate <= currentDate && endDate >= currentDate;
 

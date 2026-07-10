@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 import { CalendarDays, Clock, MapPin, CheckSquare, BellRing, Settings } from 'lucide-react';
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
 import { type RouterOutputs } from '~/trpc/react';
 import { EventMode } from '@prisma/client';
 import GeometryBackground from '~/components/ui/background/geometry';
@@ -14,9 +14,9 @@ interface EventItemProps {
 }
 
 export default function EventItem({ event, href }: EventItemProps) {
-  const startDate = toZonedTime(new Date(event.start), TIMEZONE);
-  const endDate = toZonedTime(new Date(event.end), TIMEZONE);
-  const currentDate = toZonedTime(new Date(), TIMEZONE);
+  const startDate = new Date(event.start);
+  const endDate = new Date(event.end);
+  const currentDate = new Date()
 
   const isOngoing = startDate <= currentDate && endDate >= currentDate;
 

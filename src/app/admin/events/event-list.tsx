@@ -39,7 +39,7 @@ import { toast } from 'sonner';
 import {  formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { TIMEZONE } from '~/constants/constants';
-import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
 
 type EventAdmin = RouterOutputs['event']['getAllEventsAdmin']['items'][number];
 type InitialEvents = RouterOutputs['event']['getAllEventsAdmin'];
@@ -107,9 +107,9 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
   };
 
   const getEventStatus = (event: EventAdmin) => {
-    const now = toZonedTime(new Date(), TIMEZONE);
-    const start = toZonedTime(new Date(event.start), TIMEZONE);
-    const end = toZonedTime(new Date(event.end), TIMEZONE);
+    const now = new Date()
+    const start = event.start
+    const end = event.end
 
     if (end < now)
       return {
@@ -156,9 +156,8 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
     <>
       <div className="grid gap-4">
         {allEvents.map((event) => {
-          const now = toZonedTime(new Date(), TIMEZONE);
-          const startDate = toZonedTime(new Date(event.start), TIMEZONE);
-          const endDate = toZonedTime(new Date(event.end), TIMEZONE);
+          const startDate = event.start
+          const endDate = event.end
           const scope = getEventScope(event);
           const status = getEventStatus(event);
           const rsvpCount = event._count?.rsvpResponses ?? 0;
@@ -238,7 +237,7 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
                     )}
 
                     <div className="text-xs text-muted-foreground">
-                      Created by {event.createdBy.name} • {formatDistanceToNow(toZonedTime(new Date(event.createdAt), TIMEZONE), { addSuffix: true })}
+                      Created by {event.createdBy.name} • {formatDistanceToNow(event.createdAt, { addSuffix: true })}
                     </div>
                   </div>
 

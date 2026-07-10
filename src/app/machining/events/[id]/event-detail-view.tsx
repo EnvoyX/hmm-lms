@@ -14,8 +14,8 @@ interface EventDetailViewProps {
 }
 
 export default function EventDetailView({ event }: EventDetailViewProps) {
-  const startDate = toZonedTime(new Date(event.start), TIMEZONE);
-  const endDate = toZonedTime(new Date(event.end), TIMEZONE);
+  const startDate = event.start;
+  const endDate = event.end;
 
   const getEventScope = () => {
     if (event.course) return { label: 'Course Event', icon: GraduationCap };
@@ -136,7 +136,7 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                       <p className="font-medium text-foreground">RSVP Before</p>
                       <p className="text-muted-foreground">
                         {formatInTimeZone(
-                          toZonedTime(new Date(event.rsvpDeadline), TIMEZONE),
+                          event.rsvpDeadline,
                           TIMEZONE,
                           'EEEE, MMM d, yyyy, HH:mm',
                         )}

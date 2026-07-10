@@ -82,8 +82,6 @@ const PRESENCE_STATUS_UI: Record<
 };
 
 export function DashboardCalendar() {
-  // const [rsvpStatus, setRsvpStatus] = React.useState<RSVPStatus | null>(null);
-  // const [notes, setNotes] = React.useState('');
   const [date, setDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
   const [selectedDate, setSelectedDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
 
@@ -111,18 +109,6 @@ export function DashboardCalendar() {
     api.studentDashboard.getMachiningFormsForDate.useQuery({
       date: selectedDate,
     });
-
-  // RSVP mutation
-  // const rsvpMutation = api.event.respondToRsvp.useMutation({
-  //   onSuccess: () => {
-  //     toast.success('RSVP updated successfully');
-  //     void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
-  //     void utils.studentDashboard.getMachiningEventsForDate.invalidate();
-  //   },
-  //   onError: (error) => {
-  //     toast.error(error.message);
-  //   },
-  // });
 
   // Attendance mutation
   const attendanceMutation = api.event.recordPresence.useMutation({
@@ -158,10 +144,6 @@ export function DashboardCalendar() {
       setSelectedDate(newDate);
     }
   };
-
-  // const handleRsvp = (eventId: string, status: RSVPStatus, notes?: string) => {
-  //   rsvpMutation.mutate({ eventId, status, notes });
-  // };
 
   const handleCheckIn = (eventId: string) => {
     attendanceMutation.mutate({ eventId });
@@ -219,10 +201,6 @@ export function DashboardCalendar() {
                     toZonedTime(new Date(eventStart.getTime() - 60 * 60 * 1000), TIMEZONE) &&
                   currentDate <= eventEnd;
 
-                // const isRsvpAvailable = event.rsvpDeadline
-                //   ? currentDate <= toZonedTime(new Date(event.rsvpDeadline), TIMEZONE)
-                //   : currentDate <= eventStart;
-
                 return (
                   <Popover key={event.id}>
                     <PopoverTrigger asChild>
@@ -247,8 +225,8 @@ export function DashboardCalendar() {
                                 : event.userRsvp.status === 'PERMIT'
                                   ? `Attend With Notice`
                                   : event.userRsvp.status === 'NO'
-                                    ? `Can't Attend`
-                                    : 'Mungkin Hadir'}
+                                    ? `Won't Attend`
+                                    : 'Maybe Attend'}
                             </Badge>
                           )}
                         </div>
@@ -319,9 +297,9 @@ export function DashboardCalendar() {
                         {/* RSVP Section */}
                         {event.eventMode !== 'BASIC' && event.eventMode !== 'ATTENDANCE_ONLY' && (
                           <div className="space-y-2">
+                             <p className="text-sm font-medium">RSVP Status:</p>
                             {event.userRsvp && (
                               <div className="flex flex-col gap-1">
-                                <span>RSVP Status</span>
                                 <div className="p-3 bg-accent text-accent-foreground rounded-md text-sm font-medium">
                                   {RSVP_RESPONSE_TEXT[event.userRsvp.status]}
                                   {event.userRsvp.approvalStatus === ApprovalStatus.PENDING &&
@@ -331,90 +309,6 @@ export function DashboardCalendar() {
                                 </div>
                               </div>
                             )}
-                            {/* <>
-                                <p className="text-sm font-medium flex flex-col">
-                                  <span>RSVP Status</span>
-                                  {event.rsvpDeadline && (
-                                    <span className="text-muted-foreground text-xs">
-                                      (ends at {formatInTimeZone(event.rsvpDeadline, TIMEZONE ,'MMM d, yyyy, HH:mm')})
-                                    </span>
-                                  )}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      setRsvpStatus('YES');
-                                    }}
-                                    variant={rsvpStatus === 'YES' ? 'default' : 'outline'}
-                                    className="flex-1"
-                                    disabled={rsvpMutation.isPending || !isRsvpAvailable}
-                                  >
-                                    Hadir
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      setRsvpStatus('NO');
-                                    }}
-                                    variant={rsvpStatus === 'NO' ? 'default' : 'outline'}
-                                    className="flex-1"
-                                    disabled={rsvpMutation.isPending || !isRsvpAvailable}
-                                  >
-                                    Tidak Hadir
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      setRsvpStatus('PERMIT');
-                                    }}
-                                    variant={rsvpStatus === 'PERMIT' ? 'default' : 'outline'}
-                                    className="flex-1"
-                                    disabled={rsvpMutation.isPending || !isRsvpAvailable}
-                                  >
-                                    Menyusul/Meninggalkan
-                                  </Button>
-                                </div>
-                            </> */}
-                            {/* {(rsvpStatus === 'NO' || rsvpStatus === 'PERMIT') && (
-                              <div className="flex flex-col">
-                                <Label className="text-lg font-semibold">Notes</Label>
-                                {rsvpStatus === 'NO' ? (
-                                  <p className="text-muted-foreground text-sm">
-                                    Sertakan alasan tidak hadir serta buktinya
-                                  </p>
-                                ) : (
-                                  <p className="text-muted-foreground text-sm">
-                                    Sertakan alasan menyusul/meninggalkan serta bukti dan jam
-                                    menyusul/meninggalkan
-                                  </p>
-                                )}
-                                <Textarea
-                                  className="mt-2"
-                                  value={notes}
-                                  disabled={rsvpMutation.isPending || !isRsvpAvailable}
-                                  onChange={(e) => setNotes(e.target.value)}
-                                />
-                              </div>
-                            )}
-                            {rsvpStatus !== null && (
-                              <Button
-                                className="w-full"
-                                onClick={() => {
-                                  if (!rsvpStatus) return;
-                                  handleRsvp(event.id, rsvpStatus, notes);
-                                  setRsvpStatus(null);
-                                }}
-                                disabled={
-                                  rsvpMutation.isPending ||
-                                  !isRsvpAvailable ||
-                                  ((rsvpStatus === 'NO' || rsvpStatus === 'PERMIT') &&
-                                    !notes.trim())
-                                }
-                              >
-                                Confirm
-                              </Button>
-                            )} */}
                           </div>
                         )}
 

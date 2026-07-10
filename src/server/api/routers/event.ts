@@ -453,6 +453,19 @@ export const eventRouter = createTRPCRouter({
       });
     }),
 
+  updateRSVPStatus: adminProcedure
+    .input(z.object({ responseId: z.string(), status: rsvpStatusSchema }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.eventRSVPResponse.update({
+        where: { id: input.responseId },
+        data: {
+          status: input.status,
+          approvedBy: ctx.session.user.id,
+          approvedAt: new Date(),
+        },
+      });
+    }),
+
   updatePresenceStatus: adminProcedure
     .input(z.object({ presenceId: z.string(), status: presenceStatusSchema }))
     .mutation(async ({ ctx, input }) => {

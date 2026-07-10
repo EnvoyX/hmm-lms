@@ -1,9 +1,10 @@
-import { format } from 'date-fns';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import { CalendarDays, Clock, MapPin, User, GraduationCap, Globe } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
+import { TIMEZONE } from '~/constants/constants';
 import { type RouterOutputs } from '~/trpc/react';
 
 type EventDetail = NonNullable<RouterOutputs['event']['getEventById']>;
@@ -13,8 +14,8 @@ interface EventDetailViewProps {
 }
 
 export default function EventDetailView({ event }: EventDetailViewProps) {
-  const startDate = new Date(event.start);
-  const endDate = new Date(event.end);
+  const startDate = toZonedTime(event.start, TIMEZONE);
+  const endDate = toZonedTime(event.end, TIMEZONE);
 
   const getEventScope = () => {
     if (event.course) return { label: 'Course Event', icon: GraduationCap };
@@ -53,18 +54,27 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {event.description && (
+          {event.description ? (
             <Card>
               <CardHeader>
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {event.description ?? 'No description for this event'}
+                  {event.description}
                 </p>
               </CardContent>
             </Card>
-          )}
+          ) : <Card>
+            <CardHeader>
+              <CardTitle>Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                No description available for this event
+              </p>
+            </CardContent>
+          </Card>}
 
           {timeline && timeline.length > 0 && (
             <Card>
@@ -86,14 +96,20 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                 <CalendarDays className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="font-medium text-foreground">Date & Time</p>
-                  <p className="text-muted-foreground">
-                    {format(startDate, 'EEEE, MMM d, yyyy')}
-                    {!event.allDay && (
+                  <p className="text-muted-foreground flex flex-col gap-2">
+                    <span>
+                    {formatInTimeZone(startDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (start)
+                    </span>
+                    <span>
+                    {formatInTimeZone(endDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (end)
+                    </span>
+                    {/*{!event.allDay && (
                       <>
                         <br />
-                        {format(startDate, 'p')} - {format(endDate, 'p')}
+                        {formatInTimeZone(startDate, TIMEZONE, 'p')} -{' '}
+                        {formatInTimeZone(endDate, TIMEZONE, 'p')}
                       </>
-                    )}
+                    )}*/}
                   </p>
                 </div>
               </div>
@@ -119,7 +135,11 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                     <div>
                       <p className="font-medium text-foreground">RSVP Before</p>
                       <p className="text-muted-foreground">
-                        {format(new Date(event.rsvpDeadline), 'EEEE, MMM d, yyyy, p')}
+                        {formatInTimeZone(
+                          new Date(event.rsvpDeadline),
+                          TIMEZONE,
+                          'EEEE, MMM d, yyyy, HH:mm',
+                        )}
                       </p>
                     </div>
                   </div>

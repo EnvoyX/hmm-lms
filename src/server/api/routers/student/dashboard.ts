@@ -336,6 +336,7 @@ export const studentDashboardRouter = createTRPCRouter({
       });
 
       return events.map((event) => ({
+        ...event,
         id: event.id,
         title: event.title,
         description: event.description,

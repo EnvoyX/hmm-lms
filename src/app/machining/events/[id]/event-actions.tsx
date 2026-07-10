@@ -1,6 +1,6 @@
 'use client';
 import { EventMode, type RSVPStatus, ApprovalStatus, PresenceStatus } from '@prisma/client';
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 import {
   BellRing,
   Check,
@@ -12,7 +12,7 @@ import {
   CircleX,
   Clock,
   User,
-  X,
+  CheckCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -105,7 +105,7 @@ export default function EventActions({ event }: { event: EventDetail }) {
             </CardTitle>
             <CardDescription>
               {event.rsvpDeadline
-                ? `RSVP ends at ${formatInTimeZone(event.rsvpDeadline, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')}`
+                ? ``
                 : 'No RSVP deadline'}
             </CardDescription>
           </CardHeader>
@@ -126,7 +126,7 @@ export default function EventActions({ event }: { event: EventDetail }) {
                   className="flex-1"
                   disabled={isResponding || !isRsvpAvailable}
                 >
-                  <Check className="h-4 w-4 mr-2" /> Hadir
+                  <CheckCircle className="h-4 w-4 mr-2" /> Hadir
                 </Button>
                 <Button
                   onClick={() => {
@@ -136,7 +136,7 @@ export default function EventActions({ event }: { event: EventDetail }) {
                   className="flex-1"
                   disabled={isResponding || !isRsvpAvailable}
                 >
-                  <X className="h-4 w-4 mr-2" /> Tidak Hadir
+                  <CircleX className="h-4 w-4 mr-2" /> Tidak Hadir
                 </Button>
                 <Button
                   onClick={() => {
@@ -170,7 +170,7 @@ export default function EventActions({ event }: { event: EventDetail }) {
                   placeholder={
                     rsvpStatus === 'NO'
                       ? 'Alasan:\nBukti:'
-                      : 'Menyusul Jam:\nMeninggalkan Jam:\nAlasan:\nBukti:'
+                      : 'Jam Menyusul:\nJam Meninggalkan:\nAlasan:\nBukti:'
                   }
                 />
               </div>

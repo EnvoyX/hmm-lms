@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PresenceStatus } from '@prisma/client';
+import { PresenceStatus, RSVPStatus } from '@prisma/client';
 import { format } from 'date-fns';
 import { Download, Users, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -125,6 +125,15 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     api.event.updatePresenceStatus.useMutation({
       onSuccess: async () => {
         toast.success('Presence status updated');
+        await refetch();
+      },
+      onError: (err) => toast.error(err.message),
+    });
+
+  const { mutate: updateRSVPStatus, isPending: isUpdatingRSVP } =
+    api.event.updateRSVPStatus.useMutation({
+      onSuccess: async () => {
+        toast.success('RSVP status updated');
         await refetch();
       },
       onError: (err) => toast.error(err.message),
@@ -460,6 +469,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                       <TableHead>Response</TableHead>
                       <TableHead>Notes</TableHead>
                       <TableHead>Responded At</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -517,6 +527,30 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(r.respondedAt), 'MMM d, yyyy • HH:mm')}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            onValueChange={(val) =>
+                              updateRSVPStatus({
+                                responseId: r.id,
+                                status: val as RSVPStatus,
+                              })
+                            }
+                            defaultValue={r.status}
+                            disabled={isUpdatingRSVP}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.values(RSVPStatus)
+                                .map((s) => (
+                                  <SelectItem key={s} value={s}>
+                                    {s === "YES" ? "WILL ATTEND" : s === "NO" ? `WON'T ATTEND` : s === "PERMIT" ? "ATTEND WITH NOTICE" : s.replace(/_/g, ' ')}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                       </TableRow>
                     ))}

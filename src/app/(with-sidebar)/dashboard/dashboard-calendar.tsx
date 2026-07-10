@@ -11,6 +11,10 @@ import {
   Clock,
   ExternalLink,
   CalendarOff,
+  CircleEllipsis,
+  ThumbsDown,
+  User,
+  CircleX,
 } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
@@ -24,6 +28,57 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 import { Separator } from '~/components/ui/separator';
 import { api } from '~/trpc/react';
 import { TIMEZONE } from '~/constants/constants';
+import { PresenceStatus , ApprovalStatus ,type RSVPStatus } from '@prisma/client';
+
+
+const RSVP_RESPONSE_TEXT: Record<RSVPStatus, string> = {
+  YES: 'Will Attend',
+  PERMIT: 'Attending with Notice',
+  NO: 'Unable to Attend',
+  MAYBE: 'You might be attend',
+};
+
+const PRESENCE_STATUS_UI: Record<
+  PresenceStatus,
+  { text: string; icon: React.ElementType; color: string; textColor: string }
+> = {
+  [PresenceStatus.PRESENT]: {
+    text: 'Checked in',
+    icon: CheckCircle,
+    color: 'bg-green-600',
+    textColor: 'text-green-600',
+  },
+  [PresenceStatus.PENDING_APPROVAL]: {
+    text: 'Pending Approval',
+    icon: CircleEllipsis,
+    color: 'bg-amber-500',
+    textColor: 'text-amber-500',
+  },
+  [PresenceStatus.ABSENT]: {
+    text: 'Marked as Absent',
+    icon: ThumbsDown,
+    color: 'bg-destructive',
+    textColor: 'text-destructive',
+  },
+  [PresenceStatus.LATE]: {
+    text: 'Checked in (Late)',
+    icon: Clock,
+    color: 'bg-amber-500',
+    textColor: 'text-amber-500',
+  },
+  [PresenceStatus.EXCUSED]: {
+    text: 'You were excused',
+    icon: User,
+    color: 'bg-primary',
+    textColor: 'text-primary',
+  },
+  [PresenceStatus.REJECTED]: {
+    text: 'Attendance Rejected',
+    icon: CircleX,
+    color: 'bg-destructive',
+    textColor: 'text-destructive',
+  },
+};
 
 export function DashboardCalendar() {
   const [date, setDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
@@ -150,6 +205,20 @@ export function DashboardCalendar() {
               {dayEvents.map((event) => {
                 const eventStart = toZonedTime(new Date(event.start), TIMEZONE);
                 const eventEnd = toZonedTime(new Date(event.end), TIMEZONE);
+                const currentDate = toZonedTime(new Date(), TIMEZONE);
+                const Icon =
+                  PRESENCE_STATUS_UI[event.userPresence?.status ?? PresenceStatus.PENDING_APPROVAL]
+                    .icon;
+
+                // check-in available 1 hour before event start until event end
+                const isCheckInAvailable =
+                  currentDate >=
+                    toZonedTime(new Date(eventStart.getTime() - 60 * 60 * 1000), TIMEZONE) &&
+                  currentDate <= eventEnd;
+
+                const isRsvpAvailable = event.rsvpDeadline
+                  ? currentDate <= toZonedTime(new Date(event.rsvpDeadline), TIMEZONE)
+                  : currentDate <= eventStart;
 
                 return (
                   <Popover key={event.id}>
@@ -170,7 +239,13 @@ export function DashboardCalendar() {
                               variant={event.userRsvp.status === 'YES' ? 'default' : 'secondary'}
                               className="ml-2 text-xs"
                             >
-                              {event.userRsvp.status}
+                              {event.userRsvp.status === 'YES'
+                                ? 'Will Attend'
+                                : event.userRsvp.status === 'PERMIT'
+                                  ? `Attend With Notice`
+                                  : event.userRsvp.status === 'NO'
+                                    ? `Won't Attend`
+                                    : 'Maybe Attend'}
                             </Badge>
                           )}
                         </div>
@@ -225,10 +300,13 @@ export function DashboardCalendar() {
 
                           {event.userPresence && (
                             <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-green-600">
-                                Checked in
-                                {event.userPresence.status === 'LATE' && ' (Late)'}
+                              <Icon
+                                className={`h-4 w-4 ${PRESENCE_STATUS_UI[event.userPresence.status].textColor}`}
+                              />
+                              <span
+                                className={PRESENCE_STATUS_UI[event.userPresence.status].textColor}
+                              >
+                                {PRESENCE_STATUS_UI[event.userPresence.status].text}
                               </span>
                             </div>
                           )}
@@ -240,35 +318,36 @@ export function DashboardCalendar() {
                         {event.eventMode !== 'BASIC' && event.eventMode !== 'ATTENDANCE_ONLY' && (
                           <div className="space-y-2">
                             <p className="text-sm font-medium">RSVP Status:</p>
-                            <div className="flex gap-2">
+                            {event.userRsvp ? (
+                              <div className="flex flex-col gap-1">
+                                <div className="p-3 bg-accent text-accent-foreground rounded-md text-sm font-medium">
+                                  {RSVP_RESPONSE_TEXT[event.userRsvp.status]}
+                                  {event.userRsvp.approvalStatus === ApprovalStatus.PENDING &&
+                                    ' (Pending Approval)'}
+                                  {event.userRsvp.approvalStatus === ApprovalStatus.REJECTED &&
+                                    ' (Not Approved)'}
+                                </div>
+                              </div>
+                            ) : (<div className="flex flex-wrap gap-2">
                               <Button
                                 size="sm"
-                                variant={event.userRsvp?.status === 'YES' ? 'default' : 'outline'}
+                                variant="default"
                                 onClick={() => handleRsvp(event.id, 'YES')}
-                                disabled={rsvpMutation.isPending}
+                                disabled={rsvpMutation.isPending || !isRsvpAvailable}
                                 className="flex-1"
                               >
-                                Going
+                                Will Attend
                               </Button>
                               <Button
                                 size="sm"
-                                variant={event.userRsvp?.status === 'MAYBE' ? 'default' : 'outline'}
-                                onClick={() => handleRsvp(event.id, 'MAYBE')}
-                                disabled={rsvpMutation.isPending}
-                                className="flex-1"
-                              >
-                                Maybe
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={event.userRsvp?.status === 'NO' ? 'default' : 'outline'}
+                                variant="secondary"
                                 onClick={() => handleRsvp(event.id, 'NO')}
-                                disabled={rsvpMutation.isPending}
+                                disabled={rsvpMutation.isPending || !isRsvpAvailable}
                                 className="flex-1"
                               >
-                                Can&apos;t Go
+                                Won&apos;t Attend
                               </Button>
-                            </div>
+                            </div>)}
                           </div>
                         )}
 
@@ -282,13 +361,13 @@ export function DashboardCalendar() {
                                 size="sm"
                                 className="w-full"
                                 onClick={() => handleCheckIn(event.id)}
-                                disabled={attendanceMutation.isPending}
+                                disabled={attendanceMutation.isPending || !isCheckInAvailable}
                               >
                                 <Clock className="mr-2 h-4 w-4" />
                                 Check In
                               </Button>
                               <p className="text-muted-foreground text-center text-xs">
-                                Available 15 minutes before start
+                                Available 1 hour before event start
                               </p>
                             </div>
                           )}

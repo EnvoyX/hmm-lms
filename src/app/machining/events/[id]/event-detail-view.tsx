@@ -54,18 +54,27 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {event.description && (
+          {event.description ? (
             <Card>
               <CardHeader>
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {event.description ?? 'No description for this event'}
+                  {event.description}
                 </p>
               </CardContent>
             </Card>
-          )}
+          ) : <Card>
+            <CardHeader>
+              <CardTitle>Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                No description available for this event
+              </p>
+            </CardContent>
+          </Card>}
 
           {timeline && timeline.length > 0 && (
             <Card>
@@ -87,15 +96,20 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                 <CalendarDays className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="font-medium text-foreground">Date & Time</p>
-                  <p className="text-muted-foreground">
-                    {formatInTimeZone(startDate, TIMEZONE, 'EEEE, MMM d, yyyy')}
-                    {!event.allDay && (
+                  <p className="text-muted-foreground flex flex-col gap-2">
+                    <span>
+                    {formatInTimeZone(startDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (start)
+                    </span>
+                    <span>
+                    {formatInTimeZone(endDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (end)
+                    </span>
+                    {/*{!event.allDay && (
                       <>
                         <br />
                         {formatInTimeZone(startDate, TIMEZONE, 'p')} -{' '}
                         {formatInTimeZone(endDate, TIMEZONE, 'p')}
                       </>
-                    )}
+                    )}*/}
                   </p>
                 </div>
               </div>

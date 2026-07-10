@@ -1,5 +1,6 @@
 'use client';
 
+import { PresenceStatus, ApprovalStatus, type RSVPStatus } from '@prisma/client';
 import cn from 'cnfast';
 import { isAfter, isBefore } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
@@ -11,6 +12,10 @@ import {
   Clock,
   ExternalLink,
   CalendarOff,
+  CircleX,
+  User,
+  CircleEllipsis,
+  ThumbsDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
@@ -22,11 +27,63 @@ import { Calendar } from '~/components/ui/calendar';
 import { Card, CardContent, CardFooter } from '~/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { Separator } from '~/components/ui/separator';
+import { TIMEZONE } from '~/constants/constants';
 import { api } from '~/trpc/react';
+// import { Label } from '~/components/ui/label';
+// import { Textarea } from '~/components/ui/textarea';
 
-const TIMEZONE = 'Asia/Jakarta'; // UTC+7 (WIB)
+const RSVP_RESPONSE_TEXT: Record<RSVPStatus, string> = {
+  YES: 'Will Attend',
+  PERMIT: 'Attending with Notice',
+  NO: 'Unable to Attend',
+  MAYBE: 'You might be attend',
+};
+
+const PRESENCE_STATUS_UI: Record<
+  PresenceStatus,
+  { text: string; icon: React.ElementType; color: string; textColor: string }
+> = {
+  [PresenceStatus.PRESENT]: {
+    text: 'Checked in',
+    icon: CheckCircle,
+    color: 'bg-green-600',
+    textColor: 'text-green-600',
+  },
+  [PresenceStatus.PENDING_APPROVAL]: {
+    text: 'Pending Approval',
+    icon: CircleEllipsis,
+    color: 'bg-amber-500',
+    textColor: 'text-amber-500',
+  },
+  [PresenceStatus.ABSENT]: {
+    text: 'Marked as Absent',
+    icon: ThumbsDown,
+    color: 'bg-destructive',
+    textColor: 'text-destructive',
+  },
+  [PresenceStatus.LATE]: {
+    text: 'Checked in (Late)',
+    icon: Clock,
+    color: 'bg-amber-500',
+    textColor: 'text-amber-500',
+  },
+  [PresenceStatus.EXCUSED]: {
+    text: 'You were excused',
+    icon: User,
+    color: 'bg-primary',
+    textColor: 'text-primary',
+  },
+  [PresenceStatus.REJECTED]: {
+    text: 'Attendance Rejected',
+    icon: CircleX,
+    color: 'bg-destructive',
+    textColor: 'text-destructive',
+  },
+};
 
 export function DashboardCalendar() {
+  // const [rsvpStatus, setRsvpStatus] = React.useState<RSVPStatus | null>(null);
+  // const [notes, setNotes] = React.useState('');
   const [date, setDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
   const [selectedDate, setSelectedDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));
 
@@ -56,16 +113,16 @@ export function DashboardCalendar() {
     });
 
   // RSVP mutation
-  const rsvpMutation = api.event.respondToRsvp.useMutation({
-    onSuccess: () => {
-      toast.success('RSVP updated successfully');
-      void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
-      void utils.studentDashboard.getMachiningEventsForDate.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  // const rsvpMutation = api.event.respondToRsvp.useMutation({
+  //   onSuccess: () => {
+  //     toast.success('RSVP updated successfully');
+  //     void utils.studentDashboard.getCalendarMachiningEvents.invalidate();
+  //     void utils.studentDashboard.getMachiningEventsForDate.invalidate();
+  //   },
+  //   onError: (error) => {
+  //     toast.error(error.message);
+  //   },
+  // });
 
   // Attendance mutation
   const attendanceMutation = api.event.recordPresence.useMutation({
@@ -102,9 +159,9 @@ export function DashboardCalendar() {
     }
   };
 
-  const handleRsvp = (eventId: string, status: 'YES' | 'NO' | 'MAYBE') => {
-    rsvpMutation.mutate({ eventId, status });
-  };
+  // const handleRsvp = (eventId: string, status: RSVPStatus, notes?: string) => {
+  //   rsvpMutation.mutate({ eventId, status, notes });
+  // };
 
   const handleCheckIn = (eventId: string) => {
     attendanceMutation.mutate({ eventId });
@@ -151,6 +208,20 @@ export function DashboardCalendar() {
               {dayEvents.map((event) => {
                 const eventStart = toZonedTime(new Date(event.start), TIMEZONE);
                 const eventEnd = toZonedTime(new Date(event.end), TIMEZONE);
+                const currentDate = toZonedTime(new Date(), TIMEZONE);
+                const Icon =
+                  PRESENCE_STATUS_UI[event.userPresence?.status ?? PresenceStatus.PENDING_APPROVAL]
+                    .icon;
+
+                // check-in available 1 hour before event start until event end
+                const isCheckInAvailable =
+                  currentDate >=
+                    toZonedTime(new Date(eventStart.getTime() - 60 * 60 * 1000), TIMEZONE) &&
+                  currentDate <= eventEnd;
+
+                // const isRsvpAvailable = event.rsvpDeadline
+                //   ? currentDate <= toZonedTime(new Date(event.rsvpDeadline), TIMEZONE)
+                //   : currentDate <= eventStart;
 
                 return (
                   <Popover key={event.id}>
@@ -171,7 +242,13 @@ export function DashboardCalendar() {
                               variant={event.userRsvp.status === 'YES' ? 'default' : 'secondary'}
                               className="ml-2 text-xs"
                             >
-                              {event.userRsvp.status}
+                              {event.userRsvp.status === 'YES'
+                                ? 'Will Attend'
+                                : event.userRsvp.status === 'PERMIT'
+                                  ? `Attend With Notice`
+                                  : event.userRsvp.status === 'NO'
+                                    ? `Can't Attend`
+                                    : 'Mungkin Hadir'}
                             </Badge>
                           )}
                         </div>
@@ -225,10 +302,13 @@ export function DashboardCalendar() {
 
                           {event.userPresence && (
                             <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-green-600">
-                                Checked in
-                                {event.userPresence.status === 'LATE' && ' (Late)'}
+                              <Icon
+                                className={`h-4 w-4 ${PRESENCE_STATUS_UI[event.userPresence.status].textColor}`}
+                              />
+                              <span
+                                className={PRESENCE_STATUS_UI[event.userPresence.status].textColor}
+                              >
+                                {PRESENCE_STATUS_UI[event.userPresence.status].text}
                               </span>
                             </div>
                           )}
@@ -239,36 +319,102 @@ export function DashboardCalendar() {
                         {/* RSVP Section */}
                         {event.eventMode !== 'BASIC' && event.eventMode !== 'ATTENDANCE_ONLY' && (
                           <div className="space-y-2">
-                            <p className="text-sm font-medium">RSVP Status:</p>
-                            <div className="flex gap-2">
+                            {event.userRsvp && (
+                              <div className="flex flex-col gap-1">
+                                <span>RSVP Status</span>
+                                <div className="p-3 bg-accent text-accent-foreground rounded-md text-sm font-medium">
+                                  {RSVP_RESPONSE_TEXT[event.userRsvp.status]}
+                                  {event.userRsvp.approvalStatus === ApprovalStatus.PENDING &&
+                                    ' (Pending Approval)'}
+                                  {event.userRsvp.approvalStatus === ApprovalStatus.REJECTED &&
+                                    ' (Not Approved)'}
+                                </div>
+                              </div>
+                            )}
+                            {/* <>
+                                <p className="text-sm font-medium flex flex-col">
+                                  <span>RSVP Status</span>
+                                  {event.rsvpDeadline && (
+                                    <span className="text-muted-foreground text-xs">
+                                      (ends at {formatInTimeZone(event.rsvpDeadline, TIMEZONE ,'MMM d, yyyy, HH:mm')})
+                                    </span>
+                                  )}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setRsvpStatus('YES');
+                                    }}
+                                    variant={rsvpStatus === 'YES' ? 'default' : 'outline'}
+                                    className="flex-1"
+                                    disabled={rsvpMutation.isPending || !isRsvpAvailable}
+                                  >
+                                    Hadir
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setRsvpStatus('NO');
+                                    }}
+                                    variant={rsvpStatus === 'NO' ? 'default' : 'outline'}
+                                    className="flex-1"
+                                    disabled={rsvpMutation.isPending || !isRsvpAvailable}
+                                  >
+                                    Tidak Hadir
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setRsvpStatus('PERMIT');
+                                    }}
+                                    variant={rsvpStatus === 'PERMIT' ? 'default' : 'outline'}
+                                    className="flex-1"
+                                    disabled={rsvpMutation.isPending || !isRsvpAvailable}
+                                  >
+                                    Menyusul/Meninggalkan
+                                  </Button>
+                                </div>
+                            </> */}
+                            {/* {(rsvpStatus === 'NO' || rsvpStatus === 'PERMIT') && (
+                              <div className="flex flex-col">
+                                <Label className="text-lg font-semibold">Notes</Label>
+                                {rsvpStatus === 'NO' ? (
+                                  <p className="text-muted-foreground text-sm">
+                                    Sertakan alasan tidak hadir serta buktinya
+                                  </p>
+                                ) : (
+                                  <p className="text-muted-foreground text-sm">
+                                    Sertakan alasan menyusul/meninggalkan serta bukti dan jam
+                                    menyusul/meninggalkan
+                                  </p>
+                                )}
+                                <Textarea
+                                  className="mt-2"
+                                  value={notes}
+                                  disabled={rsvpMutation.isPending || !isRsvpAvailable}
+                                  onChange={(e) => setNotes(e.target.value)}
+                                />
+                              </div>
+                            )}
+                            {rsvpStatus !== null && (
                               <Button
-                                size="sm"
-                                variant={event.userRsvp?.status === 'YES' ? 'default' : 'outline'}
-                                onClick={() => handleRsvp(event.id, 'YES')}
-                                disabled={rsvpMutation.isPending}
-                                className="flex-1"
+                                className="w-full"
+                                onClick={() => {
+                                  if (!rsvpStatus) return;
+                                  handleRsvp(event.id, rsvpStatus, notes);
+                                  setRsvpStatus(null);
+                                }}
+                                disabled={
+                                  rsvpMutation.isPending ||
+                                  !isRsvpAvailable ||
+                                  ((rsvpStatus === 'NO' || rsvpStatus === 'PERMIT') &&
+                                    !notes.trim())
+                                }
                               >
-                                Going
+                                Confirm
                               </Button>
-                              <Button
-                                size="sm"
-                                variant={event.userRsvp?.status === 'MAYBE' ? 'default' : 'outline'}
-                                onClick={() => handleRsvp(event.id, 'MAYBE')}
-                                disabled={rsvpMutation.isPending}
-                                className="flex-1"
-                              >
-                                Maybe
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={event.userRsvp?.status === 'NO' ? 'default' : 'outline'}
-                                onClick={() => handleRsvp(event.id, 'NO')}
-                                disabled={rsvpMutation.isPending}
-                                className="flex-1"
-                              >
-                                Can&apos;t Go
-                              </Button>
-                            </div>
+                            )} */}
                           </div>
                         )}
 
@@ -282,19 +428,19 @@ export function DashboardCalendar() {
                                 size="sm"
                                 className="w-full"
                                 onClick={() => handleCheckIn(event.id)}
-                                disabled={attendanceMutation.isPending}
+                                disabled={attendanceMutation.isPending || !isCheckInAvailable}
                               >
                                 <Clock className="mr-2 h-4 w-4" />
                                 Check In
                               </Button>
                               <p className="text-muted-foreground text-center text-xs">
-                                Available 15 minutes before start
+                                Available 1 hour before event start
                               </p>
                             </div>
                           )}
 
                         <Button variant="ghost" size="sm" className="w-full" asChild>
-                          <Link href={`/events/${event.id}`}>
+                          <Link href={`/machining/events/${event.id}`}>
                             <ExternalLink className="mr-2 h-4 w-4" />
                             View Details
                           </Link>
@@ -415,7 +561,7 @@ export function DashboardCalendar() {
 
       <CardFooter className="pt-0">
         <Button variant="ghost" size="sm" className="w-full" asChild>
-          <Link href="/events">
+          <Link href="/machining/events">
             View all events
             <ExternalLink className="ml-2 h-4 w-4" />
           </Link>

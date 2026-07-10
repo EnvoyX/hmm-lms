@@ -1,4 +1,3 @@
-// ~/app/(admin)/admin/events/[id]/event-admin-dashboard.tsx
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,7 +8,6 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { z } from 'zod';
 
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
@@ -166,7 +164,15 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
       ...data.rsvpResponses.map((r) => [
         r.user?.name ?? 'N/A',
         r.user?.nim ?? 'N/A',
-        r.status,
+        r.status === 'YES'
+          ? 'Hadir'
+          : r.status === 'NO'
+            ? 'Tidak Hadir'
+            : r.status === 'PERMIT'
+              ? 'Menyusul/Meninggalkan'
+              : r.status === 'MAYBE'
+                ? 'Mungkin Hadir'
+                : 'No RSVP response',
         format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
         r.user?.email ?? 'N/A',
         r.notes ?? '',
@@ -203,53 +209,53 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     toast.success('Attendance exported to Excel successfully');
   };
 
-  const handleExportCSVRsvps = () => {
-    if (!data) return;
+  // const handleExportCSVRsvps = () => {
+  //   if (!data) return;
 
-    const csv = [
-      ['Name', 'NIM', 'Status', 'Responded At'].join(','),
-      ...data.rsvpResponses.map((r) =>
-        [
-          r.user?.name ?? 'N/A',
-          r.user?.nim ?? 'N/A',
-          r.status,
-          format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
-        ].join(','),
-      ),
-    ].join('\n');
+  //   const csv = [
+  //     ['Name', 'NIM', 'Status', 'Responded At'].join(','),
+  //     ...data.rsvpResponses.map((r) =>
+  //       [
+  //         r.user?.name ?? 'N/A',
+  //         r.user?.nim ?? 'N/A',
+  //         r.status,
+  //         format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
+  //       ].join(','),
+  //     ),
+  //   ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rsvps-${eventId}.csv`;
-    a.click();
-    toast.success('RSVPs exported to CSV successfully');
-  };
+  //   const blob = new Blob([csv], { type: 'text/csv' });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = `rsvps-${eventId}.csv`;
+  //   a.click();
+  //   toast.success('RSVPs exported to CSV successfully');
+  // };
 
-  const handleExportCSVAttendance = () => {
-    if (!data) return;
+  // const handleExportCSVAttendance = () => {
+  //   if (!data) return;
 
-    const csv = [
-      ['Name', 'NIM', 'Status', 'Checked In At'].join(','),
-      ...data.presenceRecords.map((p) =>
-        [
-          p.user.name,
-          p.user.nim,
-          p.status,
-          p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A',
-        ].join(','),
-      ),
-    ].join('\n');
+  //   const csv = [
+  //     ['Name', 'NIM', 'Status', 'Checked In At'].join(','),
+  //     ...data.presenceRecords.map((p) =>
+  //       [
+  //         p.user.name,
+  //         p.user.nim,
+  //         p.status,
+  //         p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A',
+  //       ].join(','),
+  //     ),
+  //   ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `attendance-${eventId}.csv`;
-    a.click();
-    toast.success('Attendance exported to CSV successfully');
-  };
+  //   const blob = new Blob([csv], { type: 'text/csv' });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = `attendance-${eventId}.csv`;
+  //   a.click();
+  //   toast.success('Attendance exported to CSV successfully');
+  // };
 
   return (
     <>
@@ -330,15 +336,6 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export Attendance (Excel)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportCSVAttendance}
-                  disabled={!data?.presenceRecords.length}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Attendance (CSV)
                 </Button>
               </div>
 
@@ -449,15 +446,6 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                   <Download className="h-4 w-4 mr-2" />
                   Export RSVPs (Excel)
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportCSVRsvps}
-                  disabled={!data?.rsvpResponses.length}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export RSVPs (CSV)
-                </Button>
               </div>
 
               {data?.rsvpResponses.length === 0 ? (
@@ -494,25 +482,31 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                                 ? 'default'
                                 : r.status === 'MAYBE'
                                   ? 'secondary'
-                                  : 'outline'
+                                  : r.status === 'PERMIT'
+                                    ? 'secondary'
+                                    : 'outline'
                             }
                           >
                             {r.status === 'YES' ? (
                               <>
-                                <CheckCircle className="h-3 w-3 mr-1" /> Going
+                                <CheckCircle className="h-3 w-3 mr-1" /> Will Attend
                               </>
                             ) : r.status === 'MAYBE' ? (
                               <>
                                 <Clock className="h-3 w-3 mr-1" /> Maybe
                               </>
+                            ) : r.status === 'PERMIT' ? (
+                              <>
+                                <Clock className="h-3 w-3 mr-1" /> Attending with Notice
+                              </>
                             ) : (
                               <>
-                                <XCircle className="h-3 w-3 mr-1" /> Can&apos;t Go
+                                <XCircle className="h-3 w-3 mr-1" /> Won&apos;t Attend
                               </>
                             )}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell>
                           <UpdateNoteDialog
                             presenceId={r.id}
                             currentNotes={r.notes}

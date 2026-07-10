@@ -13,8 +13,7 @@ import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-
-const TIMEZONE = 'Asia/Jakarta';
+import { TIMEZONE } from '~/constants/constants';
 
 export const studentDashboardRouter = createTRPCRouter({
   // Get enrolled courses with progress
@@ -552,6 +551,7 @@ export const studentDashboardRouter = createTRPCRouter({
       });
 
       return events.map((event) => ({
+        ...event,
         id: event.id,
         title: event.title,
         description: event.description,

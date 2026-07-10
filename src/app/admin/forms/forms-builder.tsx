@@ -43,6 +43,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Textarea } from '~/components/ui/textarea';
 import { type FormBuilderSchema, formBuilderSchema } from '~/lib/types/forms';
 import { api } from '~/trpc/react';
+import { TIMEZONE } from '~/constants/constants';
 
 import { QuestionBuilderItem } from './question-builder';
 
@@ -50,8 +51,6 @@ interface FormsBuilderProps {
   mode: 'create' | 'edit';
   initialData?: FormBuilderSchema & { id: string };
 }
-
-const TIMEZONE = 'Asia/Jakarta';
 
 // helper: format Date to 'YYYY-MM-DDTHH:mm' for datetime-local
 function toDateTimeLocalValue(date?: Date | null) {

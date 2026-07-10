@@ -352,6 +352,7 @@ export const eventRouter = createTRPCRouter({
       z.object({
         eventId: z.string(),
         status: rsvpStatusSchema,
+        notes: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -380,12 +381,14 @@ export const eventRouter = createTRPCRouter({
           status: input.status,
           respondedAt: new Date(),
           approvalStatus: ApprovalStatus.APPROVED, // Auto-approve
+          notes: input.notes,
         },
         create: {
           eventId: input.eventId,
           userId: ctx.session.user.id,
           status: input.status,
           approvalStatus: ApprovalStatus.APPROVED, // Auto-approve
+          notes: input.notes,
         },
       });
     }),
@@ -402,8 +405,8 @@ export const eventRouter = createTRPCRouter({
 
       const now = new Date();
 
-      // Allow check-in from 15 minutes before until event ends
-      const allowedStartTime = new Date(event.start.getTime() - 15 * 60 * 1000);
+      // Allow check-in from 60 minutes before until event ends
+      const allowedStartTime = new Date(event.start.getTime() - 60 * 60 * 1000);
 
       if (now < allowedStartTime || now > event.end) {
         throw new TRPCError({

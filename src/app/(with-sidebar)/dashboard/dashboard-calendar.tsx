@@ -23,8 +23,7 @@ import { Card, CardContent, CardFooter } from '~/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { Separator } from '~/components/ui/separator';
 import { api } from '~/trpc/react';
-
-const TIMEZONE = 'Asia/Jakarta'; // UTC+7 (WIB)
+import { TIMEZONE } from '~/constants/constants';
 
 export function DashboardCalendar() {
   const [date, setDate] = React.useState<Date>(toZonedTime(new Date(), TIMEZONE));

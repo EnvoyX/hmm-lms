@@ -37,6 +37,7 @@ import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { eventInputSchema, type timelineItemSchema } from '~/lib/schema/event';
 import type { JsonArray } from '@prisma/client/runtime/library';
+import { TIMEZONE } from '~/constants/constants';
 
 type EventDetail = NonNullable<RouterOutputs['event']['getEventById']>;
 
@@ -46,8 +47,6 @@ interface EventFormProps {
   event?: EventDetail;
   mode: 'create' | 'edit';
 }
-
-const TIMEZONE = "Asia/Jakarta";
 
 // helper: format Date to 'YYYY-MM-DDTHH:mm' for datetime-local
 function toDateTimeLocalValue(d?: Date | null) {

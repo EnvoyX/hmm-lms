@@ -27,10 +27,8 @@ import { EditorProvider } from '~/components/ui/shadcn-io/editor';
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import {} from "date-fns"
 import { useIsMobile } from "~/hooks/use-mobile";
+import { TIMEZONE } from '~/constants/constants';
 
-
-
-const TIMEZONE = "Asia/Jakarta"; // UTC+7 (WIB)
 export function DashboardContent() {
   const isMobile = useIsMobile()
   const { data: announcements, isLoading: announcementsLoading } =

@@ -111,6 +111,7 @@ enum EventMode {
 
 enum RSVPStatus {
   YES
+  PERMIT
   NO
   MAYBE
 }

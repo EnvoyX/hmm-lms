@@ -1,6 +1,5 @@
 import {
   Banknote,
-  Calendar,
   Footprints,
   GraduationCap,
   Home,
@@ -12,13 +11,7 @@ import {
 import { cookies } from 'next/headers';
 import Image from 'next/image';
 
-import {
-  getAnnoucements,
-  getCourses,
-  getScholarships,
-  getTryouts,
-  getUserEvents,
-} from '~/server/action';
+import { getAnnoucements, getCourses, getUserEvents, getTryouts } from '~/server/action';
 import { auth } from '~/server/auth';
 
 import StudentBreadcrumb from '../student-breadcrumb';
@@ -58,7 +51,7 @@ const sidebarTabs: {
     items: [
       {
         label: 'Dashboard',
-        href: '/machining/dashboard',
+        href: '/machining',
         icon: Home,
         tooltip: 'Dashboard',
       },
@@ -160,11 +153,17 @@ export default async function MachiningNavbar({
       title: event.title,
       date: event.createdAt,
     }));
+  const tryout = (await getTryouts()).map((tryout) => ({
+    id: tryout.id,
+    title: tryout.title,
+    classCode: tryout.course.classCode ?? 'N/A',
+  }));
 
   const tabs = {
     courses,
     announcements,
     events,
+    tryouts: tryout,
   };
 
   return (

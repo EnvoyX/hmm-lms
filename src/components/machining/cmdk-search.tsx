@@ -1,20 +1,5 @@
-"use client";
+'use client';
 
-import {
-  useEffect,
-  useState,
-  type Dispatch,
-  type JSX,
-  type SetStateAction,
-} from "react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../ui/command";
 import {
   Banknote,
   Bell,
@@ -27,11 +12,22 @@ import {
   Megaphone,
   Settings,
   SquarePlay,
+  Tally5,
   User,
-} from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
-import { Kbd } from "../ui/key-bind";
-import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+} from 'lucide-react';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState, type Dispatch, type JSX, type SetStateAction } from 'react';
+
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '../ui/command';
+import { Kbd } from '../ui/key-bind';
 
 type NavTabItem = {
   label: string;
@@ -43,60 +39,52 @@ type NavTabItem = {
 
 const tabs: { group: string; items: NavTabItem[] }[] = [
   {
-    group: "Machining",
+    group: 'Machining',
     items: [
       {
-        label: "Dashboard",
-        href: "/machining/dashboard",
+        label: 'Dashboard',
+        href: '/machining/dashboard',
         icon: Home,
-        tooltip: "Dashboard",
+        tooltip: 'Dashboard',
       },
       {
-        label: "Courses",
-        href: "/machining/courses",
+        label: 'Courses',
+        href: '/machining/courses',
         icon: GraduationCap,
-        tooltip: "Courses",
+        tooltip: 'Courses',
       },
       {
-        label: "Events",
-        href: "/machining/events",
+        label: 'Events',
+        href: '/machining/events',
         icon: Footprints,
-        tooltip: "Events",
+        tooltip: 'Events',
         dev: false,
       },
       {
-        label: "Announcements",
-        href: "/machining/announcements",
+        label: 'Announcements',
+        href: '/machining/announcements',
         icon: Megaphone,
-        tooltip: "Announcements",
+        tooltip: 'Announcements',
         dev: false,
       },
-      {
-        label: "Calendar",
-        href: "/machining/schedule",
-        icon: Calendar,
-        tooltip: "Schedule",
-        dev: false,
-      },
+      { label: 'Tryouts', href: '/tryouts', icon: Tally5, tooltip: 'Try Outs' },
     ],
   },
   {
-    group: "Preferences",
+    group: 'Preferences',
     items: [
       {
-        label: "Settings",
-        href: "/machining/settings",
+        label: 'Settings',
+        href: '/machining/settings',
         icon: Settings,
-        tooltip: "Settings",
+        tooltip: 'Settings',
         dev: false,
       },
     ],
   },
   {
-    group: "Others",
-    items: [
-      { label: "Profile", href: "/machining/profile", icon: User },
-    ],
+    group: 'Others',
+    items: [{ label: 'Profile', href: '/machining/profile', icon: User }],
   },
 ];
 
@@ -118,6 +106,11 @@ export type TabsType = {
     title: string;
     date: Date;
   }[];
+  tryouts: {
+    id: string;
+    title: string;
+    classCode: string;
+  }[];
 };
 
 // Helper type for the router prop
@@ -131,7 +124,7 @@ function CourseSearchItem({
   props,
   router,
   setOpen,
-}: { props: TabsType["courses"][number] } & SearchItemBaseProps) {
+}: { props: TabsType['courses'][number] } & SearchItemBaseProps) {
   const handleSelect = () => {
     router.push(`/courses/${props.id}`);
     setOpen(false); // Close the command menu on selection
@@ -143,11 +136,11 @@ function CourseSearchItem({
       className="cursor-pointer"
       value={[
         props.title,
-        props.classCode ?? "",
+        props.classCode ?? '',
         `${props.totalLessons} materials`,
         `${props.totalVideos} videos`,
-        "course",
-      ].join(" ")}
+        'course',
+      ].join(' ')}
     >
       <GraduationCap className="mr-2 h-4 w-4 shrink-0" />
       <span className="truncate">{props.title}</span>
@@ -169,7 +162,7 @@ function AnnouncementSearchItem({
   props,
   router,
   setOpen,
-}: { props: TabsType["announcements"][number] } & SearchItemBaseProps) {
+}: { props: TabsType['announcements'][number] } & SearchItemBaseProps) {
   const handleSelect = () => {
     router.push(`/announcements?id=${props.id}`);
     setOpen(false);
@@ -191,9 +184,27 @@ function EventSearchItem({
   props,
   router,
   setOpen,
-}: { props: TabsType["events"][number] } & SearchItemBaseProps) {
+}: { props: TabsType['events'][number] } & SearchItemBaseProps) {
   const handleSelect = () => {
     router.push(`/events?id=${props.id}`);
+    setOpen(false);
+  };
+
+  return (
+    <CommandItem onSelect={handleSelect} className="cursor-pointer" value={`${props.title} event`}>
+      <Footprints className="mr-2" />
+      <span>{props.title}</span>
+    </CommandItem>
+  );
+}
+
+function TryOutSearchItem({
+  props,
+  router,
+  setOpen,
+}: { props: TabsType['tryouts'][number] } & SearchItemBaseProps) {
+  const handleSelect = () => {
+    router.push(`/try-outs/${props.id}`);
     setOpen(false);
   };
 
@@ -201,22 +212,24 @@ function EventSearchItem({
     <CommandItem
       onSelect={handleSelect}
       className="cursor-pointer"
-      value={`${props.title} event`}
+      value={`${props.title} ${props.classCode} tryout`}
     >
-      <Footprints className="mr-2" />
+      <Tally5 className="mr-2" />
       <span>{props.title}</span>
+      <p className="text-muted-foreground ml-auto">{props.classCode}</p>
     </CommandItem>
   );
 }
 
 const tabsItems: {
   [K in keyof TabsType]: (
-    props: Record<"props", TabsType[K][number]> & SearchItemBaseProps,
+    props: Record<'props', TabsType[K][number]> & SearchItemBaseProps,
   ) => JSX.Element;
 } = {
   courses: CourseSearchItem,
   announcements: AnnouncementSearchItem,
   events: EventSearchItem,
+  tryouts: TryOutSearchItem,
 };
 
 /** Keeps `tabKey` and `items` in sync so we don't get a cross-tab props intersection. */
@@ -238,7 +251,7 @@ function SearchItemsForKey<K extends keyof TabsType>({
   ) => JSX.Element;
   return items.map((item) => (
     <Comp
-      key={item.id + "-cmd-item-" + String(tabKey)}
+      key={item.id + '-cmd-item-' + String(tabKey)}
       props={item}
       router={router}
       setOpen={setOpen}
@@ -249,19 +262,19 @@ function SearchItemsForKey<K extends keyof TabsType>({
 export default function SearchCMDK({ data }: { data: TabsType }) {
   const [open, setOpen] = useState(false);
   const pathName = usePathname();
-  const firstPath = pathName.split("/")[1] as keyof TabsType;
+  const firstPath = pathName.split('/')[1] as keyof TabsType;
   const primaryData = data[firstPath];
   const router = useRouter();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
     };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, []);
 
   return (
@@ -293,19 +306,11 @@ export default function SearchCMDK({ data }: { data: TabsType }) {
             </CommandGroup>
           )}
           {tabs.map((group) => (
-            <CommandGroup
-              heading={group.group}
-              key={group.group + group.items[0]?.label}
-            >
+            <CommandGroup heading={group.group} key={group.group + group.items[0]?.label}>
               {group.items.map((item) => (
                 <CommandItem
-                  key={item.label + "-cmd-item-" + group.group}
-                  value={[
-                    item.label,
-                    item.tooltip ?? "",
-                    item.href,
-                    group.group,
-                  ].join(" ")}
+                  key={item.label + '-cmd-item-' + group.group}
+                  value={[item.label, item.tooltip ?? '', item.href, group.group].join(' ')}
                   // asChild
                   onSelect={() => {
                     // Close the dialog when user selects
@@ -324,7 +329,7 @@ export default function SearchCMDK({ data }: { data: TabsType }) {
             if (label === firstPath) return null;
             return (
               <CommandGroup
-                key={String(label) + "-cmd-group"}
+                key={String(label) + '-cmd-group'}
                 heading={String(label)}
                 className="capitalize"
               >

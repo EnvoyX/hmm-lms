@@ -20,6 +20,7 @@ import { Form } from '~/components/ui/form';
 import { getErrorMessage } from '~/lib/error-utils';
 import { uploadImages } from '~/server/action';
 import { api, type RouterOutputs } from '~/trpc/react';
+import { TIMEZONE } from '~/constants/constants';
 
 type FormWithQuestions = RouterOutputs['form']['getById'];
 
@@ -70,8 +71,6 @@ interface PendingFileUpload {
   files: File[];
   type: 'FILE_UPLOAD';
 }
-
-const TIMEZONE = 'Asia/Jakarta';
 
 function isPendingFileUpload(value: Answer | PendingFileUpload): value is PendingFileUpload {
   return 'type' in value && value.type === 'FILE_UPLOAD';

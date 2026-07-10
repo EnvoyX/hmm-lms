@@ -1,15 +1,20 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import EventItem from './event-item';
-import { api } from '~/trpc/server';
 import { CalendarDays } from 'lucide-react';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { type RouterOutputs } from '~/trpc/react';
+import { api } from '~/trpc/server';
+
+import EventItem from './event-item';
 
 export default async function EventsPage() {
   const myEvents = await api.event.getMyEvents();
-  const allEvents = await api.event.getAllEvents();
+  const allEvents = await api.event.getNonMachiningEvents();
   const courseEvents = await api.event.getCourseEvents();
 
-  const renderEventList = (events: RouterOutputs['event']['getAllEvents'], emptyMessage: string) => {
+  const renderEventList = (
+    events: RouterOutputs['event']['getAllEvents'],
+    emptyMessage: string,
+  ) => {
     if (events.length === 0) {
       return (
         <div className="text-center py-12">
@@ -21,11 +26,7 @@ export default async function EventsPage() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
-          <EventItem
-            key={event.id}
-            event={event}
-            href={`/events/${event.id}`}
-          />
+          <EventItem key={event.id} event={event} href={`/events/${event.id}`} />
         ))}
       </div>
     );
@@ -55,9 +56,15 @@ export default async function EventsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="my-events">{renderEventList(myEvents, "You don't have any personal events yet.")}</TabsContent>
-        <TabsContent value="course-events">{renderEventList(courseEvents, "No course events available.")}</TabsContent>
-        <TabsContent value="all-events">{renderEventList(allEvents, "No public events available.")}</TabsContent>
+        <TabsContent value="my-events">
+          {renderEventList(myEvents, "You don't have any personal events yet.")}
+        </TabsContent>
+        <TabsContent value="course-events">
+          {renderEventList(courseEvents, 'No course events available.')}
+        </TabsContent>
+        <TabsContent value="all-events">
+          {renderEventList(allEvents, 'No public events available.')}
+        </TabsContent>
       </Tabs>
     </div>
   );

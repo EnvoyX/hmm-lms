@@ -153,7 +153,7 @@ const sidebarTabs: {
         },
         {
           label: "Machining",
-          href: "/machining/dashboard",
+          href: "/machining",
           icon: BookOpen,
           tooltip: "Machining",
         },

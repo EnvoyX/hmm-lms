@@ -1,4 +1,3 @@
-// ~/app/(admin)/admin/events/event-list.tsx
 'use client';
 
 import { useState } from 'react';
@@ -37,8 +36,10 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } from 'date-fns';
+import {  formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { TIMEZONE } from '~/constants/constants';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 type EventAdmin = RouterOutputs['event']['getAllEventsAdmin']['items'][number];
 type InitialEvents = RouterOutputs['event']['getAllEventsAdmin'];
@@ -106,9 +107,9 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
   };
 
   const getEventStatus = (event: EventAdmin) => {
-    const now = new Date();
-    const start = new Date(event.start);
-    const end = new Date(event.end);
+    const now = toZonedTime(new Date(), TIMEZONE);
+    const start = toZonedTime(new Date(event.start), TIMEZONE);
+    const end = toZonedTime(new Date(event.end), TIMEZONE);
 
     if (end < now)
       return {
@@ -155,6 +156,9 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
     <>
       <div className="grid gap-4">
         {allEvents.map((event) => {
+          const now = toZonedTime(new Date(), TIMEZONE);
+          const startDate = toZonedTime(new Date(event.start), TIMEZONE);
+          const endDate = toZonedTime(new Date(event.end), TIMEZONE);
           const scope = getEventScope(event);
           const status = getEventStatus(event);
           const rsvpCount = event._count?.rsvpResponses ?? 0;
@@ -186,9 +190,9 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <CalendarIcon className="h-4 w-4" />
                         <span>
-                          {format(new Date(event.start), 'MMM d, yyyy')}
-                          {new Date(event.start).toDateString() !== new Date(event.end).toDateString() &&
-                            ` - ${format(new Date(event.end), 'MMM d, yyyy')}`
+                          {formatInTimeZone(startDate, TIMEZONE, 'MMM d, yyyy')}
+                          {startDate.toDateString() !== endDate.toDateString() &&
+                            ` - ${formatInTimeZone(endDate, TIMEZONE, 'MMM d, yyyy')}`
                           }
                         </span>
                       </div>
@@ -196,7 +200,7 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         <span>
-                          {format(new Date(event.start), 'HH:mm')} - {format(new Date(event.end), 'HH:mm')}
+                          {formatInTimeZone(startDate, TIMEZONE, 'HH:mm')} - {formatInTimeZone(endDate, TIMEZONE, 'HH:mm')}
                         </span>
                       </div>
 
@@ -234,7 +238,7 @@ export default function EventList({ initialEvents }: { initialEvents: InitialEve
                     )}
 
                     <div className="text-xs text-muted-foreground">
-                      Created by {event.createdBy.name} • {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+                      Created by {event.createdBy.name} • {formatDistanceToNow(toZonedTime(new Date(event.createdAt), TIMEZONE), { addSuffix: true })}
                     </div>
                   </div>
 

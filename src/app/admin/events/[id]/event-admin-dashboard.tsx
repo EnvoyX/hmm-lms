@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PresenceStatus, RSVPStatus } from '@prisma/client';
-import { format } from 'date-fns';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import { Download, Users, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -47,6 +47,7 @@ import {
 } from '~/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Textarea } from '~/components/ui/textarea';
+import { TIMEZONE } from '~/constants/constants';
 import { updateNoteSchema, type UpdateNoteForm } from '~/lib/schema/event';
 import { api } from '~/trpc/react';
 
@@ -182,7 +183,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
               : r.status === 'MAYBE'
                 ? 'Mungkin Hadir'
                 : 'No RSVP response',
-        format(new Date(r.respondedAt), 'yyyy-MM-dd HH:mm'),
+        formatInTimeZone(toZonedTime(new Date(r.respondedAt), TIMEZONE), TIMEZONE ,'yyyy-MM-dd HH:mm'),
         r.user?.email ?? 'N/A',
         r.notes ?? '',
       ]),
@@ -199,13 +200,12 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
     if (!data) return;
 
     const worksheetData = [
-      ['Name', 'NIM', 'Status', 'Checked In At', 'Checked Out At', 'Duration (min)', 'Notes'],
+      ['Name', 'NIM', 'Status', 'Checked In At', 'Duration (min)', 'Notes'],
       ...data.presenceRecords.map((p) => [
         p.user.name,
         p.user.nim,
         p.status,
-        p.checkedInAt ? format(new Date(p.checkedInAt), 'yyyy-MM-dd HH:mm') : 'N/A',
-        p.checkedOutAt ? format(new Date(p.checkedOutAt), 'yyyy-MM-dd HH:mm') : 'N/A',
+        p.checkedInAt ? formatInTimeZone(toZonedTime(new Date(p.checkedInAt), TIMEZONE), TIMEZONE, 'yyyy-MM-dd HH:mm') : 'N/A',
         p.duration ?? 'N/A',
         p.notes ?? '',
       ]),
@@ -380,7 +380,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                         <TableCell className="text-muted-foreground">{p.user.email}</TableCell>
                         <TableCell className="text-sm">
                           {p.checkedInAt
-                            ? format(new Date(p.checkedInAt), 'MMM d, HH:mm')
+                            ? formatInTimeZone(toZonedTime(new Date(p.checkedInAt), TIMEZONE), TIMEZONE, 'MMM d, HH:mm')
                             : 'Not checked in'}
                         </TableCell>
                         <TableCell>
@@ -526,7 +526,7 @@ export default function EventAdminDashboard({ eventId }: { eventId: string }) {
                           />
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(r.respondedAt), 'MMM d, yyyy • HH:mm')}
+                          {formatInTimeZone(toZonedTime(new Date(r.respondedAt), TIMEZONE), TIMEZONE, 'MMM d, yyyy • HH:mm')}
                         </TableCell>
                         <TableCell>
                           <Select

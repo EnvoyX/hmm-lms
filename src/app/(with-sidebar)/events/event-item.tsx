@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 import { CalendarDays, Clock, MapPin, User, GraduationCap, Globe, CheckSquare, BellRing } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import { type RouterOutputs } from '~/trpc/react';
 import { EventMode } from '@prisma/client';
 import GeometryBackground from '~/components/ui/background/geometry';
+import { TIMEZONE } from '~/constants/constants';
 
 interface EventItemProps {
   event: RouterOutputs['event']['getAllEvents'][number];
@@ -13,9 +14,11 @@ interface EventItemProps {
 }
 
 export default function EventItem({ event, href }: EventItemProps) {
-  const startDate = new Date(event.start);
-  const endDate = new Date(event.end);
-  const isOngoing = startDate <= new Date() && endDate >= new Date();
+  const startDate = toZonedTime(new Date(event.start), TIMEZONE);
+  const endDate = toZonedTime(new Date(event.end), TIMEZONE);
+  const currentDate = toZonedTime(new Date(), TIMEZONE);
+
+  const isOngoing = startDate <= currentDate && endDate >= currentDate;
 
   const getEventScope = () => {
     if (event.course) return { label: event.course.title, icon: GraduationCap };
@@ -56,13 +59,13 @@ export default function EventItem({ event, href }: EventItemProps) {
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <span className="line-clamp-1">
-              {format(startDate, 'MMM d, yyyy')}
+              {formatInTimeZone(startDate, TIMEZONE,'MMM d, yyyy')}
             </span>
           </div>
           {!event.allDay && (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span>{format(startDate, 'p')} - {format(endDate, 'p')}</span>
+              <span>{formatInTimeZone(startDate, TIMEZONE,'HH:mm')} - {formatInTimeZone(endDate, TIMEZONE,'HH:mm')}</span>
             </div>
           )}
           {event.location && (

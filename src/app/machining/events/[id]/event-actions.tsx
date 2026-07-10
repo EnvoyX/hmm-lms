@@ -87,7 +87,6 @@ export default function EventActions({ event }: { event: EventDetail }) {
 
   const handleRsvp = (status: RSVPStatus, notes?: string) =>
     respond({ eventId: event.id, status, notes });
-  // const isEventActive = new Date() >= new Date(event.start) && new Date() <= new Date(event.end);
   const isCheckInAvailable =
     currentDate >= toZonedTime(new Date(eventStart.getTime() - 60 * 60 * 1000), TIMEZONE) &&
     currentDate <= eventEnd;

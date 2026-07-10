@@ -1,4 +1,3 @@
-// ~/app/(admin)/admin/events/[id]/page.tsx
 import { api } from "~/trpc/server";
 import { notFound } from "next/navigation";
 import EventAdminDashboard from "./event-admin-dashboard";
@@ -6,21 +5,24 @@ import { Button } from "~/components/ui/button";
 import { ArrowLeft, Edit } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "~/components/ui/badge";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { toZonedTime, formatInTimeZone } from "date-fns-tz";
+import { TIMEZONE } from "~/constants/constants";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const {id} = await params
   const event = await api.event.getEventById({ id });
+  const start = toZonedTime(new Date(event.start), TIMEZONE);
+  const end = toZonedTime(new Date(event.end), TIMEZONE);
 
   if (!event) {
     notFound();
   }
 
   const getEventStatus = () => {
-    const now = new Date();
-    const start = new Date(event.start);
-    const end = new Date(event.end);
+    const now = toZonedTime(new Date(), TIMEZONE);
+    const start = toZonedTime(new Date(event.start), TIMEZONE);
+    const end = toZonedTime(new Date(event.end), TIMEZONE);
 
     if (end < now) return { text: 'Ended', color: 'bg-muted text-muted-foreground' };
     if (start <= now && end >= now) return { text: 'Ongoing', color: 'bg-green-500 text-white' };
@@ -73,13 +75,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             <div>
               <p className="text-sm font-medium mb-1">Start</p>
               <p className="text-sm text-muted-foreground">
-                {format(new Date(event.start), 'EEEE, MMMM d, yyyy • HH:mm')}
+                {formatInTimeZone(start, TIMEZONE, 'EEEE, MMMM d, yyyy • HH:mm')}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium mb-1">End</p>
               <p className="text-sm text-muted-foreground">
-                {format(new Date(event.end), 'EEEE, MMMM d, yyyy • HH:mm')}
+                {formatInTimeZone(end, TIMEZONE, 'EEEE, MMMM d, yyyy • HH:mm')}
               </p>
             </div>
             {event.location && (
@@ -110,5 +112,3 @@ export const metadata = {
   title: "Event Details",
   description: "View and manage event details",
 };
-
-

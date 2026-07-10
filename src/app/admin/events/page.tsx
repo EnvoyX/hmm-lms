@@ -1,4 +1,3 @@
-// ~/app/(admin)/admin/events/page.tsx
 import { api } from "~/trpc/server";
 import EventList from "./event-list";
 import { Button } from "~/components/ui/button";
@@ -34,4 +33,3 @@ export const metadata = {
   title: "Events",
   description: "Manage events",
 };
-

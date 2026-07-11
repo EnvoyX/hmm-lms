@@ -45,7 +45,7 @@ export default function FormsPage() {
     isLoading,
     fetchNextPage,
     hasNextPage
-  } = api.form.getMyForms.useInfiniteQuery(
+  } = api.form.getAllForms.useInfiniteQuery(
     { limit: 12 },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );
@@ -290,7 +290,7 @@ const FormCard: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }) =>
     <Card className="group hover:shadow-lg transition-shadow duration-300">
       <CardHeader className="cursor-pointer" onClick={onEdit}>
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg font-semibold truncate">
+          <CardTitle className="text-lg font-semibold truncate max-w-3xs">
             {form.title}
           </CardTitle>
           <FormDropdownMenu actions={{ onEdit, ...actions }} />
@@ -360,8 +360,8 @@ const FormListItem: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }
     <Card className="group hover:bg-muted/50 transition-colors">
       <CardContent className="p-3 flex items-center justify-between">
         <div className="flex-1 min-w-0 cursor-pointer flex items-center gap-4" onClick={onEdit}>
-          <FileText className="w-6 h-6 text-muted-foreground" />
-          <div className="flex-1">
+          <FileText className="w-6 h-6 text-muted-foreground shrink-0" />
+          <div className="flex-1 w-full overflow-hidden">
             <h3 className="font-semibold truncate">{form.title}</h3>
             <p className="text-sm text-muted-foreground truncate">{form.description ?? 'No description'}</p>
           </div>

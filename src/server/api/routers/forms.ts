@@ -56,12 +56,19 @@ export const formRouter = createTRPCRouter({
       select: { createdBy: true },
     });
 
-    if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+    if (!existingForm) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'You can only edit your own forms',
+        message: 'Form to update is not exist',
       });
     }
+
+    // if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+    //   throw new TRPCError({
+    //     code: 'FORBIDDEN',
+    //     message: 'You can only edit your own forms',
+    //   });
+    // }
 
     return ctx.db.form.update({
       where: { id },
@@ -85,17 +92,17 @@ export const formRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Check if user owns the form
-      const existingForm = await ctx.db.form.findUnique({
-        where: { id: input.id },
-        select: { createdBy: true },
-      });
+      // const existingForm = await ctx.db.form.findUnique({
+      //   where: { id: input.id },
+      //   select: { createdBy: true },
+      // });
 
-      if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You can only delete your own forms',
-        });
-      }
+      // if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+      //   throw new TRPCError({
+      //     code: 'FORBIDDEN',
+      //     message: 'You can only delete your own forms',
+      //   });
+      // }
 
       return ctx.db.form.delete({
         where: { id: input.id },
@@ -126,17 +133,50 @@ export const formRouter = createTRPCRouter({
       });
     }
 
-    // If form is not published, only allow creator to view
-    if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
+    // If form is not published
+    if (!form.isPublished) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'This form is not published',
       });
     }
 
+    // If form is not published, only allow creator to view
+    // if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
+    //   throw new TRPCError({
+    //     code: 'FORBIDDEN',
+    //     message: 'This form is not published',
+    //   });
+    // }
+
     return form;
   }),
+  getFormById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const form = await ctx.db.form.findUnique({
+      where: { id: input.id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        questions: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
 
+    if (!form) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Form is not found',
+      });
+    }
+
+    return form;
+  }),
   getMyForms: protectedProcedure
     .input(
       z.object({
@@ -149,6 +189,42 @@ export const formRouter = createTRPCRouter({
 
       const forms = await ctx.db.form.findMany({
         where: { createdBy: ctx.session.user.id },
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          _count: {
+            select: {
+              questions: true,
+              submissions: true,
+            },
+          },
+        },
+      });
+
+      let nextCursor: string | undefined = undefined;
+      if (forms.length > limit) {
+        const nextItem = forms.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        forms,
+        nextCursor,
+      };
+    }),
+  getAllForms: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor } = input;
+
+      const forms = await ctx.db.form.findMany({
+        // where: { createdBy: ctx.session.user.id },
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { updatedAt: 'desc' },
@@ -382,12 +458,18 @@ export const formRouter = createTRPCRouter({
         select: { createdBy: true },
       });
 
-      if (!form || form.createdBy !== ctx.session.user.id) {
+      if (!form) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'You can only view submissions for your own forms',
+          message: 'Form is not exist',
         });
       }
+      // if (!form || form.createdBy !== ctx.session.user.id) {
+      //   throw new TRPCError({
+      //     code: 'FORBIDDEN',
+      //     message: 'You can only view submissions for your own forms',
+      //   });
+      // }
 
       const { limit, cursor } = input;
 
@@ -565,10 +647,17 @@ export const formRouter = createTRPCRouter({
         include: { questions: true },
       });
 
-      if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+      // if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
+      //   throw new TRPCError({
+      //     code: 'FORBIDDEN',
+      //     message: 'You can only duplicate your own forms',
+      //   });
+      // }
+
+      if (!existingForm) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'You can only duplicate your own forms',
+          message: 'Form to duplicate is not exist',
         });
       }
 

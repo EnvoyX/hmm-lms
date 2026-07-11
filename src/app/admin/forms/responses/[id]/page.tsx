@@ -12,7 +12,7 @@ export default async function FormResponsesPage({ params }: { params: Promise<{ 
   const { id } = await params;
 
   const [form, submissionsData] = await Promise.all([
-    api.form.getById({ id }),
+    api.form.getFormById({ id }),
     api.form.getSubmissions({ formId: id}),
   ]);
 

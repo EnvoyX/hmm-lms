@@ -11,7 +11,7 @@ export default function AdminFormPreviewPage() {
   const router = useRouter();
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { data: form, isLoading, error } = api.form.getById.useQuery({ id: id! });
+  const { data: form, isLoading, error } = api.form.getFormById.useQuery({ id: id! });
 
   if (isLoading) {
     return (
@@ -46,7 +46,7 @@ export default function AdminFormPreviewPage() {
           </div>
         </div>
       </div>
-      
+
       <FormSubmitClient form={form} isPreview={true} />
     </div>
   );

@@ -24,6 +24,7 @@ import { DisplaySettingProvider } from "~/components/providers/display-provider"
 import { CustomThemeProvider } from "~/components/providers/custom-theme-provider";
 import Script from "next/script";
 import { ServiceWorkerUpdate } from "~/components/sw-update";
+import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const APP_NAME = "HMM ITB";
@@ -178,6 +179,7 @@ export default function RootLayout({
                 <ThemeProvider attribute="class" defaultTheme="light">
                   {/* <RegisterSW /> */}
                   <SpeedInsights />
+                    <Analytics />
                   <ServiceWorkerUpdate />
                   {children}
                 </ThemeProvider>

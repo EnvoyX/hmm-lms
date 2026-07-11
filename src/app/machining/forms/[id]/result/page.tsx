@@ -14,7 +14,7 @@ export default function FormResultPage() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/machining/dashboard">Back to Dashboard</Link>
+            <Link href="/machining">Back to Dashboard</Link>
           </Button>
         </CardContent>
       </Card>

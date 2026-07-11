@@ -43,7 +43,7 @@ const tabs: { group: string; items: NavTabItem[] }[] = [
     items: [
       {
         label: 'Dashboard',
-        href: '/machining/dashboard',
+        href: '/machining',
         icon: Home,
         tooltip: 'Dashboard',
       },

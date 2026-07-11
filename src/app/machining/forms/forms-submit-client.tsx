@@ -277,7 +277,7 @@ export function FormSubmitClient({
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/machining/dashboard">Go to Dashboard</Link>
+            <Link href="/machining">Go to Dashboard</Link>
           </Button>
         </CardContent>
       </Card>

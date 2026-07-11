@@ -15,7 +15,7 @@ export default async function Layout({
   const isMachining = session?.user && (session.user.role === Role.MACHINING);
 
   if (isMachining) {
-    redirect("/machining/dashboard")
+    redirect("/machining")
   }
 
   if (!session) {

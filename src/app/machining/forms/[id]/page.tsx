@@ -23,7 +23,7 @@ export default async function AssignmentSubmitPage({
       <FormSubmitClient
         form={form}
         basePath="/machining/forms"
-        dashboardHref="/machining/dashboard"
+        dashboardHref="/machining"
       />
     </div>
   );

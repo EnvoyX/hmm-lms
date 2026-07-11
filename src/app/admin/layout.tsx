@@ -14,7 +14,7 @@ export default async function AdminLayout({
   const isAdmin = session?.user && (session.user.role === Role.ADMIN || session.user.role === Role.SUPERADMIN);
   // Redirect non-admin users
   if (!session || !isAdmin) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   return <AdminNavbar>

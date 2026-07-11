@@ -402,7 +402,7 @@ export const formRouter = createTRPCRouter({
     .input(
       z.object({
         formId: z.string(),
-        limit: z.number().min(1).max(100).default(20),
+        limit: z.number().min(1).default(999),
         cursor: z.string().optional(),
       }),
     )

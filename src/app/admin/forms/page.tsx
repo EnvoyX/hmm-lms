@@ -289,7 +289,7 @@ const FormCard: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }) =>
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-300">
       <CardHeader className="cursor-pointer" onClick={onEdit}>
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between w-full overflow-hidden">
           <CardTitle className="text-lg font-semibold truncate max-w-3xs">
             {form.title}
           </CardTitle>

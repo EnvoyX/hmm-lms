@@ -257,7 +257,7 @@ export function DashboardCalendar() {
                     >
                       <div className="space-y-3">
                         <div>
-                          <h4 className="font-semibold">{event.title}</h4>
+                          <h4 className="font-semibold line-clamp-1">{event.title}</h4>
                           {event.course && (
                             <Badge variant="outline" className="mt-1 text-xs">
                               {event.course.classCode}
@@ -266,7 +266,7 @@ export function DashboardCalendar() {
                         </div>
 
                         {event.description && (
-                          <p className="text-muted-foreground text-sm">{event.description}</p>
+                          <p className="text-muted-foreground text-sm line-clamp-2">{event.description}</p>
                         )}
 
                         <div className="space-y-2 text-sm">
@@ -423,14 +423,14 @@ export function DashboardCalendar() {
                     >
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-semibold">{form.title}</h4>
+                          <h4 className="font-semibold line-clamp-1">{form.title}</h4>
                           <Badge variant="default" className="text-xs">
                             Form
                           </Badge>
                         </div>
 
                         {form.description && (
-                          <p className="text-muted-foreground text-sm">{form.description}</p>
+                          <p className="text-muted-foreground text-sm line-clamp-2">{form.description}</p>
                         )}
 
                         <div className="space-y-2 text-sm">

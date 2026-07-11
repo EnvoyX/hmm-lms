@@ -133,25 +133,17 @@ export const formRouter = createTRPCRouter({
       });
     }
 
-    // If form is not published
-    if (!form.isPublished) {
+    // If form is not published, only allow creator to view
+    if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'This form is not published',
       });
     }
 
-    // If form is not published, only allow creator to view
-    // if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
-    //   throw new TRPCError({
-    //     code: 'FORBIDDEN',
-    //     message: 'This form is not published',
-    //   });
-    // }
-
     return form;
   }),
-  getFormById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+  getResponsesFormById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     const form = await ctx.db.form.findUnique({
       where: { id: input.id },
       include: {
@@ -213,43 +205,6 @@ export const formRouter = createTRPCRouter({
         nextCursor,
       };
     }),
-  getAllForms: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().min(1).max(100).default(20),
-        cursor: z.string().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const { limit, cursor } = input;
-
-      const forms = await ctx.db.form.findMany({
-        // where: { createdBy: ctx.session.user.id },
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { updatedAt: 'desc' },
-        include: {
-          _count: {
-            select: {
-              questions: true,
-              submissions: true,
-            },
-          },
-        },
-      });
-
-      let nextCursor: string | undefined = undefined;
-      if (forms.length > limit) {
-        const nextItem = forms.pop();
-        nextCursor = nextItem?.id;
-      }
-
-      return {
-        forms,
-        nextCursor,
-      };
-    }),
-
   getHotlineForms: protectedProcedure
     .input(
       z.object({

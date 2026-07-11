@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { api } from "~/trpc/react";
 import { FormSubmitClient } from "~/app/forms/forms-submit-client";
 import { Loader2, ArrowLeft } from "lucide-react";
@@ -11,7 +10,7 @@ export default function AdminFormPreviewPage() {
   const router = useRouter();
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { data: form, isLoading, error } = api.form.getFormById.useQuery({ id: id! });
+  const { data: form, isLoading, error } = api.form.getById.useQuery({ id: id! });
 
   if (isLoading) {
     return (

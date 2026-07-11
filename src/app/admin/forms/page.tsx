@@ -45,7 +45,7 @@ export default function FormsPage() {
     isLoading,
     fetchNextPage,
     hasNextPage
-  } = api.form.getAllForms.useInfiniteQuery(
+  } = api.form.getMyForms.useInfiniteQuery(
     { limit: 12 },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );

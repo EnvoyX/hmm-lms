@@ -96,7 +96,7 @@ export default function BreadcrumbItemResolver({
 
   // Check if this is a form ID
   const isFormId = previousPath === "forms";
-  const { data: form, isLoading: isLoadingForm } = api.form.getFormById.useQuery(
+  const { data: form, isLoading: isLoadingForm } = api.form.getById.useQuery(
     { id: path },
     { enabled: isFormId && isLikelyId },
   );

@@ -17,7 +17,7 @@ export const metadata = {
 
 export default async function EditFormPage({ params }: EditFormPageProps) {
   const { id } = await params;
-  const form = await api.form.getFormById({ id });
+  const form = await api.form.getById({ id });
 
   // If no form is found, render the 404 page
   if (!form) {

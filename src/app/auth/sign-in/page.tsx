@@ -73,7 +73,7 @@ export default function SignIn() {
   return (
     <main className='relative w-full min-h-dvh flex items-center justify-center'>
       {/* Background Images */}
-      <Image
+      {/*<Image
         src='/hmm-vstock/bp-black-transparent.png'
         className='opacity-20 absolute left-0 bottom-0 w-2/5 md:w-1/6'
         alt='bp-black-transparent'
@@ -86,7 +86,7 @@ export default function SignIn() {
         alt='bp-black-transparent'
         width={2000}
         height={2000}
-      />
+      />*/}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

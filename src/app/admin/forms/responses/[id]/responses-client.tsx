@@ -1,6 +1,6 @@
 'use client';
 
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { ChevronLeft, ChevronRight, User, MessageSquare, Download } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import {
@@ -37,6 +37,7 @@ import {
   TableRow,
 } from '~/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '~/components/ui/tabs';
+import { TIMEZONE } from '~/constants/constants';
 import type { RouterOutputs } from '~/trpc/react';
 
 type FormWithQuestions = RouterOutputs['form']['getById'];
@@ -62,7 +63,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
         s.submitter?.name ?? 'N/A',
         s.submitter?.email ?? 'N/A',
         s.submitter?.nim ?? 'N/A',
-        format(new Date(s.submittedAt), 'yyyy-MM-dd HH:mm'),
+        formatInTimeZone(new Date(s.submittedAt), TIMEZONE ,'yyyy-MM-dd HH:mm'),
         ...form.questions.map((question) => {
           const answers = s.answers.filter((a) => a.questionId === question.id);
 
@@ -71,7 +72,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
           textAnswers = answers.map((a) => {
             let jsonValuesArray: string[] = [];
             if (a.textValue) return a.textValue;
-            else if (a.dateValue) return format(new Date(a.dateValue), 'PPP');
+            else if (a.dateValue) return formatInTimeZone(new Date(a.dateValue), TIMEZONE, 'PPP');
             else if (a.numberValue !== null && a.numberValue !== undefined)
               return a.numberValue.toString();
             else if (a.jsonValue && Array.isArray(a.jsonValue)) {
@@ -125,7 +126,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
       } else {
         textAnswers = answers.map((a) => {
           if (a.textValue) return a.textValue;
-          if (a.dateValue) return format(new Date(a.dateValue), 'PPP');
+          if (a.dateValue) return formatInTimeZone(new Date(a.dateValue), TIMEZONE, 'PPP');
           if (a.jsonValue) return JSON.stringify(a.jsonValue);
           return 'No answer';
         });
@@ -295,7 +296,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                     ? (item.answer.textValue ??
                       (item.answer.numberValue !== null ? String(item.answer.numberValue) : null) ??
                       (item.answer.dateValue
-                        ? format(new Date(item.answer.dateValue), 'PPP')
+                        ? formatInTimeZone(new Date(item.answer.dateValue), TIMEZONE, 'PPP')
                         : null) ??
                       (item.answer.jsonValue ? JSON.stringify(item.answer.jsonValue) : 'No answer'))
                     : 'Skipped';
@@ -311,7 +312,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                             {item.submission.submitter?.name ?? 'Anonymous'}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(item.submission.submittedAt), 'MMM d, p')}
+                            {formatInTimeZone(new Date(item.submission.submittedAt), TIMEZONE, 'MMM d, p')}
                           </span>
                         </div>
                         <p className="text-foreground">{val}</p>
@@ -348,7 +349,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
               </Button>
             </div>
             <div className="text-sm text-muted-foreground">
-              {currentSubmission && format(new Date(currentSubmission.submittedAt), "PPP 'at' p")}
+              {currentSubmission && formatInTimeZone(new Date(currentSubmission.submittedAt), TIMEZONE, "PPP 'at' p")}
             </div>
           </div>
 
@@ -376,7 +377,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                   const val = answer ? (
                     (answer.textValue ??
                     (answer.numberValue !== null ? String(answer.numberValue) : null) ??
-                    (answer.dateValue ? format(new Date(answer.dateValue), 'PPP') : null) ??
+                    (answer.dateValue ? formatInTimeZone(new Date(answer.dateValue), TIMEZONE, 'PPP') : null) ??
                     (answer.jsonValue
                       ? Array.isArray(answer.jsonValue)
                         ? (answer.jsonValue as string[]).join(', ')
@@ -448,7 +449,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{row.submitter?.nim}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(row.submittedAt), 'MMM d, yyyy • HH:mm')}
+                        {formatInTimeZone(new Date(row.submittedAt), TIMEZONE, 'MMM d, yyyy • HH:mm')}
                       </TableCell>
                       {row.answers?.map((answer) => {
                         let jsonValuesArray: string[] = [];
@@ -466,7 +467,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                             ) : answer.jsonValue && Array.isArray(answer.jsonValue) ? (
                               jsonValuesArray.map((value) => value).join(', ')
                             ) : answer.dateValue ? (
-                              format(new Date(answer.dateValue), 'PPP')
+                              formatInTimeZone(new Date(answer.dateValue), TIMEZONE, 'PPP')
                             ) : answer.fileUrl ? (
                               <a
                                 href={answer.fileUrl}

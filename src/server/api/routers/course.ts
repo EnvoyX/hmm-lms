@@ -228,6 +228,9 @@ export const courseRouter = createTRPCRouter({
     const courses = await ctx.db.course.findMany({
       where: {
         members: { some: { id: ctx.session.user.id } },
+        NOT: {
+          scope: "MACHINING",
+        },
       },
       include: {
         _count: {
@@ -313,6 +316,64 @@ export const courseRouter = createTRPCRouter({
         createdAt: "desc",
       },
     });
+  }),
+
+  getMyMachiningCourses: protectedProcedure.query(async ({ ctx }) => {
+    const courses = await ctx.db.course.findMany({
+      where: {
+        members: { some: { id: ctx.session.user.id } },
+        scope: "MACHINING"
+      },
+      include: {
+        _count: {
+          select: {
+            members: true,
+            tryout: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const courseIds = courses.map(c => c.id);
+
+    // Aggregate link counts
+    const videoCounts = await ctx.db.resource.groupBy({
+      by: ['attachableId'],
+      where: {
+        attachableType: 'COURSE',
+        attachableId: { in: courseIds },
+        category: 'VIDEO',
+        isActive: true,
+      },
+      _count: { _all: true },
+    });
+
+    // Aggregate file (attachment) counts
+    const fileCounts = await ctx.db.resource.groupBy({
+      by: ['attachableId'],
+      where: {
+        attachableType: 'COURSE',
+        attachableId: { in: courseIds },
+        category: {
+          not: 'VIDEO'
+        },
+        isActive: true,
+      },
+      _count: { _all: true },
+    });
+
+    const videoMap = new Map(videoCounts.map(r => [r.attachableId, r._count._all]));
+    const fileMap = new Map(fileCounts.map(r => [r.attachableId, r._count._all]));
+
+    return courses.map(c => ({
+      ...c,
+      _count: {
+        ...c._count,
+        videos: videoMap.get(c.id) ?? 0,
+        attachments: fileMap.get(c.id) ?? 0,
+      },
+    }));
   }),
   getMachiningCourses: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.course.findMany({

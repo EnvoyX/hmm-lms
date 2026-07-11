@@ -13,7 +13,7 @@ export default async function FormResponsesPage({ params }: { params: Promise<{ 
 
   const [form, submissionsData] = await Promise.all([
     api.form.getById({ id }),
-    api.form.getSubmissions({ formId: id, limit: 100 }), // Fetching up to 100 submissions
+    api.form.getSubmissions({ formId: id}),
   ]);
 
   if (!form) {

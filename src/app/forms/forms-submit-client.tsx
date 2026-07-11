@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { CheckCircle, Loader2, Eye, AlertCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -266,7 +265,7 @@ export function FormSubmitClient({ form: initialForm, isPreview = false }: FormS
           <CheckCircle className="w-12 h-12 mx-auto text-green-500" />
           <CardTitle className="mt-4">You&apos;ve Already Responded</CardTitle>
           <CardDescription>
-            You submitted this form on {format(new Date(submissionStatus.submittedAt), 'PPP')}.
+            You submitted this form on {formatInTimeZone(new Date(submissionStatus.submittedAt), TIMEZONE, 'MMMM d yyyy HH:mm')}.
           </CardDescription>
         </CardHeader>
         <CardContent>

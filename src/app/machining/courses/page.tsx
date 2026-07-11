@@ -5,7 +5,7 @@ import { type RouterOutputs } from '~/trpc/react';
 import MyCoursesItem from './my-course-item';
 
 export default async function CoursesPage() {
-  const myCourses = await api.course.getMyCourses();
+  const myCourses = await api.course.getMyMachiningCourses();
   const allCourses = await api.course.getMachiningCourses();
 
   const images = ['/images/mesin.png', "/images/pengukuran.png", "/images/pipe_system.png", "/images/printer.png"];

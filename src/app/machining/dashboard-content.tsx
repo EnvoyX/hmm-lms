@@ -38,7 +38,7 @@ export function DashboardContent() {
     api.event.getMachiningEvents.useQuery();
 
   const { data: courses, isLoading: coursesLoading } =
-    api.studentDashboard.getEnrolledCourses.useQuery();
+    api.studentDashboard.getEnrolledMachiningCourses.useQuery();
 
   const { isLoading: statsLoading } =
     api.studentDashboard.getDashboardStats.useQuery();

@@ -88,7 +88,7 @@ export default function SignUpPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background">
-      <Image
+      {/*<Image
         src='/hmm-vstock/bp-black-transparent.png'
         className='opacity-20 absolute left-0 bottom-0 w-2/5 md:w-1/6'
         alt='bp-black-transparent'
@@ -101,7 +101,7 @@ export default function SignUpPage() {
         alt='bp-black-transparent'
         width={2000}
         height={2000}
-      />
+      />*/}
       <div className="flex flex-col items-center w-sm gap-4 bg-card px-6 py-4 rounded-xl shadow">
         <h1 className='font-semibold text-base'>Sign up to HMM LMS</h1>
         <Form {...form}>

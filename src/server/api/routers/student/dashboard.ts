@@ -22,6 +22,93 @@ export const studentDashboardRouter = createTRPCRouter({
       where: {
         members: { some: { id: ctx.session.user.id } },
         isActive: true,
+        NOT: {
+          scope: "MACHINING",
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        classCode: true,
+        _count: {
+          select: {
+            learningSession: {
+              where: { userId: ctx.session.user.id },
+            },
+          },
+        },
+        learningSession: {
+          where: { userId: ctx.session.user.id },
+          select: { duration: true },
+        },
+      },
+      orderBy: {
+        learningSession: {
+          _count: 'desc',
+        },
+      },
+      // take: 6, // removed as requested
+    });
+
+    const courseIds = courses.map((c) => c.id);
+    if (courseIds.length === 0) {
+      return [];
+    }
+
+    // 2) Aggregate link counts per course
+    const videoCounts = await ctx.db.resource.groupBy({
+      by: ['attachableId'],
+      where: {
+        attachableType: 'COURSE',
+        attachableId: { in: courseIds },
+        type: 'LINK',
+        isActive: true,
+        category: 'VIDEO',
+      },
+      _count: { _all: true },
+    });
+
+    // 3) Aggregate attachment (file) counts per course
+    const fileCounts = await ctx.db.resource.groupBy({
+      by: ['attachableId'],
+      where: {
+        attachableType: 'COURSE',
+        attachableId: { in: courseIds },
+        category: {
+          not: 'VIDEO',
+        },
+        isActive: true,
+      },
+      _count: { _all: true },
+    });
+
+    const videoMap = new Map(videoCounts.map((r) => [r.attachableId, r._count._all]));
+
+    const fileMap = new Map(fileCounts.map((r) => [r.attachableId, r._count._all]));
+
+    // 4) Shape final payload
+    return courses.map((course) => {
+      const totalMinutes = course.learningSession.reduce((sum, s) => sum + s.duration, 0) / 60;
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        classCode: course.classCode,
+        totalSessions: course._count.learningSession,
+        totalMinutes,
+        videoCount: videoMap.get(course.id) ?? 0,
+        attachmentsCount: fileMap.get(course.id) ?? 0,
+      };
+    });
+  }),
+  getEnrolledMachiningCourses: protectedProcedure.query(async ({ ctx }) => {
+    // 1) Fetch enrolled, active courses with user-scoped learningSession data
+    const courses = await ctx.db.course.findMany({
+      where: {
+        members: { some: { id: ctx.session.user.id } },
+        isActive: true,
+        scope: "MACHINING",
       },
       select: {
         id: true,

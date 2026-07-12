@@ -63,7 +63,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
         s.submitter?.name ?? 'N/A',
         s.submitter?.email ?? 'N/A',
         s.submitter?.nim ?? 'N/A',
-        formatInTimeZone(new Date(s.submittedAt), TIMEZONE ,'yyyy-MM-dd HH:mm'),
+        formatInTimeZone(new Date(s.submittedAt), TIMEZONE, 'yyyy-MM-dd HH:mm'),
         ...form.questions.map((question) => {
           const answers = s.answers.filter((a) => a.questionId === question.id);
 
@@ -285,41 +285,53 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
           {selectedQuestion && (
             <Card>
               <CardHeader>
-                <CardTitle>{selectedQuestion.title}</CardTitle>
+                <CardTitle className="overflow-auto">{selectedQuestion.title}</CardTitle>
                 {selectedQuestion.description && (
-                  <CardDescription>{selectedQuestion.description}</CardDescription>
+                  <CardDescription className="overflow-auto">
+                    {selectedQuestion.description}
+                  </CardDescription>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">
-                {selectedQuestionAnswers.map((item, i) => {
-                  const val = item.answer
-                    ? (item.answer.textValue ??
-                      (item.answer.numberValue !== null ? String(item.answer.numberValue) : null) ??
-                      (item.answer.dateValue
-                        ? formatInTimeZone(new Date(item.answer.dateValue), TIMEZONE, 'PPP')
-                        : null) ??
-                      (item.answer.jsonValue ? JSON.stringify(item.answer.jsonValue) : 'No answer'))
-                    : 'Skipped';
+                <ScrollArea className="h-[350px] w-full rounded-md border p-4">
+                  {selectedQuestionAnswers.map((item, i) => {
+                    const val = item.answer
+                      ? (item.answer.textValue ??
+                        (item.answer.numberValue !== null
+                          ? String(item.answer.numberValue)
+                          : null) ??
+                        (item.answer.dateValue
+                          ? formatInTimeZone(new Date(item.answer.dateValue), TIMEZONE, 'PPP')
+                          : null) ??
+                        (item.answer.jsonValue
+                          ? JSON.stringify(item.answer.jsonValue)
+                          : 'No answer'))
+                      : 'Skipped';
 
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-sm text-muted-foreground">
-                            {item.submission.submitter?.name ?? 'Anonymous'}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatInTimeZone(new Date(item.submission.submittedAt), TIMEZONE, 'MMM d, p')}
-                          </span>
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors my-2"
+                      >
+                        <div className="flex-1 w-full">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-sm text-muted-foreground">
+                              {item.submission.submitter?.name ?? 'Anonymous'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatInTimeZone(
+                                new Date(item.submission.submittedAt),
+                                TIMEZONE,
+                                'MMM d, yyyy • HH:mm',
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-foreground overflow-auto">{val}</p>
                         </div>
-                        <p className="text-foreground">{val}</p>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </ScrollArea>
               </CardContent>
             </Card>
           )}
@@ -349,7 +361,12 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
               </Button>
             </div>
             <div className="text-sm text-muted-foreground">
-              {currentSubmission && formatInTimeZone(new Date(currentSubmission.submittedAt), TIMEZONE, "PPP 'at' p")}
+              {currentSubmission &&
+                formatInTimeZone(
+                  new Date(currentSubmission.submittedAt),
+                  TIMEZONE,
+                  "PPP 'at' HH:mm",
+                )}
             </div>
           </div>
 
@@ -369,7 +386,7 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                 </div>
               </CardHeader>
               <Separator />
-              <CardContent className="pt-6 space-y-6">
+              <CardContent className="pt-6 space-y-6 w-full">
                 {form.questions.map((question) => {
                   const answer = currentSubmission.answers.find(
                     (a) => a.questionId === question.id,
@@ -377,7 +394,9 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
                   const val = answer ? (
                     (answer.textValue ??
                     (answer.numberValue !== null ? String(answer.numberValue) : null) ??
-                    (answer.dateValue ? formatInTimeZone(new Date(answer.dateValue), TIMEZONE, 'PPP') : null) ??
+                    (answer.dateValue
+                      ? formatInTimeZone(new Date(answer.dateValue), TIMEZONE, 'PPP')
+                      : null) ??
                     (answer.jsonValue
                       ? Array.isArray(answer.jsonValue)
                         ? (answer.jsonValue as string[]).join(', ')
@@ -389,10 +408,12 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
 
                   return (
                     <div key={question.id} className="space-y-2">
-                      <h4 className="font-medium text-sm text-muted-foreground">
+                      <h4 className="font-medium text-sm text-muted-foreground overflow-auto">
                         {question.title}
                       </h4>
-                      <div className="p-3 bg-muted/30 rounded-md border text-sm">{val}</div>
+                      <div className="p-3 bg-muted/30 rounded-md border text-sm overflow-auto">
+                        {val}
+                      </div>
                     </div>
                   );
                 })}
@@ -417,76 +438,86 @@ export function ResponsesClient({ form, submissions }: ResponsesClientProps) {
             {submissions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">No responses yet.</div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Respondent</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>NIM</TableHead>
-                    <TableHead>Responded At</TableHead>
-                    {submissions.slice(0, 1).map((row) => {
-                      return row.answers?.map((answer) => {
-                        return (
-                          <TableHead key={answer.question?.id}>{answer.question?.title}</TableHead>
-                        );
-                      });
-                    })}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {submissions.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback>{row.submitter?.name?.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{row.submitter?.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {row.submitter?.email}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{row.submitter?.nim}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatInTimeZone(new Date(row.submittedAt), TIMEZONE, 'MMM d, yyyy • HH:mm')}
-                      </TableCell>
-                      {row.answers?.map((answer) => {
-                        let jsonValuesArray: string[] = [];
-                        if (answer.jsonValue && Array.isArray(answer.jsonValue)) {
-                          jsonValuesArray = answer.jsonValue as string[];
-                        }
-                        return (
-                          <TableCell key={answer.question?.id}>
-                            {answer.textValue ? (
-                              answer.textValue
-                            ) : answer.numberValue &&
-                              answer.numberValue !== null &&
-                              answer.numberValue !== undefined ? (
-                              answer.numberValue.toString()
-                            ) : answer.jsonValue && Array.isArray(answer.jsonValue) ? (
-                              jsonValuesArray.map((value) => value).join(', ')
-                            ) : answer.dateValue ? (
-                              formatInTimeZone(new Date(answer.dateValue), TIMEZONE, 'PPP')
-                            ) : answer.fileUrl ? (
-                              <a
-                                href={answer.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline"
-                              >
-                                View
-                              </a>
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
-                        );
+              <div className="h-[600px] w-full rounded-md border overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Respondent</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>NIM</TableHead>
+                      <TableHead>Responded At</TableHead>
+                      {submissions.slice(0, 1).map((row) => {
+                        return row.answers?.map((answer) => {
+                          return (
+                            <TableHead key={answer.question?.id}>
+                              {answer.question?.title}
+                            </TableHead>
+                          );
+                        });
                       })}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {submissions.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>{row.submitter?.name?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{row.submitter?.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {row.submitter?.email}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {row.submitter?.nim}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatInTimeZone(
+                            new Date(row.submittedAt),
+                            TIMEZONE,
+                            'MMM d, yyyy • HH:mm',
+                          )}
+                        </TableCell>
+                        {row.answers?.map((answer) => {
+                          let jsonValuesArray: string[] = [];
+                          if (answer.jsonValue && Array.isArray(answer.jsonValue)) {
+                            jsonValuesArray = answer.jsonValue as string[];
+                          }
+                          return (
+                            <TableCell key={answer.question?.id}>
+                              {answer.textValue ? (
+                                answer.textValue
+                              ) : answer.numberValue &&
+                                answer.numberValue !== null &&
+                                answer.numberValue !== undefined ? (
+                                answer.numberValue.toString()
+                              ) : answer.jsonValue && Array.isArray(answer.jsonValue) ? (
+                                jsonValuesArray.map((value) => value).join(', ')
+                              ) : answer.dateValue ? (
+                                formatInTimeZone(new Date(answer.dateValue), TIMEZONE, 'PPP')
+                              ) : answer.fileUrl ? (
+                                <a
+                                  href={answer.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                '-'
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </div>
         </TabsContent>

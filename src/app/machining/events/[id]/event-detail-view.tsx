@@ -1,4 +1,4 @@
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
 import { CalendarDays, Clock, MapPin, User, GraduationCap, Globe } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -65,16 +65,18 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                 </p>
               </CardContent>
             </Card>
-          ) : <Card>
-            <CardHeader>
-              <CardTitle>Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                No description available for this event
-              </p>
-            </CardContent>
-          </Card>}
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  No description available for this event
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {timeline && timeline.length > 0 && (
             <Card>
@@ -98,10 +100,10 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                   <p className="font-medium text-foreground">Date & Time</p>
                   <p className="text-muted-foreground flex flex-col gap-2">
                     <span>
-                    {formatInTimeZone(startDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (start)
+                      {formatInTimeZone(startDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (start)
                     </span>
                     <span>
-                    {formatInTimeZone(endDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (end)
+                      {formatInTimeZone(endDate, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')} (end)
                     </span>
                     {/*{!event.allDay && (
                       <>
@@ -135,11 +137,7 @@ export default function EventDetailView({ event }: EventDetailViewProps) {
                     <div>
                       <p className="font-medium text-foreground">RSVP Before</p>
                       <p className="text-muted-foreground">
-                        {formatInTimeZone(
-                          event.rsvpDeadline,
-                          TIMEZONE,
-                          'EEEE, MMM d, yyyy, HH:mm',
-                        )}
+                        {formatInTimeZone(event.rsvpDeadline, TIMEZONE, 'EEEE, MMM d, yyyy, HH:mm')}
                       </p>
                     </div>
                   </div>

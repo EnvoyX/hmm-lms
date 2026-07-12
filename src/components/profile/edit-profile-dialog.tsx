@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState, type ChangeEvent } from "react";
-import Image from "next/image";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Save, X, Eye, EyeOff, ImagePlus } from 'lucide-react';
+import { useEffect, useState, type ChangeEvent } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import { Button } from '~/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -16,14 +16,15 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from "~/components/ui/form";
-import { ProfileAvatar } from "./profile-avatar";
-import { editProfileSchema, type EditProfileInput } from "~/lib/schema/profile";
-import { Loader2, Save, X, Eye, EyeOff, ImagePlus } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "~/trpc/react";
-import { Separator } from "~/components/ui/separator";
-import { ImageCropper } from "~/components/ui/image-cropper";
+} from '~/components/ui/form';
+import { ImageCropper } from '~/components/ui/image-cropper';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { Separator } from '~/components/ui/separator';
+import { editProfileSchema, type EditProfileInput } from '~/lib/schema/profile';
+import { api } from '~/trpc/react';
+
+import { ProfileAvatar } from './profile-avatar';
 
 type User = {
   id: string;
@@ -47,29 +48,24 @@ interface EditProfileDialogProps {
   onUpdate: () => void;
 }
 
-export function EditProfileDialog({
-  isOpen,
-  onClose,
-  user,
-  onUpdate,
-}: EditProfileDialogProps) {
+export function EditProfileDialog({ isOpen, onClose, user, onUpdate }: EditProfileDialogProps) {
   const utils = api.useUtils();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isCoverEditing, setIsCoverEditing] = useState(false);
-  const [tempCoverImageSrc, setTempCoverImageSrc] = useState("");
+  const [tempCoverImageSrc, setTempCoverImageSrc] = useState('');
 
   const updateProfileMutation = api.user.updateProfile.useMutation({
     onSuccess: async () => {
       await utils.user.getCurrentUser.invalidate();
-      toast.success("Profile updated successfully!");
+      toast.success('Profile updated successfully!');
       onUpdate();
       handleClose();
     },
     onError: (error) => {
-      console.error("Update error:", error);
-      toast.error(error.message || "Failed to update profile. Please try again.");
+      console.error('Update error:', error);
+      toast.error(error.message || 'Failed to update profile. Please try again.');
     },
   });
 
@@ -77,26 +73,26 @@ export function EditProfileDialog({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
       name: user.name,
-      position: user.position ?? "",
-      image: user.image ?? "",
-      coverImage: user.coverImage ?? "",
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
+      position: user.position ?? '',
+      image: user.image ?? '',
+      coverImage: user.coverImage ?? '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   useEffect(() => {
     if (isOpen) {
       form.reset({
         name: user.name,
-        position: user.position ?? "",
-        image: user.image ?? "",
-        coverImage: user.coverImage ?? "",
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+        position: user.position ?? '',
+        image: user.image ?? '',
+        coverImage: user.coverImage ?? '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
       });
     }
   }, [isOpen, user]);
@@ -113,7 +109,7 @@ export function EditProfileDialog({
   };
 
   const handleImageChange = (image: string) => {
-    form.setValue("image", image, {
+    form.setValue('image', image, {
       shouldDirty: true,
       shouldValidate: true,
     });
@@ -126,7 +122,7 @@ export function EditProfileDialog({
       setShowNewPassword(false);
       setShowConfirmPassword(false);
       setIsCoverEditing(false);
-      setTempCoverImageSrc("");
+      setTempCoverImageSrc('');
       onClose();
     }
   };
@@ -138,7 +134,7 @@ export function EditProfileDialog({
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result;
-      if (typeof result === "string") {
+      if (typeof result === 'string') {
         setTempCoverImageSrc(result);
         setIsCoverEditing(true);
       }
@@ -147,12 +143,12 @@ export function EditProfileDialog({
   };
 
   const handleCoverCrop = (croppedImage: string) => {
-    form.setValue("coverImage", croppedImage, {
+    form.setValue('coverImage', croppedImage, {
       shouldDirty: true,
       shouldValidate: true,
     });
     setIsCoverEditing(false);
-    setTempCoverImageSrc("");
+    setTempCoverImageSrc('');
   };
 
   return (
@@ -168,12 +164,11 @@ export function EditProfileDialog({
             <div className="space-y-2">
               <Label>Cover Photo</Label>
               <div className="relative h-36 w-full overflow-hidden rounded-lg border bg-muted">
-                {form.watch("coverImage") ? (
-                  <Image
-                    src={form.watch("coverImage") ?? ""}
+                {form.watch('coverImage') ? (
+                  <img
+                    src={form.watch('coverImage') ?? ''}
                     alt="Profile cover"
-                    fill
-                    className="object-cover"
+                    className="object-cover w-full"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
@@ -186,19 +181,19 @@ export function EditProfileDialog({
                     size="sm"
                     variant="secondary"
                     disabled={updateProfileMutation.isPending}
-                    onClick={() => document.getElementById("cover-upload")?.click()}
+                    onClick={() => document.getElementById('cover-upload')?.click()}
                   >
                     <ImagePlus className="mr-2 h-4 w-4" />
                     Change Cover
                   </Button>
-                  {form.watch("coverImage") && (
+                  {form.watch('coverImage') && (
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       disabled={updateProfileMutation.isPending}
                       onClick={() => {
-                        form.setValue("coverImage", "", {
+                        form.setValue('coverImage', '', {
                           shouldDirty: true,
                           shouldValidate: true,
                         });
@@ -234,7 +229,7 @@ export function EditProfileDialog({
             {/* Profile Picture */}
             <div className="flex flex-col items-center space-y-2">
               <ProfileAvatar
-                src={form.watch("image") ?? user.image ?? undefined}
+                src={form.watch('image') ?? user.image ?? undefined}
                 name={user.name}
                 size="xl"
                 editable
@@ -280,9 +275,7 @@ export function EditProfileDialog({
                         disabled={updateProfileMutation.isPending}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Your role or position in the organization
-                    </FormDescription>
+                    <FormDescription>Your role or position in the organization</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -292,18 +285,14 @@ export function EditProfileDialog({
               <div>
                 <Label>Email</Label>
                 <Input value={user.email} disabled className="bg-muted" />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Email cannot be changed
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">Email cannot be changed</p>
               </div>
 
               {user.nim && (
                 <div>
                   <Label>NIM</Label>
                   <Input value={user.nim} disabled className="bg-muted" />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    NIM cannot be changed
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">NIM cannot be changed</p>
                 </div>
               )}
 
@@ -342,7 +331,7 @@ export function EditProfileDialog({
                     <FormControl>
                       <div className="relative">
                         <Input
-                          type={showCurrentPassword ? "text" : "password"}
+                          type={showCurrentPassword ? 'text' : 'password'}
                           placeholder="Enter your current password"
                           {...field}
                           disabled={updateProfileMutation.isPending}
@@ -352,9 +341,7 @@ export function EditProfileDialog({
                           variant="ghost"
                           size="sm"
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                           disabled={updateProfileMutation.isPending}
                         >
                           {showCurrentPassword ? (
@@ -379,7 +366,7 @@ export function EditProfileDialog({
                     <FormControl>
                       <div className="relative">
                         <Input
-                          type={showNewPassword ? "text" : "password"}
+                          type={showNewPassword ? 'text' : 'password'}
                           placeholder="Enter your new password"
                           {...field}
                           disabled={updateProfileMutation.isPending}
@@ -401,8 +388,7 @@ export function EditProfileDialog({
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Must be at least 8 characters with uppercase, lowercase,
-                      and numbers
+                      Must be at least 8 characters with uppercase, lowercase, and numbers
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -418,7 +404,7 @@ export function EditProfileDialog({
                     <FormControl>
                       <div className="relative">
                         <Input
-                          type={showConfirmPassword ? "text" : "password"}
+                          type={showConfirmPassword ? 'text' : 'password'}
                           placeholder="Confirm your new password"
                           {...field}
                           disabled={updateProfileMutation.isPending}
@@ -428,9 +414,7 @@ export function EditProfileDialog({
                           variant="ghost"
                           size="sm"
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           disabled={updateProfileMutation.isPending}
                         >
                           {showConfirmPassword ? (
@@ -460,9 +444,7 @@ export function EditProfileDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={
-                  updateProfileMutation.isPending || !form.formState.isDirty
-                }
+                disabled={updateProfileMutation.isPending || !form.formState.isDirty}
               >
                 {updateProfileMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -476,11 +458,11 @@ export function EditProfileDialog({
         </Form>
         <ImageCropper
           dialogProps={{ open: isCoverEditing, onOpenChange: setIsCoverEditing }}
-          src={tempCoverImageSrc || "/placeholder.svg"}
+          src={tempCoverImageSrc || '/placeholder.svg'}
           cropShape="square"
           onCancel={() => {
             setIsCoverEditing(false);
-            setTempCoverImageSrc("");
+            setTempCoverImageSrc('');
           }}
           onSave={handleCoverCrop}
         />

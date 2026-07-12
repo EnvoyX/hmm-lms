@@ -191,7 +191,7 @@ export const uploadImages = async (
     formData.append("file", file);
     formData.append("entityType", entityType);
     formData.append("entityId", entityId);
-    
+
     // If questionNumber is provided, entityType MUST be 'tryout'
     if (questionNumber !== undefined) {
       if (entityType !== 'tryout') {
@@ -199,22 +199,22 @@ export const uploadImages = async (
       }
       formData.append("questionNumber", questionNumber.toString());
     }
-    
+
     const response = await fetch(
       env.NEXT_PUBLIC_APP_URL + "/api/documents/upload",
       { method: "POST", body: formData }
     );
-    
+
     if (!response.ok) throw new Error(`Upload failed for ${file.name}`);
     return response.json() as Promise<{ CDNurl: string; key: string }>;
   });
-  
+
   return Promise.all(uploadPromises);
 };
 
 export async function startTryoutAttempt(formData: FormData) {
   const tryoutId = formData.get("tryoutId") as string;
-  
+
   let attempt;
   let errorOccurred = false;
 
@@ -231,4 +231,25 @@ export async function startTryoutAttempt(formData: FormData) {
   }
 
   redirect(`/tryouts/${tryoutId}/attempt/${attempt?.id}`);
+}
+
+export async function startMachiningTryoutAttempt(formData: FormData) {
+  const tryoutId = formData.get("tryoutId") as string;
+
+  let attempt;
+  let errorOccurred = false;
+
+  try {
+    attempt = await api.tryout.startAttempt({ id: tryoutId });
+  } catch (error) {
+    console.error("Failed to start attempt:", error);
+    errorOccurred = true;
+  }
+
+  // Call redirect OUTSIDE of try/catch block
+  if (errorOccurred) {
+    redirect(`/machining/tryouts/${tryoutId}?error=failed-to-start`);
+  }
+
+  redirect(`/machining/tryouts/${tryoutId}/attempt/${attempt?.id}`);
 }

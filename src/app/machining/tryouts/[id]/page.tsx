@@ -16,7 +16,7 @@ import { redirect } from 'next/navigation';
 
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-import { startTryoutAttempt } from '~/server/action';
+import { startMachiningTryoutAttempt } from '~/server/action';
 import { auth } from '~/server/auth';
 import { api } from '~/trpc/server';
 
@@ -274,7 +274,7 @@ function StartNewAttemptButton({
   isDisabled: boolean;
 }) {
   return (
-    <form action={startTryoutAttempt}>
+    <form action={startMachiningTryoutAttempt}>
       <input type="hidden" name="tryoutId" value={tryoutId} />
       <Button type="submit" disabled={isDisabled}>
         <PlayCircle className="h-4 w-4 mr-2" />

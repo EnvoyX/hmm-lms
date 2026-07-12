@@ -426,7 +426,103 @@ export const tryoutRouter = createTRPCRouter({
         },
       });
     }),
+  submitAnswersBatch: protectedProcedure
+    .input(
+      z.object({
+        attemptId: z.string().cuid(),
+        answers: z.array(
+          z.object({
+            questionId: z.string().cuid(),
+            answer: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const attempt = await ctx.db.userAttempt.findUnique({
+        where: {
+          id: input.attemptId,
+          userId: ctx.session.user.id,
+          isCompleted: false,
+        },
+        include: {
+          tryout: {
+            include: {
+              questions: {
+                include: { options: true },
+              },
+            },
+          },
+        },
+      });
 
+      if (!attempt) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Attempt not found or already completed',
+        });
+      }
+
+      input.answers.map((ansItem) => {
+        const question = attempt.tryout.questions.find((q) => q.id === ansItem.questionId);
+
+        if (!question) return null;
+
+        let points = 0;
+
+        if (question.type === 'MULTIPLE_CHOICE_SINGLE') {
+          const selectedOption = question.options.find((opt) => opt.id === ansItem.answer);
+          if (selectedOption?.isCorrect) {
+            points = question.points;
+          }
+        } else if (question.type === 'MULTIPLE_CHOICE_MULTIPLE') {
+          try {
+            const selectedOptions = JSON.parse(ansItem.answer) as string[];
+            const correctOptions = question.options.filter((opt) => opt.isCorrect);
+            const selectedCorrectOptions = selectedOptions.filter((optId) =>
+              correctOptions.some((opt) => opt.id === optId),
+            );
+
+            if (
+              selectedCorrectOptions.length === correctOptions.length &&
+              selectedOptions.length === correctOptions.length
+            ) {
+              points = question.points;
+            }
+          } catch {
+            points = 0;
+          }
+        } else if (question.type === 'SHORT_ANSWER') {
+          if (
+            Array.isArray(question.shortAnswers) &&
+            question.shortAnswers.some(
+              (ans) => ans.trim().toLowerCase() === ansItem.answer.trim().toLowerCase(),
+            )
+          ) {
+            points = question.points;
+          }
+        }
+
+        return ctx.db.userAnswer.upsert({
+          where: {
+            attemptId_questionId: {
+              attemptId: input.attemptId,
+              questionId: ansItem.questionId,
+            },
+          },
+          update: {
+            answer: ansItem.answer,
+            points,
+          },
+          create: {
+            attemptId: input.attemptId,
+            questionId: ansItem.questionId,
+            answer: ansItem.answer,
+            points,
+          },
+        });
+      });
+    }),
   completeAttempt: protectedProcedure
     .input(z.object({ attemptId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {

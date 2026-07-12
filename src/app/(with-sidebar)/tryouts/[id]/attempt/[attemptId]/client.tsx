@@ -51,6 +51,7 @@ export function TryoutAttemptClient({ attempt, tryout, tryoutId }: TryoutAttempt
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submitAnswerMutation = api.tryout.submitAnswer.useMutation();
+  // const submitAnswersBatchMutation = api.tryout.submitAnswersBatch.useMutation();
   const completeAttemptMutation = api.tryout.completeAttempt.useMutation();
 
   const currentQuestion = tryout.questions[currentQuestionIndex];
@@ -114,14 +115,65 @@ export function TryoutAttemptClient({ attempt, tryout, tryoutId }: TryoutAttempt
     [attempt.id, submitAnswerMutation],
   );
 
+  const submitAllAnswers = useCallback(async () => {
+    // console.log('Answers in function: ', answers);
+    const answerEntries = Object.entries(answers);
+    // const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => ({
+    //   questionId,
+    //   answer,
+    // }));
+
+    // if (formattedAnswers.length === 0) return;
+
+    // try {
+    //   await submitAnswersBatchMutation.mutateAsync({
+    //     attemptId: attempt.id,
+    //     answers: formattedAnswers,
+    //   });
+    // } catch (error) {
+    //   console.error('Failed to batch submit answers:', error);
+    //   throw error;
+    // }
+
+    // for (const [questionId, answer] of answerEntries) {
+    //   try {
+    //     await submitAnswerMutation.mutateAsync({
+    //       attemptId: attempt.id,
+    //       questionId,
+    //       answer,
+    //     });
+    //   } catch (error) {
+    //     console.error(`Failed to submit answer for question ${questionId}:`, error);
+    //   }
+    // }
+    const promises = answerEntries.map(async ([questionId, answer]) => {
+      try {
+        return await submitAnswerMutation.mutateAsync({
+          attemptId: attempt.id,
+          questionId,
+          answer,
+        });
+      } catch (error) {
+        console.error(`Failed to submit answer for question ${questionId}:`, error);
+        throw error;
+      }
+    });
+
+    // run all mutations concurrently
+    await Promise.all(promises);
+  }, [answers, attempt.id, submitAnswerMutation]);
+
   const handleAutoSubmit = useCallback(async () => {
     if (isSubmitting) return;
 
+    const toastId = toast.loading('Submitting Tryout...');
     setIsSubmitting(true);
     try {
+      await submitAllAnswers();
       await completeAttemptMutation.mutateAsync({
         attemptId: attempt.id,
       });
+      toast.dismiss(toastId);
       toast.success('Tryout submitted automatically due to time limit');
       router.push(`/tryouts/${tryoutId}/results/${attempt.id}`);
     } catch {
@@ -131,11 +183,14 @@ export function TryoutAttemptClient({ attempt, tryout, tryoutId }: TryoutAttempt
   }, [attempt.id, completeAttemptMutation, router, tryoutId, isSubmitting]);
 
   const handleSubmit = async () => {
+    const toastId = toast.loading('Submitting Tryout...');
     setIsSubmitting(true);
     try {
+      await submitAllAnswers();
       await completeAttemptMutation.mutateAsync({
         attemptId: attempt.id,
       });
+      toast.dismiss(toastId);
       toast.success('Tryout submitted successfully!');
       router.push(`/tryouts/${tryoutId}/results/${attempt.id}`);
     } catch {

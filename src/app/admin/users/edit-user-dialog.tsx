@@ -54,6 +54,28 @@ export default function EditUserDialog({
     },
   });
 
+  const resetPassword = api.auth.resetPasswordByAdmin.useMutation({
+    onSuccess: (data) => {
+      // Show the new password so the admin can copy it
+      toast.success(`Password reset. New password: ${data.newPassword}`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleSave = () => {
+    if (!user) return;
+
+    updateUser.mutate({
+      id: user.id,
+      ...formData,
+      faculty: formData.faculty ?? undefined,
+      program: formData.program ?? undefined,
+      position: formData.position ?? undefined,
+    });
+  };
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -68,17 +90,7 @@ export default function EditUserDialog({
     }
   }, [user]);
 
-  const handleSave = () => {
-    if (!user) return;
 
-    updateUser.mutate({
-      id: user.id,
-      ...formData,
-      faculty: formData.faculty ?? undefined,
-      program: formData.program ?? undefined,
-      position: formData.position ?? undefined,
-    });
-  };
 
   if (isLoading) {
     return (
@@ -91,16 +103,6 @@ export default function EditUserDialog({
   }
 
   if (!user) return null;
-
-  const resetPassword = api.auth.resetPasswordByAdmin.useMutation({
-    onSuccess: (data) => {
-      // Show the new password so the admin can copy it
-      toast.success(`Password reset. New password: ${data.newPassword}`);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

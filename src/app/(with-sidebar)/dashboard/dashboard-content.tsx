@@ -131,7 +131,7 @@ export function DashboardContent() {
           <DashboardChart />
         </div>
 
-        <div className="min-w-0 space-y-6 xl:col-span-4 max-sm:pb-64">
+        <div className="min-w-0 space-y-6 xl:col-span-4 max-sm:pb-16">
           <Card className="border-border/60 bg-card/80 shadow-xs">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">

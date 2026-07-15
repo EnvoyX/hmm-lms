@@ -48,3 +48,11 @@ yarn-error.log*
 prisma/seed.ts
 prisma/seed.js
 prisma/seeds
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

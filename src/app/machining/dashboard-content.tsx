@@ -311,7 +311,7 @@ export function DashboardContent() {
           </Card>
           {/* <DashboardChart /> */}
         </div>
-        <div className="min-w-0 space-y-6 xl:col-span-4 max-sm:pb-64">
+        <div className="min-w-0 space-y-6 xl:col-span-4 max-sm:pb-16">
           <DashboardCalendar />
         </div>
       </div>

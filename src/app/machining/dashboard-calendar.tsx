@@ -150,8 +150,8 @@ export function DashboardCalendar() {
   };
 
   return (
-    <Card className="border-border/70 bg-card shadow-sm" data-testid='dashboard-calendar-machining'>
-      <CardContent className="pt-5 grid grid-cols-1 auto-rows-min gap-y-0">
+    <Card className="border-border/70 bg-card shadow-sm">
+      <CardContent className="pt-5 flex flex-col">
         <Calendar
           mode="single"
           selected={selectedDate}

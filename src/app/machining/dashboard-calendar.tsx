@@ -151,7 +151,7 @@ export function DashboardCalendar() {
 
   return (
     <Card className="border-border/70 bg-card shadow-sm">
-      <CardContent className="pt-5 flex flex-col">
+      <CardContent className="pt-5 flex flex-col overflow-auto">
         <Calendar
           mode="single"
           selected={selectedDate}

@@ -133,8 +133,8 @@ export const formRouter = createTRPCRouter({
       });
     }
 
-    // If form is not published, only allow creator to view
-    if (!form.isPublished && form.createdBy !== ctx.session?.user?.id) {
+    // If form is not published, only allow creator to view (SUPERADMIN allowed to view)
+    if (!form.isPublished && form.createdBy !== ctx.session?.user?.id && ctx.session?.user.role !== 'SUPERADMIN') {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'This form is not published',
@@ -169,7 +169,7 @@ export const formRouter = createTRPCRouter({
 
     return form;
   }),
-  getMyForms: protectedProcedure
+  getForms: protectedProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(20),
@@ -179,8 +179,15 @@ export const formRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { limit, cursor } = input;
 
+      const userRole = ctx.session.user.role;
+      const whereCondition =
+            userRole === "SUPERADMIN"
+              ? {}
+              : { createdBy: ctx.session.user.id };
+
+
       const forms = await ctx.db.form.findMany({
-        where: { createdBy: ctx.session.user.id },
+        where: whereCondition,
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { updatedAt: 'desc' },
@@ -289,17 +296,17 @@ export const formRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Check if user owns the form
-      const question = await ctx.db.formQuestion.findUnique({
-        where: { id: input.id },
-        include: { form: true },
-      });
+      // const question = await ctx.db.formQuestion.findUnique({
+      //   where: { id: input.id },
+      //   include: { form: true },
+      // });
 
-      if (!question || question.form.createdBy !== ctx.session.user.id) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You can only delete questions in your own forms',
-        });
-      }
+      // if (!question || question.form.createdBy !== ctx.session.user.id) {
+      //   throw new TRPCError({
+      //     code: 'FORBIDDEN',
+      //     message: 'You can only delete questions in your own forms',
+      //   });
+      // }
 
       return ctx.db.formQuestion.delete({
         where: { id: input.id },

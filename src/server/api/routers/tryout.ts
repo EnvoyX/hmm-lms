@@ -197,6 +197,52 @@ export const tryoutRouter = createTRPCRouter({
     });
     return coursesWithTryouts.filter((course) => course.tryout.length > 0);
   }),
+  getMyMachiningTryouts: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+    const coursesWithTryouts = await ctx.db.course.findMany({
+      where: {
+        members: {
+          some: {
+            id: userId,
+          },
+        },
+        OR: [
+              { scope: "MACHINING"},
+              { type: "MACHINING"},
+        ],
+      },
+      include: {
+        tryout: {
+          where: {
+            isActive: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: {
+            attempts: {
+              where: {
+                userId: userId,
+              },
+              orderBy: {
+                startedAt: 'desc',
+              },
+            },
+            _count: {
+              select: {
+                questions: true,
+                attempts: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        title: 'asc',
+      },
+    });
+    return coursesWithTryouts.filter((course) => course.tryout.length > 0);
+  }),
 
   getById: protectedProcedure.input(tryoutIdSchema).query(async ({ ctx, input }) => {
     const tryout = await ctx.db.tryout.findUnique({

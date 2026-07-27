@@ -1,4 +1,3 @@
-// ~/app/admin/layout.tsx
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";

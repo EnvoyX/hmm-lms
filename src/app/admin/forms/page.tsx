@@ -27,7 +27,7 @@ import { Switch } from '~/components/ui/switch';
 type ViewMode = 'grid' | 'list';
 type FilterType = 'all' | 'published' | 'draft' | 'archived';
 // Infer the type for a single form item from the tRPC router output
-type FormListItemType = RouterOutputs['form']['getMyForms']['forms'][number];
+type FormListItemType = RouterOutputs['form']['getForms']['forms'][number];
 
 
 // --- Main Page Component ---
@@ -45,7 +45,7 @@ export default function FormsPage() {
     isLoading,
     fetchNextPage,
     hasNextPage
-  } = api.form.getMyForms.useInfiniteQuery(
+  } = api.form.getForms.useInfiniteQuery(
     { limit: 12 },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );
@@ -55,7 +55,7 @@ export default function FormsPage() {
   const deleteFormMutation = api.form.delete.useMutation({
     onSuccess: () => {
       toast.success('Form deleted successfully');
-      void utils.form.getMyForms.invalidate();
+      void utils.form.getForms.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -65,7 +65,7 @@ export default function FormsPage() {
   const duplicateFormMutation = api.form.duplicate.useMutation({
     onSuccess: async (newForm) => {
       toast.success(`Form "${newForm.title}" duplicated successfully`);
-      await utils.form.getMyForms.invalidate();
+      await utils.form.getForms.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -275,7 +275,7 @@ const FormCard: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }) =>
   const utils = api.useUtils();
   const updatePublish = api.form.updatePublish.useMutation({
     onSuccess: async () => {
-      await utils.form.getMyForms.invalidate();
+      await utils.form.getForms.invalidate();
     },
   });
 
@@ -345,7 +345,7 @@ const FormListItem: React.FC<FormComponentProps> = ({ form, onEdit, ...actions }
   const utils = api.useUtils();
   const updatePublish = api.form.updatePublish.useMutation({
     onSuccess: async () => {
-      await utils.form.getMyForms.invalidate();
+      await utils.form.getForms.invalidate();
     },
   });
 

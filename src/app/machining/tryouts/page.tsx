@@ -16,7 +16,7 @@ export default async function TryoutsPage() {
     redirect('/auth/signin');
   }
 
-  const courses = await api.tryout.getMyTryouts();
+  const courses = await api.tryout.getMyMachiningTryouts();
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">

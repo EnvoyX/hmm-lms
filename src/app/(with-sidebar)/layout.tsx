@@ -25,7 +25,7 @@ export default async function Layout({
   return (
     <MainNavbar>
       <Suspense fallback={<div className='w-full h-full grid place-items-center'>Fetching data...</div>}>
-        <InstallPrompt />
+        {/*<InstallPrompt />*/}
         <WeeklyPodiumPopup />
         {/* <NotificationPromptModal /> */}
         {children}

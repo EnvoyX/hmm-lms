@@ -180,7 +180,7 @@ export default function CourseContentClient({ initialCourseData, courseId }: Cou
                       </span>
                     </div>
                     <Button asChild size="sm" disabled={!tryout.isActive}>
-                      <Link href={`/tryouts/${tryout.id}`} className='text-sm'>
+                      <Link href={`/machining/tryouts/${tryout.id}`} className='text-sm'>
                         Start Tryout
                       </Link>
                     </Button>

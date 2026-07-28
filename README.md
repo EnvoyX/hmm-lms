@@ -320,7 +320,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Website: [hmmitb.com](https://hmmitb.com)
 - Email: bccipionirberkarya@gmail.com
-
+- Email 2: itdbccihmmitb@gmail.com
 ---
 
 ## 🙏 Acknowledgments

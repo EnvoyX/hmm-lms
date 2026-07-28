@@ -862,12 +862,17 @@ export const tryoutRouter = createTRPCRouter({
       },
     });
 
+
+
     if (!originalTryout) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Tryout not found',
       });
     }
+
+
+    console.log("originalTryout: ", originalTryout)
 
     return ctx.db.tryout.create({
       data: {
@@ -885,6 +890,8 @@ export const tryoutRouter = createTRPCRouter({
             order: index + 1,
             explanation: question.explanation,
             shortAnswers: question.shortAnswers,
+            images: question.images,
+            explanationImages: question.explanationImages,
             options:
               question.options.length > 0
                 ? {

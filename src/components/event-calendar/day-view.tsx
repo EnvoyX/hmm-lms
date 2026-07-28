@@ -17,7 +17,7 @@ import {
   EndHour,
   StartHour,
   WeekCellsHeight,
-} from "~/components/event-calendar/constants"
+} from "~/constants/constants"
 import { cn } from "~/lib/utils"
 import type { CalendarEvent } from './types'
 import { isMultiDayEvent } from './utils'

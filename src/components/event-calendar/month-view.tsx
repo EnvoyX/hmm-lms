@@ -14,7 +14,7 @@ import {
   startOfWeek,
 } from "date-fns"
 
-import { DefaultStartHour, EventGap, EventHeight } from "~/components/event-calendar/constants"
+import { DefaultStartHour, EventGap, EventHeight } from "~/constants/constants"
 import {
   Popover,
   PopoverContent,

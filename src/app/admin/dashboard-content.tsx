@@ -1,18 +1,17 @@
-// ~/app/(admin)/admin/dashboard/dashboard-content.tsx
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import { format } from "date-fns";
 import {
-  Bell,
+  // Bell,
   Users,
   BookOpen,
   Calendar,
   AlertCircle,
   CheckCircle,
   Clock,
-  TrendingUp,
-  FileText,
+  // TrendingUp,
+  // FileText,
   Award,
   MessageSquare,
   Activity,
@@ -24,7 +23,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Progress } from "~/components/ui/progress";
-import { Separator } from "~/components/ui/separator";
+// import { Separator } from "~/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import Link from "next/link";
 
@@ -287,12 +286,12 @@ export function DashboardContent() {
                   Manage Tryouts
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              {/*<Button variant="outline" className="w-full justify-start" asChild>
                 <Link href="/admin/resources">
                   <FileText className="h-4 w-4 mr-2" />
                   Manage Resources
                 </Link>
-              </Button>
+              </Button>*/}
               <Button variant="outline" className="w-full justify-start" asChild>
                 <Link href="/admin/announcements">
                   <MessageSquare className="h-4 w-4 mr-2" />

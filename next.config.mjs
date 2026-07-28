@@ -93,6 +93,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "1024mb",
     },
+    useTypeScriptCli: true,
   },
   // Add webpack configuration to handle Node.js modules
   webpack: (config, { isServer }) => {

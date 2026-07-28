@@ -6,7 +6,7 @@ import {
   Megaphone,
   Users,
   BarChart3,
-  FileText,
+  // FileText,
   Database,
   BookOpen,
   Briefcase,
@@ -15,7 +15,6 @@ import {
   Link2,
   Settings,
 } from 'lucide-react';
-// ~/components/layout/admin-navbar.tsx
 import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -30,7 +29,7 @@ import {
 import { auth } from '~/server/auth';
 
 import SearchCMDK, { type TabsType } from '../main/cmdk-search';
-import HeaderTitle from '../main/header-title';
+// import HeaderTitle from '../main/header-title';
 import ProfileMenu from '../main/profile-menu';
 import StudentBreadcrumb from '../student-breadcrumb';
 import ThemeSwitch from '../theme-switch';
@@ -135,7 +134,7 @@ const adminSidebarTabs: {
         tooltip: 'Database Management',
         dev: false,
       },
-      { label: 'Logs', href: '/admin/logs', icon: FileText, tooltip: 'System Logs', dev: false },
+      // { label: 'Logs', href: '/admin/logs', icon: FileText, tooltip: 'System Logs', dev: false },
     ],
   },
   {

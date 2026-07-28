@@ -20,8 +20,8 @@
       "ES2022"
     ],
     "noEmit": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "plugins": [
       {

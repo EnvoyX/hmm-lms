@@ -9,7 +9,7 @@ import {
   SPACING_SIZES,
   type A11ySettings,
   type ReduceMotionMode,
-} from "./constants";
+} from "~/constants/constants";
 
 type Spacing = keyof typeof SPACING_SIZES;
 type FontSize = keyof typeof FONT_SIZES;

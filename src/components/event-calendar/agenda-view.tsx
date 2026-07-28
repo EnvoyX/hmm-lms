@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { RiCalendarEventLine } from "@remixicon/react"
 import { addDays, format, isToday } from "date-fns"
 import type { CalendarEvent } from './types'
-import { AgendaDaysToShow } from './constants'
+import { AgendaDaysToShow } from '~/constants/constants'
 import { EventItem } from './event-item'
 import { getAgendaEventsForDay } from './utils'
 

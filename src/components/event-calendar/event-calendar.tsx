@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import type { CalendarEvent, CalendarView } from './types'
-import { AgendaDaysToShow, EventGap, EventHeight, WeekCellsHeight } from './constants'
+import { AgendaDaysToShow, EventGap, EventHeight, WeekCellsHeight } from '~/constants/constants'
 import { addHoursToDate } from './utils'
 import { CalendarDndProvider } from './calendar-dnd-context'
 import { MonthView } from './month-view'

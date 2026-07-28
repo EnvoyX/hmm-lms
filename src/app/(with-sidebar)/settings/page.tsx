@@ -8,7 +8,7 @@ import { Label } from "~/components/ui/label"
 import { useTheme } from "next-themes"
 import { Type, Palette, Layout, Dice5, Contrast } from "lucide-react"
 import { useDisplaySetting } from '~/components/providers/display-provider'
-import { FONT_FAMILIES, FONT_SIZES, SPACING_SIZES, REDUCE_MOTION_OPTIONS, type ReduceMotionMode } from '~/components/providers/constants'
+import { FONT_FAMILIES, FONT_SIZES, SPACING_SIZES, REDUCE_MOTION_OPTIONS, type ReduceMotionMode } from '~/constants/constants'
 import { Switch } from "~/components/ui/switch"
 import { Separator } from '~/components/ui/separator'
 import { cn } from '~/lib/utils'

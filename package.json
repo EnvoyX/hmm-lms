@@ -90,7 +90,7 @@
     "caniuse-lite": "^1.0.30001790",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
-    "cnfast": "^0.0.8",
+    "cnfast": "^0.1.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "embla-carousel-autoplay": "^8.6.0",

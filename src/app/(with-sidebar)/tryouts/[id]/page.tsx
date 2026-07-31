@@ -10,6 +10,7 @@ import {
   AlertCircle,
   CheckCircle2,
   CheckCheck,
+  Check,
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -140,6 +141,17 @@ export default async function TryoutDetailPage({ params }: TryoutDetailPageProps
                     Make sure you have enough time to complete the tryout.
                     {tryout.duration && ` You'll have ${tryout.duration} minutes once you start.`}
                   </p>
+                  {tryout.allowViewCorrectAnswers ? (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <Check className="h-4 w-4" />
+                      <span>You are able to view correct answers.</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-amber-600">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>You are not able to view correct answers.</span>
+                    </div>
+                  )}
                   {tryout.allowMultipleAttempts ? (
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <CheckCheck className="h-4 w-4" />

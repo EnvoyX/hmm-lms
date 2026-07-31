@@ -49,6 +49,7 @@ export type TryoutFormData = {
   duration?: number | null;
   courseId: string;
   allowMultipleAttempts: boolean;
+  allowViewCorrectAnswers: boolean;
   isActive?: boolean;
   questions: Array<{
     id?: string;
@@ -134,6 +135,7 @@ export default function TryoutForm({ courses, initialData, isEdit = false }: Try
           duration: 60,
           courseId: '',
           allowMultipleAttempts: true,
+          allowViewCorrectAnswers: true,
           questions: [
             {
               type: QuestionType.MULTIPLE_CHOICE_SINGLE,
@@ -278,6 +280,20 @@ export default function TryoutForm({ courses, initialData, isEdit = false }: Try
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
                       <FormLabel>Multiple Attempt</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="allowViewCorrectAnswers"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>View Correct Answers</FormLabel>
                     </div>
                     <FormControl>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />

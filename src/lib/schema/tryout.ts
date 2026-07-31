@@ -82,6 +82,7 @@ export const createTryoutSchema = z.object({
   duration: z.number().int().min(1, 'Duration must be at least 1 minute'),
   courseId: z.string().cuid('Course is required'),
   allowMultipleAttempts: z.boolean().default(true),
+  allowViewCorrectAnswers: z.boolean().default(true),
   questions: z.array(questionSchema).min(1, 'At least one question is required'),
 });
 
@@ -92,6 +93,7 @@ export const updateTryoutSchema = z.object({
   duration: z.number().min(1, 'Duration must be at least 1 minute.').optional(),
   isActive: z.boolean().optional(),
   allowMultipleAttempts: z.boolean().default(true),
+  allowViewCorrectAnswers: z.boolean().default(true),
   courseId: z.string().cuid('Please select a valid course.').optional(),
   questions: z
     .array(questionSchema) // Re-using the base question schema is cleaner

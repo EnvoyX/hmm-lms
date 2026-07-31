@@ -24,6 +24,7 @@ export default async function EditTryoutPage({ params }: EditTryoutPageProps) {
     courseId: tryout.courseId,
     isActive: tryout.isActive,
     allowMultipleAttempts: tryout.allowMultipleAttempts,
+    allowViewCorrectAnswers: tryout.allowViewCorrectAnswers,
     questions: tryout.questions.map((q) => ({
       id: q.id,
       type: q.type,

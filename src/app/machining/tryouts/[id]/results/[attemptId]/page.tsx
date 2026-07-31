@@ -63,7 +63,7 @@ const OptionDetail = ({ option }: { option: QuestionOption }) => (
   </div>
 );
 
-const renderMultipleChoiceAnswer = (answer: ResultsUserAnswer, isCorrect: boolean): JSX.Element => {
+const renderMultipleChoiceAnswer = (answer: ResultsUserAnswer, isCorrect: boolean, isAllowViewCorrectAnswers: boolean): JSX.Element => {
   const { question } = answer;
   const correctOptions = question.options.filter((opt) => opt.isCorrect);
 
@@ -75,7 +75,7 @@ const renderMultipleChoiceAnswer = (answer: ResultsUserAnswer, isCorrect: boolea
         <div className="text-sm text-muted-foreground">
           {selectedOption ? <OptionDetail option={selectedOption} /> : 'No answer'}
         </div>
-        {!isCorrect && (
+        {!isCorrect && isAllowViewCorrectAnswers && (
           <div className="space-y-1">
             <div className="text-sm font-medium text-green-600">Correct Answer:</div>
             {correctOptions.map((opt) => (
@@ -105,7 +105,7 @@ const renderMultipleChoiceAnswer = (answer: ResultsUserAnswer, isCorrect: boolea
                 ))
               : 'No answer'}
           </div>
-          {!isCorrect && (
+          {!isCorrect && isAllowViewCorrectAnswers && (
             <div className="space-y-1 mt-3">
               <div className="text-sm font-medium text-green-600">Correct Answer:</div>
               <div className="space-y-2">
@@ -126,7 +126,7 @@ const renderMultipleChoiceAnswer = (answer: ResultsUserAnswer, isCorrect: boolea
   return <div>Unsupported question type</div>;
 };
 
-const renderTextAnswer = (answer: ResultsUserAnswer, isCorrect: boolean): JSX.Element => {
+const renderTextAnswer = (answer: ResultsUserAnswer, isCorrect: boolean, isAllowViewCorrectAnswers: boolean): JSX.Element => {
   const { question } = answer;
   return (
     <div className="space-y-3">
@@ -134,7 +134,7 @@ const renderTextAnswer = (answer: ResultsUserAnswer, isCorrect: boolean): JSX.El
       <div className="text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap">
         {answer.answer || 'No answer provided'}
       </div>
-      {!isCorrect && question.type === 'SHORT_ANSWER' && (
+      {!isCorrect && isAllowViewCorrectAnswers && question.type === 'SHORT_ANSWER' && (
         <div className="space-y-1">
           <div className="text-sm font-medium text-green-600">Possible Correct Answers:</div>
           <div className="text-sm text-green-600 bg-green-50 dark:bg-green-950/50 p-2 rounded-md">
@@ -150,7 +150,7 @@ const renderTextAnswer = (answer: ResultsUserAnswer, isCorrect: boolean): JSX.El
           </div>
         </div>
       )}
-      {!isCorrect && question.type === 'LONG_ANSWER' && (
+      {!isCorrect && isAllowViewCorrectAnswers && question.type === 'LONG_ANSWER' && (
         <div className="text-sm text-amber-600">
           <AlertCircle className="h-4 w-4 inline mr-1" />
           This answer requires manual grading.
@@ -276,6 +276,7 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
             {attempt.answers.map((answer, index) => {
               const { question } = answer;
               const isCorrect = answer.points > 0;
+              const isAllowViewCorrectAnswers = attempt.tryout.allowViewCorrectAnswers;
 
               return (
                 <div key={answer.id} className="border-b pb-6 last:border-b-0 last:pb-0">
@@ -319,10 +320,10 @@ export default async function TryoutResultsPage({ params }: TryoutResultsPagePro
 
                     {(question.type === 'MULTIPLE_CHOICE_SINGLE' ||
                       question.type === 'MULTIPLE_CHOICE_MULTIPLE') &&
-                      renderMultipleChoiceAnswer(answer, isCorrect)}
+                      renderMultipleChoiceAnswer(answer, isCorrect, isAllowViewCorrectAnswers)}
 
                     {(question.type === 'SHORT_ANSWER' || question.type === 'LONG_ANSWER') &&
-                      renderTextAnswer(answer, isCorrect)}
+                      renderTextAnswer(answer, isCorrect, isAllowViewCorrectAnswers)}
                   </div>
 
                   {question.explanation && (

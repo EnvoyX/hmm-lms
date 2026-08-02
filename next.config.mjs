@@ -1,97 +1,33 @@
-import withPWA from "@ducanh2912/next-pwa";
-
-const pwaDevDisabled =
-  process.env.NODE_ENV === "development" && process.env.ENABLE_PWA_IN_DEV !== "1";
-
-const pwaConfig = withPWA({
-  dest: "public",
-  disable: pwaDevDisabled,
-  register: true,
-  customWorkerSrc: "worker",
-
-  cacheStartUrl: false,
-  dynamicStartUrl: false,
-  cacheOnFrontEndNav: false,
-  aggressiveFrontEndNavCaching: false,
-
-  workboxOptions: {
-    // Forces Workbox prod runtime bundle to avoid verbose router debug logs in dev PWA mode.
-    mode: "production",
-    skipWaiting: true,
-    clientsClaim: true,
-
-    // Exclude problematic files
-    exclude: [
-      /\.map$/,
-      /^manifest.*\.js$/,
-      /favicon\.ico$/,
-      /workbox-.*\.js$/,
-      /worker-.*\.js$/,
-      /icon-.*\.png$/,
-    ],
-
-    // Don't precache at all - use runtime caching only
-    // This completely avoids the 304 issue
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "google-fonts",
-          expiration: {
-            maxEntries: 10,
-            maxAgeSeconds: 60 * 60 * 24 * 365,
-          },
-        },
-      },
-      {
-        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "images",
-          expiration: {
-            maxEntries: 60,
-            maxAgeSeconds: 60 * 60 * 24 * 30,
-          },
-        },
-      },
-      {
-        urlPattern: /\/_next\/static\/.*/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "next-static",
-          expiration: {
-            maxEntries: 64,
-            maxAgeSeconds: 60 * 60 * 24 * 365,
-          },
-        },
-      },
-      {
-        urlPattern: /\.(?:js|css)$/i,
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "static-resources",
-          expiration: {
-            maxEntries: 32,
-            maxAgeSeconds: 60 * 60 * 24,
-          },
-        },
-      },
-    ],
-  },
-});
+import withPWA from '@ducanh2912/next-pwa';
+import { createMDX } from 'fumadocs-mdx/next';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Next 16 defaults to Turbopack; keep an explicit config
   // so custom webpack settings don't hard-fail `next build`.
+  reactStrictMode: true,
+  transpilePackages: ['fumadocs-ui'],
   turbopack: {},
   images: {
-    domains: ["hmm-lms.sgp1.digitaloceanspaces.com"],
+    domains: ['hmm-lms.sgp1.digitaloceanspaces.com', 'hmm-lms.sgp1.cdn.digitaloceanspaces.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'hmm-lms.sgp1.digitaloceanspaces.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hmm-lms.sgp1.cdn.digitaloceanspaces.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "1024mb",
+      bodySizeLimit: '1024mb',
     },
     useTypeScriptCli: true,
   },
@@ -119,4 +55,87 @@ const nextConfig = {
   },
 };
 
-export default pwaConfig(nextConfig);
+const pwaDevDisabled =
+  process.env.NODE_ENV === 'development' && process.env.ENABLE_PWA_IN_DEV !== '1';
+
+const pwaConfig = withPWA({
+  dest: 'public',
+  disable: pwaDevDisabled,
+  register: true,
+  customWorkerSrc: 'worker',
+
+  cacheStartUrl: false,
+  dynamicStartUrl: false,
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
+
+  workboxOptions: {
+    // Forces Workbox prod runtime bundle to avoid verbose router debug logs in dev PWA mode.
+    mode: 'production',
+    skipWaiting: true,
+    clientsClaim: true,
+
+    // Exclude problematic files
+    exclude: [
+      /\.map$/,
+      /^manifest.*\.js$/,
+      /favicon\.ico$/,
+      /workbox-.*\.js$/,
+      /worker-.*\.js$/,
+      /icon-.*\.png$/,
+    ],
+
+    // Don't precache at all - use runtime caching only
+    // This completely avoids the 304 issue
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'google-fonts',
+          expiration: {
+            maxEntries: 10,
+            maxAgeSeconds: 60 * 60 * 24 * 365,
+          },
+        },
+      },
+      {
+        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'images',
+          expiration: {
+            maxEntries: 60,
+            maxAgeSeconds: 60 * 60 * 24 * 30,
+          },
+        },
+      },
+      {
+        urlPattern: /\/_next\/static\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'next-static',
+          expiration: {
+            maxEntries: 64,
+            maxAgeSeconds: 60 * 60 * 24 * 365,
+          },
+        },
+      },
+      {
+        urlPattern: /\.(?:js|css)$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'static-resources',
+          expiration: {
+            maxEntries: 32,
+            maxAgeSeconds: 60 * 60 * 24,
+          },
+        },
+      },
+    ],
+  },
+});
+
+const withMDX = createMDX();
+
+export default pwaConfig(withMDX(nextConfig));

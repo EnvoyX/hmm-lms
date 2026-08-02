@@ -56,8 +56,9 @@ export default function SignUpPage() {
   // tRPC mutation hook for registration
   const signupMutation = api.auth.signUp.useMutation({
     onSuccess: async (data) => {
-      await sendVerificationEmail(data.email, data.name)
-      toast.success("Registration successful. Please check your email for verification link.")
+      await sendVerificationEmail(data.email, data.name);
+      toast.success('Registration successful. Please check your email for verification link.');
+      router.push('/auth/sign-in');
 
       // const loginResult = await signIn('credentials', {
       //   redirect: false, // Prevent NextAuth.js from redirecting automatically

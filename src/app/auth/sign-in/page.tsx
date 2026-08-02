@@ -165,6 +165,12 @@ export default function SignIn() {
               <h4 className="font-medium underline">Sign up</h4>
             </Link>
           </span>
+          <span className="flex gap-1 text-sm">
+            <h4>Forgot your password?</h4>
+            <Link href="/auth/request-reset-password">
+              <h4 className="font-medium underline">Reset it</h4>
+            </Link>
+          </span>
         </form>
       </Form>
     </main>

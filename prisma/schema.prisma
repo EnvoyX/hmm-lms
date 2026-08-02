@@ -158,6 +158,16 @@ model VerificationToken {
   @@index([email])
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
 // Core LMS course models
 model Course {
   id              String              @id @default(cuid())

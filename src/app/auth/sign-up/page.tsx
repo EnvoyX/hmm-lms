@@ -1,15 +1,18 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type z } from 'zod';
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // For redirection after success
-import { signIn } from 'next-auth/react'; // Optional: For auto-login after register
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { toast } from 'sonner';
+import { type z } from 'zod';
 
 // Shadcn UI Components
 import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
 import {
   Form,
   FormControl,
@@ -18,13 +21,10 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { toast } from 'sonner';
+import { Input } from '~/components/ui/input';
 import { signUpSchema } from '~/lib/schema/auth';
+import { sendVerificationEmail } from '~/server/action/send-verification';
 import { api } from '~/trpc/react';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
@@ -56,24 +56,25 @@ export default function SignUpPage() {
   // tRPC mutation hook for registration
   const signupMutation = api.auth.signUp.useMutation({
     onSuccess: async (data) => {
-      toast.success(data.message || "Registration successful!");
+      await sendVerificationEmail(data.email, data.name)
+      toast.success("Registration successful. Please check your email for verification link.")
 
-      const loginResult = await signIn('credentials', {
-        redirect: false, // Prevent NextAuth.js from redirecting automatically
-        email: form.getValues('email'), // Get email from form state
-        password: form.getValues('password'), // Get password from form state
-      });
+      // const loginResult = await signIn('credentials', {
+      //   redirect: false, // Prevent NextAuth.js from redirecting automatically
+      //   email: form.getValues('email'), // Get email from form state
+      //   password: form.getValues('password'), // Get password from form state
+      // });
 
-      if (loginResult?.error) {
-        toast.error("Auto-login failed. Please log in manually.");
-        router.push('/auth/sign-in'); // Redirect to login page if auto-login fails
-      } else {
-        router.push('/auth/sign-in'); // Redirect to dashboard after successful auto-login
-      }
+      // if (loginResult?.error) {
+      //   toast.error("Auto-login failed. Please log in manually.");
+      //   router.push('/auth/sign-in'); // Redirect to login page if auto-login fails
+      // } else {
+      //   router.push('/auth/sign-in'); // Redirect to dashboard after successful auto-login
+      // }
     },
     onError: (error) => {
       // tRPCError has a 'message' property that includes the error message from the server
-      toast.error(error.message || "Registration failed. Please try again.");
+      toast.error(error.message || 'Registration failed. Please try again.');
 
       // If it's a CONFLICT error (email exists), you might want to specifically set it on the email field
       if (error.data?.code === 'CONFLICT') {
@@ -103,7 +104,7 @@ export default function SignUpPage() {
         height={2000}
       />*/}
       <div className="flex flex-col items-center w-sm gap-4 bg-card px-6 py-4 rounded-xl shadow">
-        <h1 className='font-semibold text-base'>Sign up to HMM LMS</h1>
+        <h1 className="font-semibold text-base">Sign up to HMM LMS</h1>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
             <FormField
@@ -113,7 +114,12 @@ export default function SignUpPage() {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Adi Haditya Nursyam" {...field} autoFocus disabled={signupMutation.isPending} />
+                    <Input
+                      placeholder="Adi Haditya Nursyam"
+                      {...field}
+                      autoFocus
+                      disabled={signupMutation.isPending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -139,15 +145,20 @@ export default function SignUpPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="nim@mahasiswa.itb.ac.id"  {...field} onChange={(e) => {
-                      const v = e.target.value;
-                      if (v.includes('@')) {
-                        field.onChange(v.replace(/@.*/, '@mahasiswa.itb.ac.id'));
-                      } else {
-                        field.onChange(v);
-                      }
-                    }}
-                      type="email" disabled={signupMutation.isPending} />
+                    <Input
+                      placeholder="nim@mahasiswa.itb.ac.id"
+                      {...field}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v.includes('@')) {
+                          field.onChange(v.replace(/@.*/, '@mahasiswa.itb.ac.id'));
+                        } else {
+                          field.onChange(v);
+                        }
+                      }}
+                      type="email"
+                      disabled={signupMutation.isPending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -162,7 +173,6 @@ export default function SignUpPage() {
                   <FormControl>
                     <div className="relative flex items-center">
                       <Input
-
                         {...field}
                         type={showPassword ? 'text' : 'password'}
                         disabled={signupMutation.isPending}
@@ -193,7 +203,6 @@ export default function SignUpPage() {
                   <FormControl>
                     <div className="relative flex items-center">
                       <Input
-
                         {...field}
                         type={showConfirmPassword ? 'text' : 'password'}
                         disabled={signupMutation.isPending}
@@ -216,15 +225,19 @@ export default function SignUpPage() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={signupMutation.isPending || !form.formState.isValid}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={signupMutation.isPending || !form.formState.isValid}
+            >
               {signupMutation.isPending ? 'Signing Up...' : 'Sign Up'}
             </Button>
           </form>
         </Form>
         <p className="text-center text-sm">
           Already have an account?{' '}
-          <Link href='/auth/sign-in'>
-            <span className='font-medium underline'>Sign in</span>
+          <Link href="/auth/sign-in">
+            <span className="font-medium underline">Sign in</span>
           </Link>
         </p>
       </div>

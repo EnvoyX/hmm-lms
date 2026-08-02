@@ -148,6 +148,16 @@ enum FormType {
   MACHINING
 }
 
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
 // Core LMS course models
 model Course {
   id              String              @id @default(cuid())
@@ -540,7 +550,8 @@ model User {
   role          Role      @default(STUDENT)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  emailVerified DateTime?
+  verified      Boolean   @default(true) // defaults to true due to many existing users in databases
+  emailVerified DateTime? // nullable for backward compatibility
   image         String?
   coverImage    String?
 

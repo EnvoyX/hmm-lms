@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
 export const env = createEnv({
   /**
@@ -7,15 +7,10 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    AUTH_SECRET: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
     DATABASE_URL: z.string().url(),
     DIRECT_URL: z.string().url(),
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     DO_SPACES_ENDPOINT: z.string().url(),
     DO_SPACES_REGION: z.string(),
     DO_SPACES_KEY: z.string(),
@@ -23,6 +18,7 @@ export const env = createEnv({
     DO_SPACES_BUCKET: z.string(),
     VAPID_PRIVATE_KEY: z.string(),
     VAPID_SUBJECT: z.string().url().or(z.string().email()),
+    RESEND_API_KEY: z.string(),
   },
 
   /**
@@ -33,7 +29,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string(),
     NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT: z.string().url(),
-    NEXT_PUBLIC_APP_URL: z.string().url()
+    NEXT_PUBLIC_APP_URL: z.string().url(),
   },
 
   /**
@@ -54,7 +50,8 @@ export const env = createEnv({
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
     VAPID_SUBJECT: process.env.VAPID_SUBJECT,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -1,14 +1,10 @@
-import { TRPCError } from "@trpc/server";
-import { hashPassword } from "~/lib/utils";
-import { signUpSchema } from "~/lib/schema/auth";
-
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import { db } from "~/server/db";
+import { TRPCError } from '@trpc/server';
 import z from 'zod';
+
+import { signUpSchema } from '~/lib/schema/auth';
+import { hashPassword } from '~/lib/utils';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { db } from '~/server/db';
 
 export const authRouter = createTRPCRouter({
   signUp: publicProcedure.input(signUpSchema).mutation(async ({ input }) => {
@@ -22,8 +18,8 @@ export const authRouter = createTRPCRouter({
     if (existingUser) {
       // Throw a specific tRPC error for existing email
       throw new TRPCError({
-        code: "CONFLICT",
-        message: "Email already registered.",
+        code: 'CONFLICT',
+        message: 'Email already registered.',
       });
     }
 
@@ -35,46 +31,48 @@ export const authRouter = createTRPCRouter({
         email: email.toLowerCase(),
         password: hashedPassword,
         nim,
+        verified: false,
       },
     });
 
     if (!newUser) {
       throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to create user. Please try again later.",
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to create user. Please try again later.',
       });
     }
 
-    const machining = await db.machining.findFirst()
-    const prefix = machining?.currentBatch
+    const machining = await db.machining.findFirst();
+    const prefix = machining?.currentBatch;
 
-    if (prefix){
-      const isMatchPrefix = email.startsWith(prefix)
-      const isMatchDomain = email.endsWith("@mahasiswa.itb.ac.id")
+    if (prefix) {
+      const isMatchPrefix = email.startsWith(prefix);
+      const isMatchDomain = email.endsWith('@mahasiswa.itb.ac.id');
       if (isMatchPrefix && isMatchDomain) {
-       console.log(`Match found for ${email}! Executing action...`);
-       await db.user.update({
-        where: {
-          id: newUser.id,
-        },
-        data: {
-          role: "MACHINING",
-        },
-       })
-      }
-      else {
+        console.log(`Match found for ${email}! Executing action...`);
+        await db.user.update({
+          where: {
+            id: newUser.id,
+          },
+          data: {
+            role: 'MACHINING',
+          },
+        });
+      } else {
         console.log(`${email} did not match the pattern. Continuing...`);
       }
     }
 
     return {
       success: true,
-      message: "Registration successful. You can now sign in.",
+      message: 'Registration successful. Please check your email for verification link.',
       userId: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
     };
   }),
 
-   resetPasswordByAdmin: protectedProcedure
+  resetPasswordByAdmin: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -82,8 +80,8 @@ export const authRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Optional: ensure only admins can use this
-      if (ctx.session.user.role !== "SUPERADMIN") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not allowed" });
+      if (ctx.session.user.role !== 'SUPERADMIN') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Not allowed' });
       }
 
       const user = await db.user.findUnique({
@@ -92,8 +90,8 @@ export const authRouter = createTRPCRouter({
 
       if (!user) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found.",
+          code: 'NOT_FOUND',
+          message: 'User not found.',
         });
       }
 
@@ -107,7 +105,7 @@ export const authRouter = createTRPCRouter({
 
       return {
         success: true,
-        newPassword, 
+        newPassword,
       };
     }),
 });

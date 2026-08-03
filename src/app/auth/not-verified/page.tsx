@@ -1,20 +1,30 @@
 'use client';
 
-import cn from 'cnfast';
 import { Loader2, MailWarning } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '~/components/ui/button';
+import { api } from '~/trpc/react';
 
 export default function NotVerifiedPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const resendVerificationMutation = api.auth.resendVerificationEmail.useMutation({
+    onSuccess: () => {
+      toast.success('Verification email has been sent to your email.');
+      router.replace('/auth/resend-success');
+    },
+    onError: (error) => {
+      console.error('Error resending verification email:', error);
+      toast.error('Failed to send verification email. Please try again.');
+    },
+  });
 
   const handleSignOut = async () => {
     setIsLoading(true);
@@ -23,6 +33,14 @@ export default function NotVerifiedPage() {
     toast.dismiss(toastId);
     setIsLoading(false);
   };
+  async function resendVerificationEmail() {
+    const email = session?.user?.email;
+    if (!email) {
+      toast.error('No email found in session');
+      return;
+    }
+    resendVerificationMutation.mutate({ email });
+  }
 
   if (status === 'loading') {
     return (
@@ -37,7 +55,10 @@ export default function NotVerifiedPage() {
       </>
     );
   } else if (status === 'unauthenticated') {
-    router.push('/auth/sign-in');
+    router.replace('/auth/sign-in');
+    return null;
+  } else if (status === 'authenticated' && session.user.verified) {
+    router.replace('/auth/sign-in');
     return null;
   }
 
@@ -54,24 +75,14 @@ export default function NotVerifiedPage() {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <Link
-            href={`/api/resend-verification?email=${session?.user?.email}`}
-            className={cn('w-full', {
-              'pointer-events-none cursor-not-allowed': isLoading,
-            })}
+          <Button
+            disabled={resendVerificationMutation.isPending || isLoading}
+            onClick={resendVerificationEmail}
+            variant="outline"
+            className="w-full"
           >
-            <Button
-              disabled={isLoading}
-              onClick={() => setIsLoading(true)}
-              variant="outline"
-              className="w-full"
-            >
-              {isLoading ? 'Sending...' : 'Resend Verification Email'}
-            </Button>
-          </Link>
-          {/* <Link href="/auth/sign-in" className="w-full">
-            <Button className="w-full">Back to Sign In</Button>
-          </Link> */}
+            {resendVerificationMutation.isPending ? 'Sending...' : 'Resend Verification Email'}
+          </Button>
           <Button
             onClick={handleSignOut}
             disabled={isLoading}

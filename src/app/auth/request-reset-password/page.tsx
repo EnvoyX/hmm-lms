@@ -53,7 +53,7 @@ export default function RequestResetPasswordPage() {
 
       if (result.success) {
         toast.success('Password reset link has been sent to your email.');
-        router.push('/auth/sign-in');
+        router.replace('/auth/sign-in');
       } else {
         toast.error(result.error || 'Failed to send reset email. Please try again.');
       }

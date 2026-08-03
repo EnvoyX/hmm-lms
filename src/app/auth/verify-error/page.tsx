@@ -1,12 +1,12 @@
 'use client';
 
-import cn from 'cnfast';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
 import { Button } from '~/components/ui/button';
+import { api } from '~/trpc/react';
 
 const errorMessages: Record<string, { title: string; description: string }> = {
   MissingToken: {
@@ -30,14 +30,37 @@ const errorMessages: Record<string, { title: string; description: string }> = {
     title: 'User Not Found',
     description: 'The user account associated with this email could not be found.',
   },
+  AlreadyVerified: {
+    title: 'Already Verified',
+    description: 'This email address is already verified.',
+  },
 };
 
 export default function VerifyErrorPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const error = searchParams.get('error') || 'MissingToken';
+  const email = searchParams.get('email');
   const errorInfo = errorMessages[error] || errorMessages.MissingToken;
 
+  const resendVerificationMutation = api.auth.resendVerificationEmail.useMutation({
+    onSuccess: () => {
+      toast.success('Verification email has been sent to your email.');
+      router.replace('/auth/resend-success');
+    },
+    onError: (error) => {
+      console.error('Error resending verification email:', error);
+      toast.error('Failed to send verification email. Please try again.');
+    },
+  });
+
+  async function resendVerificationEmail() {
+    if (!email) {
+      toast.error('No email provided');
+      return;
+    }
+    resendVerificationMutation.mutate({ email });
+  }
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="flex flex-col items-center w-sm gap-4 bg-card px-6 py-4 rounded-xl shadow">
@@ -52,21 +75,15 @@ export default function VerifyErrorPage() {
             <Button className="w-full">Back to Sign In</Button>
           </Link>
           {error === 'TokenExpired' && (
-            <Link
-              href={`/api/resend-verification?email=${searchParams.get('email')}`}
-              className={cn('w-full', {
-                'pointer-events-none cursor-not-allowed': isLoading,
-              })}
+            <Button
+              disabled={resendVerificationMutation.isPending}
+              type="button"
+              onClick={resendVerificationEmail}
+              variant="outline"
+              className="w-full"
             >
-              <Button
-                disabled={isLoading}
-                onClick={() => setIsLoading(true)}
-                variant="outline"
-                className="w-full"
-              >
-                {isLoading ? 'Sending...' : 'Request New Verification Email'}
-              </Button>
-            </Link>
+              {resendVerificationMutation.isPending ? 'Sending...' : 'Request New Verification Email'}
+            </Button>
           )}
         </div>
       </div>

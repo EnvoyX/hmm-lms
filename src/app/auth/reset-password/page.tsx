@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import { api } from '~/trpc/react';
 
 const resetPasswordSchema = z
   .object({
@@ -50,7 +51,6 @@ function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -62,6 +62,20 @@ function ResetPasswordForm() {
     },
   });
 
+  const resetPasswordMutation = api.auth.resetPassword.useMutation({
+    onSuccess: () => {
+      toast.success('Password has been reset successfully');
+      router.replace('/auth/sign-in');
+    },
+    onError: (error) => {
+      console.error('Error:', error);
+      toast.error(error.message || 'Failed to reset password');
+      if (error.message === 'Invalid reset token' || error.message === 'Reset token has expired') {
+        router.replace('/auth/request-reset-password');
+      }
+    },
+  });
+
   const onSubmit = async (values: ResetPasswordFormValues) => {
     if (!token) {
       toast.error('Invalid or missing reset token');
@@ -69,36 +83,7 @@ function ResetPasswordForm() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          password: values.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success('Password has been reset successfully');
-        router.push('/auth/sign-in');
-      } else {
-        toast.error(data.error || 'Failed to reset password');
-        if (data.redirect) {
-          router.push(data.redirect);
-        }
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('An error occurred. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    resetPasswordMutation.mutate({ token, password: values.password });
   };
 
   return (
@@ -122,7 +107,7 @@ function ResetPasswordForm() {
                       <Input
                         {...field}
                         type={showPassword ? 'text' : 'password'}
-                        disabled={isSubmitting}
+                        disabled={resetPasswordMutation.isPending}
                       />
                       {showPassword ? (
                         <FiEye
@@ -152,7 +137,7 @@ function ResetPasswordForm() {
                       <Input
                         {...field}
                         type={showConfirmPassword ? 'text' : 'password'}
-                        disabled={isSubmitting}
+                        disabled={resetPasswordMutation.isPending}
                       />
                       {showConfirmPassword ? (
                         <FiEye
@@ -172,8 +157,8 @@ function ResetPasswordForm() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Resetting...' : 'Reset Password'}
+            <Button type="submit" className="w-full" disabled={resetPasswordMutation.isPending}>
+              {resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'}
             </Button>
           </form>
         </Form>

@@ -36,7 +36,7 @@ export async function sendVerificationEmail(email: string, name?: string) {
         },
       });
     }
-    const confirmLink = `${env.NEXT_PUBLIC_APP_URL}/api/verify-email?token=${token}`;
+    const confirmLink = `${env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}`;
     const { data, error } = await resend.emails.send({
       from: 'HMM LMS ITB <admin@mail.hmmitb.com>',
       to: [email],

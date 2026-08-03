@@ -58,7 +58,7 @@ export default function SignUpPage() {
     onSuccess: async (data) => {
       await sendVerificationEmail(data.email, data.name);
       toast.success('Registration successful. Please check your email for verification link.');
-      router.push('/auth/sign-in');
+      router.replace('/auth/sign-in');
 
       // const loginResult = await signIn('credentials', {
       //   redirect: false, // Prevent NextAuth.js from redirecting automatically

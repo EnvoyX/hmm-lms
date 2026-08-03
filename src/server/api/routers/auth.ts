@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { signUpSchema } from '~/lib/schema/auth';
 import { hashPassword } from '~/lib/utils';
+import { sendVerificationEmail } from '~/server/action/send-verification';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
 import { db } from '~/server/db';
 
@@ -107,5 +108,107 @@ export const authRouter = createTRPCRouter({
         success: true,
         newPassword,
       };
+    }),
+
+  resendVerificationEmail: publicProcedure
+    .input(z.object({ email: z.string() }))
+    .mutation(async ({ input }) => {
+      const existingUser = await db.user.findUnique({
+        where: { email: input.email },
+      });
+
+      if (!existingUser) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'UserNotFound',
+        });
+      }
+
+      if (existingUser.emailVerified || existingUser.verified) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'AlreadyVerified',
+        });
+      }
+
+      await sendVerificationEmail(input.email, existingUser.name);
+
+      return { success: true, email: input.email, name: existingUser.name };
+    }),
+
+  resetPassword: publicProcedure
+    .input(z.object({ token: z.string(), password: z.string() }))
+    .mutation(async ({ input }) => {
+      const resetToken = await db.passwordResetToken.findUnique({
+        where: { token: input.token },
+      });
+
+      if (!resetToken) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invalid reset token',
+        });
+      }
+
+      if (resetToken.expiresAt < new Date()) {
+        await db.passwordResetToken.delete({
+          where: { id: resetToken.id },
+        });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Reset token has expired',
+        });
+      }
+
+      const hashedPassword = await hashPassword(input.password);
+
+      await db.$transaction([
+        db.user.update({
+          where: { email: resetToken.email },
+          data: { password: hashedPassword },
+        }),
+        db.passwordResetToken.delete({
+          where: { id: resetToken.id },
+        }),
+      ]);
+
+      return { success: true };
+    }),
+
+  verifyEmail: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ input }) => {
+      const existingToken = await db.verificationToken.findUnique({
+        where: { token: input.token },
+      });
+
+      if (!existingToken) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'InvalidToken',
+        });
+      }
+
+      if (existingToken.expiresAt < new Date()) {
+        await db.verificationToken.delete({
+          where: { id: existingToken.id },
+        });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'TokenExpired',
+        });
+      }
+
+      await db.$transaction([
+        db.user.update({
+          where: { email: existingToken.email },
+          data: { emailVerified: new Date(), verified: true },
+        }),
+        db.verificationToken.delete({
+          where: { id: existingToken.id },
+        }),
+      ]);
+
+      return { success: true };
     }),
 });

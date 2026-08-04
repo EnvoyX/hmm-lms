@@ -662,6 +662,16 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                 mode={mode}
                 selectedUserIds={selectedUserIds}
                 onUserSelection={handleUserSelection}
+                ownerData={
+                  initialData?.creator
+                    ? {
+                        id: initialData.creator.id,
+                        name: initialData.creator.name,
+                        email: initialData.creator.email,
+                        role: 'OWNER',
+                      }
+                    : undefined
+                }
               />
             </TabsContent>
           </Tabs>

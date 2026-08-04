@@ -23,6 +23,12 @@ interface FormManagersProps {
   mode: 'create' | 'edit';
   selectedUserIds: Set<string>;
   onUserSelection: (userId: string) => void;
+  ownerData?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 export function FormManagers({
@@ -31,14 +37,15 @@ export function FormManagers({
   mode,
   selectedUserIds,
   onUserSelection,
+  ownerData,
 }: FormManagersProps) {
-  const {data} = useSession()
+  const { data } = useSession();
 
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   function queryCondition(): boolean {
-    if (mode === 'create') return true
-    else if (mode === "edit" && data?.user.role === "SUPERADMIN") return true
+    if (mode === 'create') return true;
+    else if (mode === 'edit' && data?.user.role === 'SUPERADMIN') return true;
     return isOwner;
   }
 
@@ -90,17 +97,24 @@ export function FormManagers({
     removeManager.mutate({ formId, managerId });
   };
 
-  const availableAdminsToAdd = availableAdmins?.filter(
-    (admin) => !managers?.managers?.some((m) => m.id === admin.id),
-  );
+  // for edit mode
+  const availableAdminsToAdd = availableAdmins
+    ?.filter((admin) => {
+      if (ownerData) {
+        return admin.id !== ownerData.id;
+      }
+      return true;
+    })
+    .filter((admin) => !managers?.managers?.some((m) => m.id === admin.id));
 
-  const availableAdminsToManage = availableAdmins?.filter(
-    (admin) => !selectedUserIds.has(admin.id),
-  );
+  // for create mode
+  const availableAdminsToManage = availableAdmins
+    ?.filter((admin) => admin.id !== data?.user.id)
+    .filter((admin) => !selectedUserIds.has(admin.id));
 
   const selectedManagers = availableAdmins?.filter((admin) => selectedUserIds.has(admin.id));
 
-  if (!isOwner && mode === 'edit' && data?.user.role !== "SUPERADMIN") {
+  if (!isOwner && mode === 'edit' && data?.user.role !== 'SUPERADMIN') {
     return (
       <Card>
         <CardHeader>
@@ -135,13 +149,15 @@ export function FormManagers({
               onValueChange={setSelectedUserId}
               disabled={addManager.isPending}
             >
-              <SelectTrigger className="flex-1 truncate line-clamp-1 ">
+              <SelectTrigger className="flex-1 truncate line-clamp-1">
                 <SelectValue placeholder="Select an admin to add" />
               </SelectTrigger>
               <SelectContent>
                 {availableAdminsToAdd?.map((admin) => (
                   <SelectItem key={admin.id} value={admin.id}>
-                    {admin.name} ({admin.email}) - {admin.role}
+                    <span>
+                      {admin.name} ({admin.email}) - {admin.role}
+                    </span>
                   </SelectItem>
                 ))}
                 {availableAdminsToAdd?.length === 0 && (
@@ -169,43 +185,60 @@ export function FormManagers({
 
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Current Managers</h4>
-            {managers?.managers && managers.managers.length > 0 ? (
-              <div className="space-y-2">
-                {managers.managers.map((manager) => (
-                  <div
-                    key={manager.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium">{manager.name}</span>
-                      <span className="text-sm text-muted-foreground">{manager.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{manager.role}</Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleRemoveManager(manager.id);
-                        }}
-                        disabled={removeManager.isPending}
-                      >
-                        {removeManager.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <X className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+            <div className="space-y-2">
+              {ownerData && (
+                <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/50">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium">{ownerData.name}</span>
+                    <span className="text-sm text-muted-foreground">{ownerData.email}</span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                No managers added yet. Add admins above to grant them access.
-              </div>
-            )}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Owner</Badge>
+                  </div>
+                </div>
+              )}
+              {managers?.managers && managers.managers.length > 0
+                ? managers.managers.map((manager) => (
+                    <div
+                      key={manager.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium">{manager.name}</span>
+                        <span className="text-sm text-muted-foreground">{manager.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{manager.role}</Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveManager(manager.id);
+                          }}
+                          disabled={removeManager.isPending}
+                        >
+                          {removeManager.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                : !ownerData && (
+                    <div className="text-sm text-muted-foreground">
+                      No managers added yet. Add admins above to grant them access.
+                    </div>
+                  )}
+
+              {ownerData && managers?.managers?.length === 0 && (
+                <div className="text-sm text-muted-foreground">
+                  No additional managers added yet. Add admins above to grant them access.
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -229,7 +262,9 @@ export function FormManagers({
               <SelectContent>
                 {availableAdminsToManage?.map((admin) => (
                   <SelectItem key={admin.id} value={admin.id}>
-                    {admin.name} ({admin.email}) - {admin.role}
+                    <span>
+                      {admin.name} ({admin.email}) - {admin.role}
+                    </span>
                   </SelectItem>
                 ))}
                 {availableAdminsToManage?.length === 0 && (

@@ -12,6 +12,8 @@ import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure }
 
 export const formRouter = createTRPCRouter({
   // form manager management
+
+  // mutation for edit mode
   addManager: protectedProcedure
     .input(z.object({ formId: z.string(), managerId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -20,7 +22,10 @@ export const formRouter = createTRPCRouter({
         select: { createdBy: true },
       });
 
-      if (!form || form.createdBy !== ctx.session.user.id) {
+      if (
+        (!form || form.createdBy !== ctx.session.user.id) &&
+        ctx.session.user.role !== 'SUPERADMIN'
+      ) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'You can only add managers to your own forms',
@@ -65,6 +70,7 @@ export const formRouter = createTRPCRouter({
         },
       });
     }),
+  // mutation for create mode
   addManagers: protectedProcedure
     .input(z.object({ formId: z.string(), managerIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
@@ -132,7 +138,10 @@ export const formRouter = createTRPCRouter({
         select: { createdBy: true },
       });
 
-      if (!form || form.createdBy !== ctx.session.user.id) {
+      if (
+        (!form || form.createdBy !== ctx.session.user.id) &&
+        ctx.session.user.role !== 'SUPERADMIN'
+      ) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'You can only remove managers from your own forms',
@@ -174,7 +183,7 @@ export const formRouter = createTRPCRouter({
         });
       }
 
-      if (form.createdBy !== ctx.session.user.id) {
+      if (form.createdBy !== ctx.session.user.id && ctx.session.user.role !== 'SUPERADMIN') {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'You can only view managers of your own forms',

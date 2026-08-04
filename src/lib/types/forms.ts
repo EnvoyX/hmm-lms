@@ -221,5 +221,10 @@ export const submitFormSchema = z.object({
 
 export const formBuilderSchema = formSchema.extend({
   questions: z.array(QuestionSchema),
+  creator: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+  }).optional(),
 });
 export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;

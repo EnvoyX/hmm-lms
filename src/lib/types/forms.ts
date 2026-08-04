@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import {
   Type,
   MessageSquare,
@@ -11,22 +10,73 @@ import {
   Calendar,
   Clock,
 } from 'lucide-react';
+import { z } from 'zod';
 
 // --- 1. CENTRAL CONFIGURATION FOR QUESTION TYPES ---
 // This object's keys MUST match the `FormQuestionType` enum in your Prisma schema.
 export const QUESTION_TYPE_CONFIG = {
-  SHORT_ANSWER: { type: 'SHORT_ANSWER', label: 'Short Answer', description: 'A short text response', icon: Type },
-  LONG_ANSWER: { type: 'LONG_ANSWER', label: 'Long Answer', description: 'A long text response', icon: Type },
-  MULTIPLE_CHOICE: { type: 'MULTIPLE_CHOICE', label: 'Multiple Choice', description: 'Select one option', icon: MessageSquare },
-  MULTIPLE_SELECT: { type: 'MULTIPLE_SELECT', label: 'Checkboxes', description: 'Select multiple options', icon: CheckSquare },
-  FILE_UPLOAD: { type: 'FILE_UPLOAD', label: 'File Upload', description: 'Upload one or more files', icon: Upload },
-  NAME_SELECT: { type: 'NAME_SELECT', label: 'Name Select', description: 'Select a user by name', icon: User },
-  NIM_SELECT: { type: 'NIM_SELECT', label: 'NIM Select', description: 'Select a student by NIM', icon: Hash },
-  RATING: { type: 'RATING', label: 'Rating', description: 'A scale of stars, hearts, etc.', icon: Star },
+  SHORT_ANSWER: {
+    type: 'SHORT_ANSWER',
+    label: 'Short Answer',
+    description: 'A short text response',
+    icon: Type,
+  },
+  LONG_ANSWER: {
+    type: 'LONG_ANSWER',
+    label: 'Long Answer',
+    description: 'A long text response',
+    icon: Type,
+  },
+  MULTIPLE_CHOICE: {
+    type: 'MULTIPLE_CHOICE',
+    label: 'Multiple Choice',
+    description: 'Select one option',
+    icon: MessageSquare,
+  },
+  MULTIPLE_SELECT: {
+    type: 'MULTIPLE_SELECT',
+    label: 'Checkboxes',
+    description: 'Select multiple options',
+    icon: CheckSquare,
+  },
+  FILE_UPLOAD: {
+    type: 'FILE_UPLOAD',
+    label: 'File Upload',
+    description: 'Upload one or more files',
+    icon: Upload,
+  },
+  NAME_SELECT: {
+    type: 'NAME_SELECT',
+    label: 'Name Select',
+    description: 'Select a user by name',
+    icon: User,
+  },
+  NIM_SELECT: {
+    type: 'NIM_SELECT',
+    label: 'NIM Select',
+    description: 'Select a student by NIM',
+    icon: Hash,
+  },
+  RATING: {
+    type: 'RATING',
+    label: 'Rating',
+    description: 'A scale of stars, hearts, etc.',
+    icon: Star,
+  },
   DATE: { type: 'DATE', label: 'Date', description: 'Pick a specific date', icon: Calendar },
   TIME: { type: 'TIME', label: 'Time', description: 'Pick a specific time', icon: Clock },
-  COURSE_SELECT: { type: 'COURSE_SELECT', label: 'Course Select', description: 'Select a course from a list', icon: BookOpen },
-  EVENT_SELECT: { type: 'EVENT_SELECT', label: 'Event Select', description: 'Select an event from a list', icon: Calendar },
+  COURSE_SELECT: {
+    type: 'COURSE_SELECT',
+    label: 'Course Select',
+    description: 'Select a course from a list',
+    icon: BookOpen,
+  },
+  EVENT_SELECT: {
+    type: 'EVENT_SELECT',
+    label: 'Event Select',
+    description: 'Select an event from a list',
+    icon: Calendar,
+  },
 } as const;
 
 // --- 2. DERIVED TYPES AND ZOD SCHEMas ---
@@ -90,13 +140,31 @@ const baseQuestionSchema = z.object({
 });
 
 export const QuestionSchema = z.discriminatedUnion('type', [
-  baseQuestionSchema.extend({ type: z.literal('SHORT_ANSWER'), settings: TextSettingsSchema.optional() }),
-  baseQuestionSchema.extend({ type: z.literal('LONG_ANSWER'), settings: TextSettingsSchema.optional() }),
-  baseQuestionSchema.extend({ type: z.literal('MULTIPLE_CHOICE'), settings: MultipleChoiceSettingsSchema }),
-  baseQuestionSchema.extend({ type: z.literal('MULTIPLE_SELECT'), settings: MultipleSelectSettingsSchema }),
-  baseQuestionSchema.extend({ type: z.literal('FILE_UPLOAD'), settings: FileUploadSettingsSchema.optional() }),
+  baseQuestionSchema.extend({
+    type: z.literal('SHORT_ANSWER'),
+    settings: TextSettingsSchema.optional(),
+  }),
+  baseQuestionSchema.extend({
+    type: z.literal('LONG_ANSWER'),
+    settings: TextSettingsSchema.optional(),
+  }),
+  baseQuestionSchema.extend({
+    type: z.literal('MULTIPLE_CHOICE'),
+    settings: MultipleChoiceSettingsSchema,
+  }),
+  baseQuestionSchema.extend({
+    type: z.literal('MULTIPLE_SELECT'),
+    settings: MultipleSelectSettingsSchema,
+  }),
+  baseQuestionSchema.extend({
+    type: z.literal('FILE_UPLOAD'),
+    settings: FileUploadSettingsSchema.optional(),
+  }),
   baseQuestionSchema.extend({ type: z.literal('RATING'), settings: RatingSettingsSchema }),
-  baseQuestionSchema.extend({ type: z.literal('DATE'), settings: DateTimeSettingsSchema.optional() }),
+  baseQuestionSchema.extend({
+    type: z.literal('DATE'),
+    settings: DateTimeSettingsSchema.optional(),
+  }),
   baseQuestionSchema.extend({ type: z.literal('TIME'), settings: TimeSettingsSchema.optional() }),
   baseQuestionSchema.extend({ type: z.literal('NAME_SELECT'), settings: NoSettingsSchema }),
   baseQuestionSchema.extend({ type: z.literal('NIM_SELECT'), settings: NoSettingsSchema }),
@@ -104,13 +172,11 @@ export const QuestionSchema = z.discriminatedUnion('type', [
   baseQuestionSchema.extend({ type: z.literal('EVENT_SELECT'), settings: NoSettingsSchema }),
 ]);
 
-
-
 export const formSchema = z.object({
   id: z.string(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  type: z.enum(['NORMAL', 'HOTLINE', "MACHINING"]).default('NORMAL'),
+  type: z.enum(['NORMAL', 'HOTLINE', 'MACHINING']).default('NORMAL'),
   isPublished: z.boolean().default(false),
   isActive: z.boolean().default(true),
   allowMultipleSubmissions: z.boolean().default(false),
@@ -119,6 +185,7 @@ export const formSchema = z.object({
   collectEmail: z.boolean().default(true),
   start: z.date().optional(),
   end: z.date().optional(),
+  createdBy: z.string().optional(),
 });
 
 // For the `form.createQuestion` procedure

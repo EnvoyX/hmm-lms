@@ -37,15 +37,14 @@ export function FormManagers({
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   function queryCondition(): boolean {
-    if (mode === 'create') {
-      return true;
-    }
+    if (mode === 'create') return true
+    else if (mode === "edit" && data?.user.role === "SUPERADMIN") return true
     return isOwner;
   }
 
   const { data: managers, refetch: refetchManagers } = api.form.getManagers.useQuery(
     { formId },
-    { enabled: isOwner },
+    { enabled: queryCondition() },
   );
 
   const { data: availableAdmins } = api.form.getAvailableAdmins.useQuery(undefined, {

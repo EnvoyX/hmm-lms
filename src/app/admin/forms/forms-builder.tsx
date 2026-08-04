@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Info,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFieldArray, useForm, type Resolver } from 'react-hook-form';
@@ -41,10 +42,11 @@ import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Textarea } from '~/components/ui/textarea';
+import { TIMEZONE } from '~/constants/constants';
 import { type FormBuilderSchema, formBuilderSchema } from '~/lib/types/forms';
 import { api } from '~/trpc/react';
-import { TIMEZONE } from '~/constants/constants';
 
+import { FormManagers } from './form-managers';
 import { QuestionBuilderItem } from './question-builder';
 
 interface FormsBuilderProps {
@@ -75,9 +77,22 @@ function fromDateTimeLocalValue(value: string): Date {
 }
 
 export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('questions');
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const router = useRouter();
   const utils = api.useUtils();
+
+  function handleUserSelection(userId: string) {
+    const newSet = new Set(selectedUserIds);
+
+    if (newSet.has(userId)) {
+      newSet.delete(userId);
+    } else {
+      newSet.add(userId);
+    }
+    setSelectedUserIds(newSet);
+  }
 
   const form = useForm<FormBuilderSchema>({
     resolver: zodResolver(formBuilderSchema) as Resolver<FormBuilderSchema>,
@@ -117,6 +132,15 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
     },
     onError: (error) => {
       toast.error(`Error creating form: ${error.message}`);
+    },
+  });
+
+  const addManagers = api.form.addManagers.useMutation({
+    onSuccess: () => {
+      toast.success('Managers added successfully');
+    },
+    onError: (error) => {
+      toast.error(`Error adding managers: ${error.message}`);
     },
   });
 
@@ -166,7 +190,6 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
   });
 
   const onSubmit = (data: FormBuilderSchema) => {
-    // Ensure questions have correct order
     const formattedData = {
       ...data,
       questions: data.questions.map((q, index) => ({
@@ -184,6 +207,12 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
         },
         {
           onSuccess: () => {
+            if (selectedUserIds.size > 0) {
+              addManagers.mutate({
+                formId,
+                managerIds: Array.from(selectedUserIds),
+              });
+            }
             formattedData.questions.forEach((question) => {
               createQuestion.mutate({
                 ...question,
@@ -300,7 +329,6 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
       </div>
       <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
         <header className="flex flex-wrap gap-2 text-xs font-medium">
-          {/* validity status */}
           {form.formState.isValid ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
               <CheckCircle2 className="h-3.5 w-3.5" /> Form Valid
@@ -318,14 +346,12 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
             </span>
           )}
 
-          {/* submitting status */}
           {form.formState.isSubmitting && (
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400">
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting...
             </span>
           )}
 
-          {/* submit success status */}
           {form.formState.isSubmitSuccessful && (
             <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400">
               <CheckCircle2 className="h-3.5 w-3.5" /> Sent Successfully
@@ -333,7 +359,6 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
           )}
         </header>
 
-        {/* error list */}
         {Object.keys(form.formState.errors).length > 0 && (
           <div className="space-y-2 rounded-md bg-rose-50/50 p-3 dark:bg-rose-950/10">
             <p className="text-xs font-semibold text-rose-800 dark:text-rose-400">
@@ -353,9 +378,10 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="questions">Questions</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="managers">Managers</TabsTrigger>
             </TabsList>
 
             <TabsContent value="questions" className="space-y-6">
@@ -628,6 +654,15 @@ export function FormsBuilder({ mode, initialData }: FormsBuilderProps) {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+            <TabsContent value="managers" className="space-y-6">
+              <FormManagers
+                formId={initialData?.id ?? ''}
+                isOwner={session?.user?.id === initialData?.createdBy}
+                mode={mode}
+                selectedUserIds={selectedUserIds}
+                onUserSelection={handleUserSelection}
+              />
             </TabsContent>
           </Tabs>
         </form>

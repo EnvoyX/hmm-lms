@@ -1,6 +1,7 @@
 'use client';
 
 import { UserPlus, X, Loader2, Shield, AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -31,6 +32,8 @@ export function FormManagers({
   selectedUserIds,
   onUserSelection,
 }: FormManagersProps) {
+  const {data} = useSession()
+
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   function queryCondition(): boolean {
@@ -98,7 +101,7 @@ export function FormManagers({
 
   const selectedManagers = availableAdmins?.filter((admin) => selectedUserIds.has(admin.id));
 
-  if (!isOwner && mode === 'edit') {
+  if (!isOwner && mode === 'edit' && data?.user.role !== "SUPERADMIN") {
     return (
       <Card>
         <CardHeader>
@@ -133,7 +136,7 @@ export function FormManagers({
               onValueChange={setSelectedUserId}
               disabled={addManager.isPending}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 truncate line-clamp-1 ">
                 <SelectValue placeholder="Select an admin to add" />
               </SelectTrigger>
               <SelectContent>

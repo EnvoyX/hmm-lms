@@ -2,7 +2,8 @@
 
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useQueryStates, parseAsString } from 'nuqs';
 import { toast } from 'sonner';
 
 import { Button } from '~/components/ui/button';
@@ -37,10 +38,12 @@ const errorMessages: Record<string, { title: string; description: string }> = {
 };
 
 export default function VerifyErrorPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const error = searchParams.get('error') || 'MissingToken';
-  const email = searchParams.get('email');
+  const [{ error, email }] = useQueryStates({
+    error: parseAsString.withDefault('MissingToken'),
+    email: parseAsString,
+  });
+
   const errorInfo = errorMessages[error] || errorMessages.MissingToken;
 
   const resendVerificationMutation = api.auth.resendVerificationEmail.useMutation({
@@ -48,8 +51,8 @@ export default function VerifyErrorPage() {
       toast.success('Verification email has been sent to your email.');
       router.replace('/auth/resend-success');
     },
-    onError: (error) => {
-      console.error('Error resending verification email:', error);
+    onError: (err) => {
+      console.error('Error resending verification email:', err);
       toast.error('Failed to send verification email. Please try again.');
     },
   });
@@ -61,6 +64,7 @@ export default function VerifyErrorPage() {
     }
     resendVerificationMutation.mutate({ email });
   }
+
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="flex flex-col items-center w-sm gap-4 bg-card px-6 py-4 rounded-xl shadow">
@@ -82,7 +86,9 @@ export default function VerifyErrorPage() {
               variant="outline"
               className="w-full"
             >
-              {resendVerificationMutation.isPending ? 'Sending...' : 'Request New Verification Email'}
+              {resendVerificationMutation.isPending
+                ? 'Sending...'
+                : 'Request New Verification Email'}
             </Button>
           )}
         </div>

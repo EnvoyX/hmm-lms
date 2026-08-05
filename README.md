@@ -29,6 +29,11 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 
 ## ✨ Features
 
+### 🛡️ **Security \& Account Controls**
+
+- Email verification after sign-up for security
+- Reset password on login page by email
+
 ### 📚 **Course Management**
 
 - Complete course lifecycle management with titles, descriptions, and class codes
@@ -75,6 +80,7 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - Conditional logic and form validation
 - Response analytics and export capabilities
 - Integration with other platform features
+- Collaboration by invite other admin users to manage form
 
 ### 🔗 **Link Shortener**
 
@@ -116,9 +122,11 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 
 ### **Core Framework**
 
-- **[Next.js 15](https://nextjs.org/)** - React framework with App Router
-- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
+- **[Next.js 16](https://nextjs.org/)** - React framework with App Router
+- **[TypeScript 7](https://www.typescriptlang.org/)** - Type-safe development
 - **[tRPC](https://trpc.io/)** - End-to-end typesafe APIs
+- **[TanStack Query](https://tanstack.com/query/latest)** - Client-side query state management
+- **[nuqs](https://nuqs.dev)** - Type-safe search params state manager
 
 ### **Database \& ORM**
 
@@ -128,6 +136,7 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 ### **Authentication**
 
 - **[NextAuth.js](https://next-auth.js.org/)** - Authentication solution
+- **[Resend](https://resend.com/)** - Email API (email verification and reset password)
 - Email/password authentication (SSO support planned)
 
 ### **UI \& Styling**
@@ -321,6 +330,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Website: [hmmitb.com](https://hmmitb.com)
 - Email: bccipionirberkarya@gmail.com
 - Email 2: itdbccihmmitb@gmail.com
+
 ---
 
 ## 🙏 Acknowledgments

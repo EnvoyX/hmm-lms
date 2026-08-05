@@ -20,6 +20,7 @@ import { SessionProvider } from "next-auth/react";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/sonner";
 import { ThemeProvider } from "~/components/providers/theme-provider";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { DisplaySettingProvider } from "~/components/providers/display-provider";
 import { CustomThemeProvider } from "~/components/providers/custom-theme-provider";
 import Script from "next/script";
@@ -174,6 +175,7 @@ export default function RootLayout({
       <body>
         <SessionProvider>
           <TRPCReactProvider>
+            <NuqsAdapter>
             <DisplaySettingProvider>
               <CustomThemeProvider>
                 <ThemeProvider attribute="class" defaultTheme="light">
@@ -185,6 +187,7 @@ export default function RootLayout({
                 </ThemeProvider>
               </CustomThemeProvider>
             </DisplaySettingProvider>
+            </NuqsAdapter>
           </TRPCReactProvider>
           <Toaster richColors position="top-center" />
         </SessionProvider>

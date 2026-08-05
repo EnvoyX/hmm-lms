@@ -1,16 +1,18 @@
 'use client';
 
 import { CheckCircle2, Loader2 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-
+import { useQueryStates, parseAsString} from 'nuqs'
 import { Button } from '~/components/ui/button';
 import { api } from '~/trpc/react';
 
 export default function VerifyEmailPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get('token');
+  const [{ token, email }] = useQueryStates({
+    token: parseAsString,
+    email: parseAsString,
+  });
 
   const verifyEmailMutation = api.auth.verifyEmail.useMutation({
     onSuccess: () => {
@@ -19,7 +21,6 @@ export default function VerifyEmailPage() {
     },
     onError: (error) => {
       console.error('Error verifying email:', error);
-      const email = searchParams.get('email');
       const errorParam = error.message || 'InvalidToken';
       router.replace(`/auth/verify-error?error=${errorParam}${email ? `&email=${email}` : ''}`);
     },

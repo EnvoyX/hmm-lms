@@ -1,6 +1,7 @@
-import "~/styles/globals.css";
-
-import { type Metadata } from "next";
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { type Metadata } from 'next';
+import { SessionProvider } from 'next-auth/react';
 import {
   Geist,
   Inter,
@@ -28,11 +29,11 @@ import { ServiceWorkerUpdate } from "~/components/sw-update";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const APP_NAME = "HMM ITB";
-const APP_DEFAULT_TITLE = "HMM ITB";
-const APP_TITLE_TEMPLATE = "%s | HMM ITB";
+const APP_NAME = 'HMM ITB';
+const APP_DEFAULT_TITLE = 'HMM ITB';
+const APP_TITLE_TEMPLATE = '%s | HMM ITB';
 const APP_DESCRIPTION =
-  "External branding landing page and LMS platform for Himpunan Mahasiswa Mesin ITB.";
+  'External branding landing page and LMS platform for Himpunan Mahasiswa Mesin ITB.';
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -41,11 +42,11 @@ export const metadata: Metadata = {
     template: APP_TITLE_TEMPLATE,
   },
   description: APP_DESCRIPTION,
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-  manifest: "/manifest.json",
+  icons: [{ rel: 'icon', url: '/favicon.ico' }],
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: 'default',
     title: APP_DEFAULT_TITLE,
     // startUpImage: [],
   },
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    type: "website",
+    type: 'website',
     siteName: APP_NAME,
     title: {
       default: APP_DEFAULT_TITLE,
@@ -62,7 +63,7 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
   },
   twitter: {
-    card: "summary",
+    card: 'summary',
     title: {
       default: APP_DEFAULT_TITLE,
       template: APP_TITLE_TEMPLATE,
@@ -72,81 +73,79 @@ export const metadata: Metadata = {
 };
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+  subsets: ['latin'],
+  variable: '--font-inter',
 });
 
 const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
+  subsets: ['latin'],
+  variable: '--font-montserrat',
 });
 
 const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-roboto",
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-roboto',
 });
 
 const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-poppins",
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-poppins',
 });
 
 const oxygen = Oxygen({
-  subsets: ["latin"],
-  weight: ["300", "400", "700"],
-  variable: "--font-oxygen",
+  subsets: ['latin'],
+  weight: ['300', '400', '700'],
+  variable: '--font-oxygen',
 });
 
 const notoSans = Noto_Sans({
-  subsets: ["latin"],
-  variable: "--font-noto-sans",
+  subsets: ['latin'],
+  variable: '--font-noto-sans',
 });
 
 const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
+  subsets: ['latin'],
+  variable: '--font-geist',
 });
 
 const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
+  subsets: ['latin'],
+  variable: '--font-roboto-mono',
 });
 
 const dancingScript = Dancing_Script({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-dancing-script",
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-dancing-script',
 });
 
 const exo2 = Exo_2({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-exo-2",
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-exo-2',
 });
 
 const lobsterTwo = Lobster_Two({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-lobster-two",
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-lobster-two',
 });
 
 const caveat = Caveat({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-caveat",
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-caveat',
 });
 
 const shadowsIntoLight = Shadows_Into_Light({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-shadows-into-light",
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-shadows-into-light',
 });
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"
@@ -181,7 +180,7 @@ export default function RootLayout({
                 <ThemeProvider attribute="class" defaultTheme="light">
                   {/* <RegisterSW /> */}
                   <SpeedInsights />
-                    <Analytics />
+                  <Analytics />
                   <ServiceWorkerUpdate />
                   {children}
                 </ThemeProvider>

@@ -31,7 +31,7 @@ export default async function TryoutDetailPage({ params }: TryoutDetailPageProps
   const session = await auth();
 
   if (!session) {
-    redirect('/auth/signin');
+    redirect('/auth/sign-in');
   }
 
   const { id } = await params;

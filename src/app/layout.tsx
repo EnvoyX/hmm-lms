@@ -16,17 +16,18 @@ import {
   Lobster_Two,
   Caveat,
   Shadows_Into_Light,
-} from 'next/font/google';
-import Script from 'next/script';
-
-import { CustomThemeProvider } from '~/components/providers/custom-theme-provider';
-import { DisplaySettingProvider } from '~/components/providers/display-provider';
-import { ThemeProvider } from '~/components/providers/theme-provider';
-import { ServiceWorkerUpdate } from '~/components/sw-update';
-import { Toaster } from '~/components/ui/sonner';
-import { TRPCReactProvider } from '~/trpc/react';
-
-import '~/styles/globals.css';
+} from "next/font/google";
+import { SessionProvider } from "next-auth/react";
+import { TRPCReactProvider } from "~/trpc/react";
+import { Toaster } from "~/components/ui/sonner";
+import { ThemeProvider } from "~/components/providers/theme-provider";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { DisplaySettingProvider } from "~/components/providers/display-provider";
+import { CustomThemeProvider } from "~/components/providers/custom-theme-provider";
+import Script from "next/script";
+import { ServiceWorkerUpdate } from "~/components/sw-update";
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const APP_NAME = 'HMM ITB';
 const APP_DEFAULT_TITLE = 'HMM ITB';
@@ -173,6 +174,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <SessionProvider>
           <TRPCReactProvider>
+            <NuqsAdapter>
             <DisplaySettingProvider>
               <CustomThemeProvider>
                 <ThemeProvider attribute="class" defaultTheme="light">
@@ -184,6 +186,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </ThemeProvider>
               </CustomThemeProvider>
             </DisplaySettingProvider>
+            </NuqsAdapter>
           </TRPCReactProvider>
           <Toaster richColors position="top-center" />
         </SessionProvider>

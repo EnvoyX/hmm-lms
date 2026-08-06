@@ -11,6 +11,216 @@ import {
 import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 
 export const formRouter = createTRPCRouter({
+  // form manager management
+
+  // mutation for edit mode
+  addManager: protectedProcedure
+    .input(z.object({ formId: z.string(), managerId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const form = await ctx.db.form.findUnique({
+        where: { id: input.formId },
+        select: { createdBy: true },
+      });
+
+      if (
+        (!form || form.createdBy !== ctx.session.user.id) &&
+        ctx.session.user.role !== 'SUPERADMIN'
+      ) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only add managers to your own forms',
+        });
+      }
+
+      const userToAdd = await ctx.db.user.findUnique({
+        where: { id: input.managerId },
+        select: { role: true },
+      });
+
+      if (!userToAdd) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      if (userToAdd.role !== 'ADMIN' && userToAdd.role !== 'SUPERADMIN') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only users with ADMIN or SUPERADMIN role can be added as managers',
+        });
+      }
+
+      return ctx.db.form.update({
+        where: { id: input.formId },
+        data: {
+          managers: {
+            connect: { id: input.managerId },
+          },
+        },
+        include: {
+          managers: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+    }),
+  // mutation for create mode
+  addManagers: protectedProcedure
+    .input(z.object({ formId: z.string(), managerIds: z.array(z.string()) }))
+    .mutation(async ({ ctx, input }) => {
+      const form = await ctx.db.form.findUnique({
+        where: { id: input.formId },
+        select: { createdBy: true },
+      });
+
+      if (!form || form.createdBy !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only add managers to your own forms',
+        });
+      }
+
+      const usersToAdd = await ctx.db.user.findMany({
+        where: { id: { in: input.managerIds } },
+        select: { id: true, role: true },
+      });
+
+      if (usersToAdd.length !== input.managerIds.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'One or more admin users were not found',
+        });
+      }
+
+      const validManagers = usersToAdd
+        .filter((user) => user.role === 'ADMIN' || user.role === 'SUPERADMIN')
+        .map((user) => user.id);
+      const hasInvalidManagers = usersToAdd.some((user) => !validManagers.includes(user.id));
+
+      if (hasInvalidManagers) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only users with ADMIN or SUPERADMIN role can be added as managers',
+        });
+      }
+
+      return ctx.db.form.update({
+        where: { id: input.formId },
+        data: {
+          managers: {
+            connect: input.managerIds.map((id) => ({ id })),
+          },
+        },
+        include: {
+          managers: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+    }),
+
+  removeManager: protectedProcedure
+    .input(z.object({ formId: z.string(), managerId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const form = await ctx.db.form.findUnique({
+        where: { id: input.formId },
+        select: { createdBy: true },
+      });
+
+      if (
+        (!form || form.createdBy !== ctx.session.user.id) &&
+        ctx.session.user.role !== 'SUPERADMIN'
+      ) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only remove managers from your own forms',
+        });
+      }
+
+      return ctx.db.form.update({
+        where: { id: input.formId },
+        data: {
+          managers: {
+            disconnect: { id: input.managerId },
+          },
+        },
+        include: {
+          managers: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+    }),
+
+  getManagers: protectedProcedure
+    .input(z.object({ formId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const form = await ctx.db.form.findUnique({
+        where: { id: input.formId },
+        select: { createdBy: true },
+      });
+
+      if (!form) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Form not found',
+        });
+      }
+
+      if (form.createdBy !== ctx.session.user.id && ctx.session.user.role !== 'SUPERADMIN') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only view managers of your own forms',
+        });
+      }
+
+      return ctx.db.form.findUnique({
+        where: { id: input.formId },
+        select: {
+          managers: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
+    }),
+
+  getAvailableAdmins: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.user.findMany({
+      where: {
+        role: {
+          in: ['ADMIN', 'SUPERADMIN'],
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+  }),
+
   // Form management
   create: protectedProcedure.input(formSchema).mutation(async ({ ctx, input }) => {
     if (input.start && input.end) {
@@ -50,10 +260,9 @@ export const formRouter = createTRPCRouter({
       }
     }
 
-    // Check if user owns the form
     const existingForm = await ctx.db.form.findUnique({
       where: { id },
-      select: { createdBy: true },
+      select: { createdBy: true, managers: { select: { id: true } } },
     });
 
     if (!existingForm) {
@@ -63,12 +272,16 @@ export const formRouter = createTRPCRouter({
       });
     }
 
-    // if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
-    //   throw new TRPCError({
-    //     code: 'FORBIDDEN',
-    //     message: 'You can only edit your own forms',
-    //   });
-    // }
+    const isOwner = existingForm.createdBy === ctx.session.user.id;
+    const isManager = existingForm.managers.some((m) => m.id === ctx.session.user.id);
+    const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+    if (!isOwner && !isManager && !isSuperAdmin) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You can only edit your own forms or forms you manage',
+      });
+    }
 
     return ctx.db.form.update({
       where: { id },
@@ -91,18 +304,28 @@ export const formRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check if user owns the form
-      // const existingForm = await ctx.db.form.findUnique({
-      //   where: { id: input.id },
-      //   select: { createdBy: true },
-      // });
+      const existingForm = await ctx.db.form.findUnique({
+        where: { id: input.id },
+        select: { createdBy: true, managers: { select: { id: true } } },
+      });
 
-      // if (!existingForm || existingForm.createdBy !== ctx.session.user.id) {
-      //   throw new TRPCError({
-      //     code: 'FORBIDDEN',
-      //     message: 'You can only delete your own forms',
-      //   });
-      // }
+      if (!existingForm) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Form not found',
+        });
+      }
+
+      const isOwner = existingForm.createdBy === ctx.session.user.id;
+      const isManager = existingForm.managers.some((m) => m.id === ctx.session.user.id);
+      const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only delete your own forms or forms you manage',
+        });
+      }
 
       return ctx.db.form.delete({
         where: { id: input.id },
@@ -120,6 +343,11 @@ export const formRouter = createTRPCRouter({
             email: true,
           },
         },
+        managers: {
+          select: {
+            id: true,
+          },
+        },
         questions: {
           orderBy: { order: 'asc' },
         },
@@ -133,42 +361,55 @@ export const formRouter = createTRPCRouter({
       });
     }
 
-    // If form is not published, only allow creator to view (SUPERADMIN allowed to view)
-    if (!form.isPublished && form.createdBy !== ctx.session?.user?.id && ctx.session?.user.role !== 'SUPERADMIN') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'This form is not published',
-      });
+    // If form is not published, only allow creator, managers, and SUPERADMIN to view
+    if (!form.isPublished) {
+      const isOwner = form.createdBy === ctx.session?.user?.id;
+      const isManager = form.managers.some((m) => m.id === ctx.session?.user?.id);
+      const isSuperAdmin = ctx.session?.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'This form is not published',
+        });
+      }
     }
 
     return form;
   }),
-  getResponsesFormById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const form = await ctx.db.form.findUnique({
-      where: { id: input.id },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+  getResponsesFormById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const form = await ctx.db.form.findUnique({
+        where: { id: input.id },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          managers: {
+            select: {
+              id: true,
+            },
+          },
+          questions: {
+            orderBy: { order: 'asc' },
           },
         },
-        questions: {
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
-
-    if (!form) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Form is not found',
       });
-    }
 
-    return form;
-  }),
+      if (!form) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Form is not found',
+        });
+      }
+
+      return form;
+    }),
   getForms: protectedProcedure
     .input(
       z.object({
@@ -180,11 +421,19 @@ export const formRouter = createTRPCRouter({
       const { limit, cursor } = input;
 
       const userRole = ctx.session.user.role;
-      const whereCondition =
-            userRole === "SUPERADMIN"
-              ? {}
-              : { createdBy: ctx.session.user.id };
+      const userId = ctx.session.user.id;
 
+      let whereCondition = {};
+
+      if (userRole === 'SUPERADMIN') {
+        // SUPERADMIN can see all forms
+        whereCondition = {};
+      } else {
+        // other users can see forms they created OR forms they manage
+        whereCondition = {
+          OR: [{ createdBy: userId }, { managers: { some: { id: userId } } }],
+        };
+      }
 
       const forms = await ctx.db.form.findMany({
         where: whereCondition,
@@ -196,6 +445,14 @@ export const formRouter = createTRPCRouter({
             select: {
               questions: true,
               submissions: true,
+            },
+          },
+          managers: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
             },
           },
         },
@@ -257,11 +514,28 @@ export const formRouter = createTRPCRouter({
   createQuestion: protectedProcedure
     .input(createQuestionSchema)
     .mutation(async ({ ctx, input }) => {
-      // Check if user owns the form
-      // const form = await ctx.db.form.findUnique({
-      //   where: { id: input.formId },
-      //   select: { createdBy: true },
-      // });
+      const form = await ctx.db.form.findUnique({
+        where: { id: input.formId },
+        select: { createdBy: true, managers: { select: { id: true } } },
+      });
+
+      if (!form) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Form not found',
+        });
+      }
+
+      const isOwner = form.createdBy === ctx.session.user.id;
+      const isManager = form.managers.some((m) => m.id === ctx.session.user.id);
+      const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only add questions to your own forms or forms you manage',
+        });
+      }
 
       return ctx.db.formQuestion.create({
         data: input,
@@ -273,18 +547,28 @@ export const formRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
-      // Check if user owns the form
-      // const question = await ctx.db.formQuestion.findUnique({
-      //   where: { id },
-      //   include: { form: true },
-      // });
+      const question = await ctx.db.formQuestion.findUnique({
+        where: { id },
+        include: { form: { select: { createdBy: true, managers: { select: { id: true } } } } },
+      });
 
-      // if (!question || question.form.createdBy !== ctx.session.user.id) {
-      //   throw new TRPCError({
-      //     code: 'FORBIDDEN',
-      //     message: 'You can only edit questions in your own forms',
-      //   });
-      // }
+      if (!question) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Question not found',
+        });
+      }
+
+      const isOwner = question.form.createdBy === ctx.session.user.id;
+      const isManager = question.form.managers.some((m) => m.id === ctx.session.user.id);
+      const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only edit questions in your own forms or forms you manage',
+        });
+      }
 
       return ctx.db.formQuestion.update({
         where: { id },
@@ -295,18 +579,28 @@ export const formRouter = createTRPCRouter({
   deleteQuestion: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check if user owns the form
-      // const question = await ctx.db.formQuestion.findUnique({
-      //   where: { id: input.id },
-      //   include: { form: true },
-      // });
+      const question = await ctx.db.formQuestion.findUnique({
+        where: { id: input.id },
+        include: { form: { select: { createdBy: true, managers: { select: { id: true } } } } },
+      });
 
-      // if (!question || question.form.createdBy !== ctx.session.user.id) {
-      //   throw new TRPCError({
-      //     code: 'FORBIDDEN',
-      //     message: 'You can only delete questions in your own forms',
-      //   });
-      // }
+      if (!question) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Question not found',
+        });
+      }
+
+      const isOwner = question.form.createdBy === ctx.session.user.id;
+      const isManager = question.form.managers.some((m) => m.id === ctx.session.user.id);
+      const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only delete questions in your own forms or forms you manage',
+        });
+      }
 
       return ctx.db.formQuestion.delete({
         where: { id: input.id },
@@ -321,16 +615,26 @@ export const formRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Check if user owns the form
       const form = await ctx.db.form.findUnique({
         where: { id: input.formId },
-        select: { createdBy: true },
+        select: { createdBy: true, managers: { select: { id: true } } },
       });
 
-      if (!form || form.createdBy !== ctx.session.user.id) {
+      if (!form) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Form not found',
+        });
+      }
+
+      const isOwner = form.createdBy === ctx.session.user.id;
+      const isManager = form.managers.some((m) => m.id === ctx.session.user.id);
+      const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'You can only reorder questions in your own forms',
+          message: 'You can only reorder questions in your own forms or forms you manage',
         });
       }
 
@@ -404,7 +708,7 @@ export const formRouter = createTRPCRouter({
     });
   }),
 
-  // Get form submissions (for form creators)
+  // get form submissions (for form creators and managers)
   getSubmissions: protectedProcedure
     .input(
       z.object({
@@ -414,24 +718,28 @@ export const formRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Check if user owns the form
       const form = await ctx.db.form.findUnique({
         where: { id: input.formId },
-        select: { createdBy: true },
+        select: { createdBy: true, managers: { select: { id: true } } },
       });
 
       if (!form) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Form is not exist',
+          code: 'NOT_FOUND',
+          message: 'Form not found',
         });
       }
-      // if (!form || form.createdBy !== ctx.session.user.id) {
-      //   throw new TRPCError({
-      //     code: 'FORBIDDEN',
-      //     message: 'You can only view submissions for your own forms',
-      //   });
-      // }
+
+      const isOwner = form.createdBy === ctx.session.user.id;
+      const isManager = form.managers.some((m) => m.id === ctx.session.user.id);
+      const isSuperAdmin = ctx.session.user.role === 'SUPERADMIN';
+
+      if (!isOwner && !isManager && !isSuperAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only view submissions for your own forms or forms you manage',
+        });
+      }
 
       const { limit, cursor } = input;
 

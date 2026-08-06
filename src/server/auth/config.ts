@@ -1,13 +1,10 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import type { Role } from '@prisma/client';
-import {
-  type DefaultSession,
-  type NextAuthConfig,
-} from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { verifyPassword } from '~/lib/utils';
+import { type DefaultSession, type NextAuthConfig } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-import { db } from "~/server/db";
+import { verifyPassword } from '~/lib/utils';
+import { db } from '~/server/db';
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -15,7 +12,7 @@ import { db } from "~/server/db";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
@@ -25,7 +22,8 @@ declare module "next-auth" {
       role: Role;
       name: string;
       image?: string;
-    } & DefaultSession["user"];
+      verified: boolean;
+    } & DefaultSession['user'];
   }
 
   interface User {
@@ -36,6 +34,7 @@ declare module "next-auth" {
     role?: Role;
     name?: string | null;
     image?: string | null;
+    verified?: boolean;
   }
 }
 
@@ -48,18 +47,18 @@ export const authConfig = {
   adapter: PrismaAdapter(db),
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
         email: {
-          label: "Email",
-          type: "email",
-          placeholder: "nim@mahasiswa.itb.ac.id",
+          label: 'Email',
+          type: 'email',
+          placeholder: 'nim@mahasiswa.itb.ac.id',
         },
-        password: { label: "Password", type: "password" },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, _) {
         if (!credentials?.email || !credentials.password) {
-          throw new Error("Please enter your email and password.");
+          throw new Error('Please enter your email and password.');
         }
 
         // 1. Find the user in your database by email
@@ -70,58 +69,55 @@ export const authConfig = {
         if (!user) {
           // If no user found, return null and NextAuth.js will display a generic error
           // For security, avoid revealing if it's an invalid email or password
-          throw new Error("Invalid email or password.");
+          throw new Error('Invalid email or password.');
         }
 
         // 2. Verify the password
-        const isValid = await verifyPassword(
-          credentials.password as string,
-          user.password,
-        );
+        const isValid = await verifyPassword(credentials.password as string, user.password);
 
         if (!isValid) {
-          throw new Error("Invalid email or password.");
+          throw new Error('Invalid email or password.');
         }
 
         // 3. Optional: Verify ITB student email domain
-        if (!user.email.endsWith("@mahasiswa.itb.ac.id")) {
+        if (!user.email.endsWith('@mahasiswa.itb.ac.id')) {
           // You can choose to allow non-ITB students or restrict here.
           // For ITB students only:
-          throw new Error("Only ITB student emails are allowed.");
+          throw new Error('Only ITB student emails are allowed.');
           // Or if you allow other emails but want to mark ITB students:
           // user.isITBStudent = true; // This would require updating the user in DB or passing through token
         }
 
-        const machining = await db.machining.findFirst()
-        const prefix = machining?.currentBatch
-        
-        if (prefix){
-              const isMatchPrefix = user.email.startsWith(prefix)
-              const isMatchDomain = user.email.endsWith("@mahasiswa.itb.ac.id")
-              if (isMatchPrefix && isMatchDomain) {
-               console.log(`Match found for ${user.email}! Executing action...`);
-               if (user.role !== "MACHINING") await db.user.update({
-                  where: {
-                    id: user.id,
-                  },
-                  data: {
-                    role: "MACHINING",
-                  },
-                })
-               }
-              else {
-                console.log(`${user.email} did not match the pattern. Continuing...`);
-                if (user.role === "MACHINING"){
-                  await db.user.update({
-                    where: {
-                      id: user.id,
-                    },
-                    data: {
-                      role: "STUDENT",
-                    },
-                  })
-                }
-              }
+        const machining = await db.machining.findFirst();
+        const prefix = machining?.currentBatch;
+
+        if (prefix) {
+          const isMatchPrefix = user.email.startsWith(prefix);
+          const isMatchDomain = user.email.endsWith('@mahasiswa.itb.ac.id');
+          if (isMatchPrefix && isMatchDomain) {
+            console.log(`Match found for ${user.email}! Executing action...`);
+            if (user.role !== 'MACHINING')
+              await db.user.update({
+                where: {
+                  id: user.id,
+                },
+                data: {
+                  role: 'MACHINING',
+                },
+              });
+          } else {
+            console.log(`${user.email} did not match the pattern. Continuing...`);
+            if (user.role === 'MACHINING') {
+              await db.user.update({
+                where: {
+                  id: user.id,
+                },
+                data: {
+                  role: 'STUDENT',
+                },
+              });
+            }
+          }
         }
 
         // Return user object if authentication is successful.
@@ -132,13 +128,13 @@ export const authConfig = {
           faculty: user.faculty ?? undefined,
           program: user.program ?? undefined,
           image: user.image,
-
+          verified: user.verified,
         };
       },
     }),
   ],
   session: {
-    strategy: "jwt", // CredentialsProvider requires JWT sessions
+    strategy: 'jwt', // CredentialsProvider requires JWT sessions
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   callbacks: {
@@ -154,6 +150,7 @@ export const authConfig = {
         token.program = user.program;
         token.role = user.role;
         token.image = user.image;
+        token.verified = user.verified;
       }
       return token;
     },
@@ -167,11 +164,12 @@ export const authConfig = {
       session.user.program = token.program as string;
       session.user.role = token.role as Role;
       session.user.image = token.image as string;
+      session.user.verified = token.verified as boolean;
       return session;
     },
   },
   pages: {
-    signIn: "/auth/sign-in",
-    signOut: "/auth/sign-out",
-  }
+    signIn: '/auth/sign-in',
+    signOut: '/auth/sign-out',
+  },
 } satisfies NextAuthConfig;

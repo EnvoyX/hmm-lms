@@ -399,7 +399,7 @@ export function FormSubmitClient({
             <Alert variant="destructive">
               <AlertDescription>
                 You must be signed in to submit this form.{' '}
-                <Link href="/api/auth/signin" className="font-bold underline">
+                <Link href="/auth/sign-in" className="font-bold underline">
                   Sign In
                 </Link>
               </AlertDescription>

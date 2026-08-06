@@ -13,7 +13,7 @@ export default async function TryoutsPage() {
   const session = await auth();
 
   if (!session) {
-    redirect('/auth/signin');
+    redirect('/auth/sign-in');
   }
 
   const courses = await api.tryout.getMyMachiningTryouts();

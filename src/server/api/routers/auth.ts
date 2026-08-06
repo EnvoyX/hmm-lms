@@ -109,6 +109,48 @@ export const authRouter = createTRPCRouter({
         newPassword,
       };
     }),
+  hashPasswordByAdmin: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== 'SUPERADMIN') {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Not allowed' });
+      }
+
+      const user = await db.user.findUnique({
+        where: { id: input.userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found.',
+        });
+      }
+
+      const IS_BCRYPT_HASH = /^\$2[aby]\$[0-9]{2}\$[./A-Za-z0-9]{53}$/;
+
+      if (user.password && IS_BCRYPT_HASH.test(user.password)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Password already hashed.",
+        })
+      }
+
+      const hashedPassword = await hashPassword(user.password);
+
+      await db.user.update({
+        where: { id: input.userId },
+        data: { password: hashedPassword },
+      });
+
+      return {
+        success: true,
+      };
+    }),
 
   resendVerificationEmail: publicProcedure
     .input(z.object({ email: z.string() }))

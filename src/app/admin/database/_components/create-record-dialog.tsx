@@ -304,7 +304,7 @@ export function CreateRecordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh]">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Plus className="h-5 w-5" />
@@ -316,7 +316,7 @@ export function CreateRecordDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <ScrollArea className="max-h-96 pr-4">
+          <ScrollArea className="max-h-96 pr-4 overflow-auto">
             <div className="space-y-4 py-4">
               {Object.entries(fields).map(([key, config]) => (
                 <div key={key} className="space-y-2">

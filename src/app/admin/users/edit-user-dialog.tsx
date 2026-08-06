@@ -64,6 +64,15 @@ export default function EditUserDialog({
     },
   });
 
+  const hashPassword = api.auth.hashPasswordByAdmin.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Password hashed successfully`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   const handleSave = () => {
     if (!user) return;
 
@@ -168,8 +177,24 @@ export default function EditUserDialog({
               placeholder="Optional"
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="position">Extra Actions</Label>
+            <Button
+              className="w-full"
+              variant="outline"
+              type="button"
+              disabled={hashPassword.isPending || !user}
+              onClick={() => {
+                if (!user) return;
+                hashPassword.mutate({ userId: user.id });
+              }}
+            >
+              Hash Password
+            </Button>
+          </div>
+
         </div>
-        <DialogFooter>
+        <DialogFooter className="w-full overflow-auto!">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -188,7 +213,6 @@ export default function EditUserDialog({
           >
             Reset password
           </Button>
-
           <Button onClick={handleSave} disabled={updateUser.isPending}>
             Save Changes
           </Button>

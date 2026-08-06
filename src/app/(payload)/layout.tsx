@@ -1,0 +1,47 @@
+/* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
+/* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
+import config from '@payload-config';
+import '@payloadcms/next/css';
+import { handleServerFunctions, RootLayout } from '@payloadcms/next/layouts';
+import { Role } from '@prisma/client';
+import { redirect } from 'next/navigation';
+import type { ServerFunctionClient } from 'payload';
+import React, { Suspense } from 'react';
+
+import './custom.scss';
+import { auth } from '~/server/auth';
+
+import { importMap } from './admin-cms/importMap.js';
+
+type Args = {
+  children: React.ReactNode;
+};
+
+const serverFunction: ServerFunctionClient = async function (args) {
+  'use server';
+  return handleServerFunctions({
+    ...args,
+    config,
+    importMap,
+  });
+};
+
+const Layout = async ({ children }: Args) => {
+  const session = await auth();
+  const isAdmin =
+    session?.user && (session.user.role === Role.ADMIN || session.user.role === Role.SUPERADMIN);
+  if (!session || !isAdmin) {
+    redirect('/dashboard');
+  } else if (!session.user.verified) {
+    redirect(`/auth/not-verified?email=${session.user.email}`);
+  }
+  return (
+    <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
+      <Suspense fallback={<div className="w-full h-full grid place-items-center">Loading...</div>}>
+        {children}
+      </Suspense>
+    </RootLayout>
+  );
+};
+
+export default Layout;

@@ -1,0 +1,16 @@
+{
+  "title": "Onboarding",
+  "description": "Admin Documentation",
+  "root": true,
+  "icon": "Rocket",
+  "pages": [
+    "index",
+    "dashboard",
+    "analytics",
+    "content-management",
+    "courses",
+    "users",
+    "database",
+    "faq"
+  ]
+}

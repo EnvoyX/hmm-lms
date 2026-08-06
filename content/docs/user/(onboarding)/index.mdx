@@ -1,0 +1,58 @@
+---
+title: Onboarding
+description: Welcome to the HMM LMS documentation guide.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { BookOpen, ShieldCheck, UserCheck, Rocket, HelpCircle, Footprints, GraduationCap } from 'lucide-react';
+
+# Welcome to HMM LMS Docs
+
+Welcome! This documentation platform is your central hub for navigating, managing, and getting the most out of the **HMM LMS** platform. Whether you are a student, instructor, or administrator, these guides are designed to help you quickly understand workflows and features.
+
+<Callout type="info" title="Quick Tip">
+  Use the sidebar on the left to browse topics sequentially, or press <kbd>Ctrl</kbd> + <kbd>K</kbd> (or <kbd>Cmd</kbd> + <kbd>K</kbd> on Mac) anytime to open the instant search dialog.
+</Callout>
+
+---
+
+## What You Can Find Here
+
+This documentation is split into tailored sections depending on your role and goals:
+
+* **User Guides:** Learn how to access courses, submit assignments, track learning progress, and manage your account settings.
+* **Walkthroughs & FAQs:** Step-by-step solutions to common account issues, enrollment questions, and platform navigation.
+
+---
+
+## Quick Actions & Navigation
+
+Select where you want to go next based on your role or immediate task:
+
+<Cards>
+  <Card
+    icon={<UserCheck className="text-blue-500" />}
+    title="User & Student Guide"
+    href="/docs/user/overview"
+    description="Explore how to navigate courses, track your learning progress, and update profile settings."
+  />
+  <Card
+    icon={<Footprints className="text-emerald-500" />}
+    title="Himpunan"
+    href="/docs/user/himpunan"
+    description="Learn how to participate in events, apply for job opportunities, and view latest announcements."
+  />
+  <Card
+    icon={<GraduationCap className="text-amber-500" />}
+    title="Academics"
+    href="/docs/user/academics"
+    description="Learn how to access academic resources, take tryouts, and track your learning progress."
+  />
+  <Card
+    icon={<HelpCircle className="text-purple-500" />}
+    title="Need Help?"
+    href="/docs/user/faq"
+    description="Find answers to frequently asked questions and learn how to contact LMS support."
+  />
+</Cards>

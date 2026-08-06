@@ -1,4 +1,59 @@
 import withPWA from '@ducanh2912/next-pwa';
+import { createMDX } from 'fumadocs-mdx/next';
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Next 16 defaults to Turbopack; keep an explicit config
+  // so custom webpack settings don't hard-fail `next build`.
+  reactStrictMode: true,
+  transpilePackages: ['fumadocs-ui'],
+  turbopack: {},
+  images: {
+    domains: ['hmm-lms.sgp1.digitaloceanspaces.com', 'hmm-lms.sgp1.cdn.digitaloceanspaces.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'hmm-lms.sgp1.digitaloceanspaces.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hmm-lms.sgp1.cdn.digitaloceanspaces.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '1024mb',
+    },
+    useTypeScriptCli: true,
+  },
+  // Add webpack configuration to handle Node.js modules
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Exclude Node.js modules from client-side bundle
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        net: false,
+        tls: false,
+        fs: false,
+        crypto: false,
+        stream: false,
+        url: false,
+        zlib: false,
+        http: false,
+        https: false,
+        assert: false,
+        os: false,
+        path: false,
+      };
+    }
+    return config;
+  },
+};
 
 const pwaDevDisabled =
   process.env.NODE_ENV === 'development' && process.env.ENABLE_PWA_IN_DEV !== '1';
@@ -81,42 +136,6 @@ const pwaConfig = withPWA({
   },
 });
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Next 16 defaults to Turbopack; keep an explicit config
-  // so custom webpack settings don't hard-fail `next build`.
-  turbopack: {},
-  images: {
-    domains: ['hmm-lms.sgp1.digitaloceanspaces.com'],
-  },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '1024mb',
-    },
-    useTypeScriptCli: true,
-  },
-  // Add webpack configuration to handle Node.js modules
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Exclude Node.js modules from client-side bundle
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        net: false,
-        tls: false,
-        fs: false,
-        crypto: false,
-        stream: false,
-        url: false,
-        zlib: false,
-        http: false,
-        https: false,
-        assert: false,
-        os: false,
-        path: false,
-      };
-    }
-    return config;
-  },
-};
+const withMDX = createMDX();
 
-export default pwaConfig(nextConfig);
+export default pwaConfig(withMDX(nextConfig));

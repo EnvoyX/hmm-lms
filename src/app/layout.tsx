@@ -25,6 +25,7 @@ import Script from "next/script";
 import { ServiceWorkerUpdate } from "~/components/sw-update";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import "~/styles/globals.css"
 
 const APP_NAME = 'HMM ITB';
 const APP_DEFAULT_TITLE = 'HMM ITB';

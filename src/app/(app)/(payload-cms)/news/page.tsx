@@ -51,7 +51,7 @@ export default async function NewsPage() {
 
             return (
               <Link key={newsItem.id} href={`/news/${newsItem.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer pt-0">
                   {newsItem.featuredImage &&
                     typeof newsItem.featuredImage === 'object' &&
                     newsItem.featuredImage.url && (

@@ -50,7 +50,7 @@ export default async function BlogPage() {
               : [];
             return (
               <Link key={post.id} href={`/blog/${post.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer pt-0">
                   {post.featuredImage &&
                     typeof post.featuredImage === 'object' &&
                     post.featuredImage.url && (

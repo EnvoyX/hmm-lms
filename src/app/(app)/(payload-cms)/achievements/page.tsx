@@ -65,7 +65,7 @@ export default async function AchievementsPage() {
 
             return (
               <Link key={achievement.id} href={`/achievements/${achievement.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer pt-0">
                   {achievement.featuredImage &&
                     typeof achievement.featuredImage === 'object' &&
                     achievement.featuredImage.url && (

@@ -51,7 +51,7 @@ export default async function EventsPage() {
 
             return (
               <Link key={event.id} href={`/events/${event.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer pt-0">
                   {event.featuredImage &&
                     typeof event.featuredImage === 'object' &&
                     event.featuredImage.url && (

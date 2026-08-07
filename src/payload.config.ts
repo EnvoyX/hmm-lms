@@ -11,6 +11,9 @@ import { Media } from './collections/Media';
 import { Posts } from './collections/Posts';
 import { Users } from './collections/Users';
 import { env } from './env';
+import { Events } from './collections/Events';
+import { Achievements } from './collections/Achievements';
+import { News } from './collections/News';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -30,6 +33,16 @@ export default buildConfig({
         if (collectionConfig?.slug === 'posts') {
           return `${baseUrl}/blog/${data.slug}`;
         }
+        else if (collectionConfig?.slug === 'events') {
+          return `${baseUrl}/event/${data.slug}`
+        }
+        else if (collectionConfig?.slug === 'achievements') {
+          return `${baseUrl}/achievements/${data.slug}`
+        }
+        else if (collectionConfig?.slug === 'news') {
+           return `${baseUrl}/news/${data.slug}`
+        }
+
         return baseUrl;
       },
       breakpoints: [
@@ -54,7 +67,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Users, Media, Posts],
+  collections: [Users, Media, Posts, Events, Achievements, News],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET || '',
   typescript: {

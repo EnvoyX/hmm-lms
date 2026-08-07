@@ -70,6 +70,9 @@ export interface Config {
     users: User;
     media: Media;
     posts: Post;
+    events: Event;
+    achievements: Achievement;
+    news: News;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +83,9 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    achievements: AchievementsSelect<false> | AchievementsSelect<true>;
+    news: NewsSelect<false> | NewsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -181,6 +187,9 @@ export interface Media {
 export interface Post {
   id: number;
   title: string;
+  /**
+   * URL identifier (e.g., hmm-fem-analysis)
+   */
   slug: string;
   authors: (number | User)[];
   content: {
@@ -207,9 +216,9 @@ export interface Post {
    */
   featuredImage?: (number | null) | Media;
   status: 'draft' | 'published';
-  publishedAt?: string | null;
+  publishedAt: string;
   /**
-   * Category for organizing posts
+   * Category for organizing blogs/articles
    */
   category?: string | null;
   tags?:
@@ -228,6 +237,159 @@ export interface Post {
      */
     description?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  /**
+   * URL identifier (e.g., hmm-company-visit)
+   */
+  slug: string;
+  eventDate: string;
+  eventEndDate?: string | null;
+  category: string;
+  location?: string | null;
+  /**
+   * Brief overview displayed on event cards
+   */
+  excerpt?: string | null;
+  /**
+   * Add custom keywords or categories for this event
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  featuredImage?: (number | null) | Media;
+  status?: ('draft' | 'published') | null;
+  publishedAt: string;
+  authors: (number | User)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements".
+ */
+export interface Achievement {
+  id: number;
+  title: string;
+  /**
+   * URL identifier (e.g., hmm-wins-hackaton)
+   */
+  slug: string;
+  /**
+   * Add custom keywords or categories for this achievements
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  competitionName: string;
+  awardLevel:
+    'juara_1' | 'juara_2' | 'juara_3' | 'honorable_mention' | 'finalist' | 'special_award' | 'otherAwardLevel';
+  customAwardLevel?: string | null;
+  achievementDate: string;
+  /**
+   * List students who won the award
+   */
+  teamMembers?:
+    | {
+        memberName: string;
+        nim?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  featuredImage?: (number | null) | Media;
+  authors: (number | User)[];
+  publishedAt: string;
+  status?: ('draft' | 'published') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news".
+ */
+export interface News {
+  id: number;
+  title: string;
+  /**
+   * URL identifier (e.g., hmm-goes-to-ugm)
+   */
+  slug: string;
+  /**
+   * Add custom keywords or categories for this news
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Short snippet used for social previews and card teasers
+   */
+  summary: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  featuredImage?: (number | null) | Media;
+  authors: (number | User)[];
+  publishedAt: string;
+  status?: ('draft' | 'published') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -266,6 +428,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'achievements';
+        value: number | Achievement;
+      } | null)
+    | ({
+        relationTo: 'news';
+        value: number | News;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -380,6 +554,86 @@ export interface PostsSelect<T extends boolean = true> {
         title?: T;
         description?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  eventDate?: T;
+  eventEndDate?: T;
+  category?: T;
+  location?: T;
+  excerpt?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  content?: T;
+  featuredImage?: T;
+  status?: T;
+  publishedAt?: T;
+  authors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements_select".
+ */
+export interface AchievementsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  competitionName?: T;
+  awardLevel?: T;
+  customAwardLevel?: T;
+  achievementDate?: T;
+  teamMembers?:
+    | T
+    | {
+        memberName?: T;
+        nim?: T;
+        id?: T;
+      };
+  content?: T;
+  featuredImage?: T;
+  authors?: T;
+  publishedAt?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news_select".
+ */
+export interface NewsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  summary?: T;
+  content?: T;
+  featuredImage?: T;
+  authors?: T;
+  publishedAt?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

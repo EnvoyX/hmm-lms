@@ -39,20 +39,24 @@ export const Posts: CollectionConfig = {
   fields: [
     {
       name: 'title',
+      label: 'Blog/Article Title',
       type: 'text',
       required: true,
     },
     {
       name: 'slug',
       type: 'text',
+      label: 'URL Slug',
       required: true,
       unique: true,
       admin: {
         position: 'sidebar',
+        description: 'URL identifier (e.g., hmm-fem-analysis)',
       },
     },
     {
       name: 'authors',
+      label: 'Authors',
       type: 'relationship',
       relationTo: 'users',
       required: true,
@@ -63,11 +67,13 @@ export const Posts: CollectionConfig = {
     },
     {
       name: 'content',
+      label: 'Blog/Article Content',
       type: 'richText',
       required: true,
     },
     {
       name: 'excerpt',
+      label: 'Short Summary',
       type: 'textarea',
       admin: {
         description: 'Short description for preview cards and SEO',
@@ -75,6 +81,7 @@ export const Posts: CollectionConfig = {
     },
     {
       name: 'featuredImage',
+      label: 'Banner / Poster Image',
       type: 'relationship',
       relationTo: 'media',
       admin: {
@@ -83,6 +90,7 @@ export const Posts: CollectionConfig = {
     },
     {
       name: 'status',
+      label: 'Publishing Status',
       type: 'select',
       required: true,
       defaultValue: 'draft',
@@ -103,19 +111,26 @@ export const Posts: CollectionConfig = {
     {
       name: 'publishedAt',
       type: 'date',
+      label: 'Published Date',
+      required: true,
       admin: {
         position: 'sidebar',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
       },
     },
     {
       name: 'category',
+      label: 'Category',
       type: 'text',
       admin: {
-        description: 'Category for organizing posts',
+        description: 'Category for organizing blogs/articles',
       },
     },
     {
       name: 'tags',
+      label: 'Tags',
       type: 'array',
       fields: [
         {
@@ -127,10 +142,12 @@ export const Posts: CollectionConfig = {
     },
     {
       name: 'meta',
+      label: 'Metadata',
       type: 'group',
       fields: [
         {
           name: 'title',
+          label: 'Meta Title',
           type: 'text',
           admin: {
             description: 'Override the page title for SEO',
@@ -138,6 +155,7 @@ export const Posts: CollectionConfig = {
         },
         {
           name: 'description',
+          label: 'Meta Description',
           type: 'textarea',
           admin: {
             description: 'Meta description for SEO',

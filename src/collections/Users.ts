@@ -7,11 +7,40 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     defaultColumns: ['name', 'email', 'role', 'createdAt'],
   },
+  access: {
+    create: ({ req: { user } }) => {
+      return user?.role === 'superadmin';
+    },
+    delete: ({ req: { user } }) => {
+      return user?.role === 'superadmin';
+    },
+    update: ({ req: { user }, id }) => {
+      if (!user) return false;
+
+      if (user.role === 'superadmin') return true;
+
+      // only update their own record for admin users
+      return user.id === id;
+    },
+    // read: ({ req: { user } }) => {
+    //   if (!user) return false;
+
+    //   if (user.role === 'superadmin') return true;
+
+    //   // only read their own record for admin users
+    //   return {
+    //     id: {
+    //       equals: user.id,
+    //     },
+    //   };
+    // },
+  },
   fields: [
     {
       name: 'name',
       type: 'text',
       label: 'Full Name',
+      required: true,
       admin: {
         placeholder: 'John Doe',
       },
@@ -21,6 +50,12 @@ export const Users: CollectionConfig = {
       type: 'select',
       defaultValue: 'admin',
       required: true,
+      access: {
+        update: ({ req: { user } }) => user?.role === 'superadmin',
+      },
+      admin: {
+        readOnly: true,
+      },
       options: [
         {
           label: 'SUPERADMIN (Full Access)',

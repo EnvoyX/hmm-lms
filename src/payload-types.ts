@@ -125,7 +125,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  name?: string | null;
+  name: string;
   role: 'superadmin' | 'admin';
   /**
    * Linked User ID from the primary application database.

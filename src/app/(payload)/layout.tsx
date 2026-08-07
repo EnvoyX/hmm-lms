@@ -37,7 +37,24 @@ const Layout = async ({ children }: Args) => {
   }
   return (
     <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
-      <Suspense fallback={<div className="w-full h-full grid place-items-center">Loading...</div>}>
+      <Suspense
+        fallback={
+          <div
+            style={{
+              width: '100% !important',
+              minHeight: '100vh !important',
+              display: 'flex !important',
+              alignItems: 'center !important',
+              justifyContent: 'center !important',
+              fontWeight: 'bold !important',
+              fontFamily: 'monospace !important',
+              fontSize: '1.5rem !important',
+            }}
+          >
+            <span>Loading...</span>
+          </div>
+        }
+      >
         {children}
       </Suspense>
     </RootLayout>

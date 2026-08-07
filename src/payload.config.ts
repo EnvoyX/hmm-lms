@@ -1,0 +1,101 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import { postgresAdapter } from '@payloadcms/db-postgres';
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import { s3Storage } from '@payloadcms/storage-s3';
+import { buildConfig } from 'payload';
+import sharp from 'sharp';
+
+import { Media } from './collections/Media';
+import { Posts } from './collections/Posts';
+import { Users } from './collections/Users';
+import { env } from './env';
+import { Events } from './collections/Events';
+import { Achievements } from './collections/Achievements';
+import { News } from './collections/News';
+
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
+
+export default buildConfig({
+  routes: {
+    admin: '/admin-cms',
+  },
+  admin: {
+    user: Users.slug,
+    importMap: {
+      baseDir: path.resolve(dirname),
+    },
+    livePreview: {
+      url: ({ data, collectionConfig }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        if (collectionConfig?.slug === 'posts') {
+          return `${baseUrl}/blog/${data.slug}`;
+        }
+        else if (collectionConfig?.slug === 'events') {
+          return `${baseUrl}/event/${data.slug}`
+        }
+        else if (collectionConfig?.slug === 'achievements') {
+          return `${baseUrl}/achievements/${data.slug}`
+        }
+        else if (collectionConfig?.slug === 'news') {
+           return `${baseUrl}/news/${data.slug}`
+        }
+
+        return baseUrl;
+      },
+      breakpoints: [
+        {
+          label: 'Mobile',
+          name: 'mobile',
+          width: 375,
+          height: 667,
+        },
+        {
+          label: 'Tablet',
+          name: 'tablet',
+          width: 768,
+          height: 1024,
+        },
+        {
+          label: 'Desktop',
+          name: 'desktop',
+          width: 1440,
+          height: 900,
+        },
+      ],
+    },
+  },
+  collections: [Users, Media, Posts, Events, Achievements, News],
+  editor: lexicalEditor(),
+  secret: env.PAYLOAD_SECRET || '',
+  typescript: {
+    outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
+  db: postgresAdapter({
+    pool: {
+      connectionString: env.DATABASE_URL || '',
+    },
+    schemaName: 'payload_cms',
+    push: env.NODE_ENV === 'development' ? true : false,
+  }),
+  sharp,
+  plugins: [
+    s3Storage({
+      collections: {
+        media: true,
+      },
+      enabled: true,
+      bucket: env.DO_SPACES_BUCKET,
+      config: {
+        region: env.DO_SPACES_REGION,
+        credentials: {
+          accessKeyId: env.DO_SPACES_KEY,
+          secretAccessKey: env.DO_SPACES_SECRET,
+        },
+        endpoint: env.DO_SPACES_ENDPOINT,
+      },
+    }),
+  ],
+});

@@ -8,8 +8,8 @@ export const env = createEnv({
    */
   server: {
     AUTH_SECRET: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
+    PAYLOAD_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
-    DIRECT_URL: z.string().url(),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     DO_SPACES_ENDPOINT: z.string().url(),
     DO_SPACES_REGION: z.string(),
@@ -38,8 +38,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
+    PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
-    DIRECT_URL: process.env.DIRECT_URL,
     NODE_ENV: process.env.NODE_ENV,
     DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
     DO_SPACES_REGION: process.env.DO_SPACES_REGION,

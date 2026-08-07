@@ -6,6 +6,8 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { verifyPassword } from '~/lib/utils';
 import { db } from '~/server/db';
 
+import { syncAdminToPayload } from '../action/sync-payload-admin';
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -66,6 +68,8 @@ export const authConfig = {
           where: { email: (credentials.email as string).toLowerCase() }, // Ensure consistent casing
         });
 
+        const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+
         if (!user) {
           // If no user found, return null and NextAuth.js will display a generic error
           // For security, avoid revealing if it's an invalid email or password
@@ -77,6 +81,14 @@ export const authConfig = {
 
         if (!isValid) {
           throw new Error('Invalid email or password.');
+        } else if (isValid && isAdmin) {
+          await syncAdminToPayload({
+            prismaId: user.id,
+            email: user.email,
+            password: credentials.password as string,
+            name: user.name,
+            role: user.role === 'ADMIN' ? 'admin' : 'superadmin',
+          });
         }
 
         // 3. Optional: Verify ITB student email domain

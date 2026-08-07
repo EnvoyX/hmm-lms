@@ -127,6 +127,8 @@ HMM-LMS is a modern web application built to serve the academic and community ne
 - **[tRPC](https://trpc.io/)** - End-to-end typesafe APIs
 - **[TanStack Query](https://tanstack.com/query/latest)** - Client-side query state management
 - **[nuqs](https://nuqs.dev)** - Type-safe search params state manager
+- **[Payload CMS](https://payloadcms.com/)** - Headless CMS for content management
+- **[Fumadocs](https://fumadocs.dev/)** - Documentation framework
 
 ### **Database \& ORM**
 

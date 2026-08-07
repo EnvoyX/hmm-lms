@@ -6,7 +6,7 @@ import {
   Megaphone,
   Users,
   BarChart3,
-  // FileText,
+  FileText,
   Database,
   BookOpen,
   Briefcase,
@@ -123,7 +123,19 @@ const adminSidebarTabs: {
         dev: false,
       },
     ],
-  },
+    },
+    {
+      group: 'Payload CMS',
+      items: [
+        {
+          label: 'Content Panel',
+          href: '/admin-cms',
+          icon: FileText,
+          tooltip: 'Content Management System',
+          dev: false,
+        },
+      ],
+      },
   {
     group: 'System',
     items: [

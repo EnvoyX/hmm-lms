@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { RefreshRouteOnSave } from '~/components/payload/RefreshRouteOnSave';
 import {
   Avatar,
   AvatarFallback,
@@ -14,6 +15,7 @@ import {
 } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { api } from '~/trpc/server';
 
 async function getPost(slug: string) {
@@ -67,6 +69,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <RefreshRouteOnSave />
       <Link href="/">
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -102,51 +105,88 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               )}
             </div>
             {authors.length > 0 && (
-              <div className="flex items-center gap-3">
-                <AvatarGroup>
-                  {authors.slice(0, 3).map((author) => {
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-3 w-fit">
+                    <AvatarGroup>
+                      {authors.slice(0, 3).map((author) => {
+                        const authorName = author.name || author.email || 'Unknown';
+                        const authorAvatar =
+                          typeof author.avatar === 'object' && author.avatar?.url
+                            ? author.avatar.url
+                            : null;
+                        return (
+                          <Avatar key={author.id} className="h-10 w-10 border border-background">
+                            {authorAvatar ? (
+                              <AvatarImage
+                                className="object-cover!"
+                                src={authorAvatar}
+                                alt={authorName}
+                              />
+                            ) : null}
+                            <AvatarFallback>
+                              {authorName
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                        );
+                      })}
+                      {authors.length - 3 > 0 && (
+                        <AvatarGroupCount className="h-10 w-10 border border-background">
+                          {`+${authors.length - 3}`}
+                        </AvatarGroupCount>
+                      )}
+                    </AvatarGroup>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">
+                        {authors.length === 1
+                          ? authors[0]?.name || authors[0]?.email
+                          : `${authors.length} authors`}
+                      </span>
+                      {authors.length === 1 && authors[0]?.bio && (
+                        <span className="text-sm text-muted-foreground">{authors[0]?.bio}</span>
+                      )}
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="flex flex-col gap-2 p-3">
+                  {authors.map((author) => {
                     const authorName = author.name || author.email || 'Unknown';
                     const authorAvatar =
                       typeof author.avatar === 'object' && author.avatar?.url
                         ? author.avatar.url
                         : null;
                     return (
-                      <Avatar key={author.id} className="h-10 w-10 border border-background">
-                        {authorAvatar ? (
-                          <AvatarImage
-                            className="object-cover!"
-                            src={authorAvatar}
-                            alt={authorName}
-                          />
-                        ) : null}
-                        <AvatarFallback>
-                          {authorName
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()
-                            .slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div key={author.id} className="flex items-center gap-2.5">
+                        <Avatar className="h-7 w-7">
+                          {authorAvatar ? (
+                            <AvatarImage
+                              className="object-cover!"
+                              src={authorAvatar}
+                              alt={authorName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="text-xs">
+                            {authorName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col leading-tight">
+                          <span className="font-medium text-xs">{authorName}</span>
+                        </div>
+                      </div>
                     );
                   })}
-                  {authors.length - 3 > 0 && (
-                    <AvatarGroupCount className="h-10 w-10 border border-background">
-                      {`+${authors.length - 3}`}
-                    </AvatarGroupCount>
-                  )}
-                </AvatarGroup>
-                <div className="flex flex-col">
-                  <span className="font-medium text-foreground">
-                    {authors.length === 1
-                      ? authors[0]?.name || authors[0]?.email
-                      : `${authors.length} authors`}
-                  </span>
-                  {authors.length === 1 && authors[0]?.bio && (
-                    <span className="text-sm text-muted-foreground">{authors[0]?.bio}</span>
-                  )}
-                </div>
-              </div>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         </div>

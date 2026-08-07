@@ -25,6 +25,7 @@ import { DisplaySettingProvider } from '~/components/providers/display-provider'
 import { ThemeProvider } from '~/components/providers/theme-provider';
 import { ServiceWorkerUpdate } from '~/components/sw-update';
 import { Toaster } from '~/components/ui/sonner';
+import { TooltipProvider } from '~/components/ui/tooltip';
 import { TRPCReactProvider } from '~/trpc/react';
 
 import '~/styles/globals.css';
@@ -178,11 +179,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <DisplaySettingProvider>
                 <CustomThemeProvider>
                   <ThemeProvider attribute="class" defaultTheme="light">
-                    {/* <RegisterSW /> */}
-                    <SpeedInsights />
-                    <Analytics />
-                    <ServiceWorkerUpdate />
-                    {children}
+                    <TooltipProvider>
+                      {/* <RegisterSW /> */}
+                      <SpeedInsights />
+                      <Analytics />
+                      <ServiceWorkerUpdate />
+                      {children}
+                    </TooltipProvider>
                   </ThemeProvider>
                 </CustomThemeProvider>
               </DisplaySettingProvider>

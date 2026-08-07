@@ -5,6 +5,15 @@ export const Posts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'authors', 'status', 'publishedAt'],
+    livePreview: {
+      url: ({ data, collectionConfig }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        if (collectionConfig?.slug === 'posts') {
+          return `${baseUrl}/blog/${data.slug}`;
+        }
+        return baseUrl;
+      },
+    },
   },
   access: {
     read: () => true,

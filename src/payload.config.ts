@@ -27,6 +27,17 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      title: 'Admin Payload CMS',
+      titleSuffix: ' | HMM ITB',
+      icons: [
+        {
+          rel: 'icon',
+          type: 'image/png',
+          url: '/favicon.ico',
+        },
+      ],
+    },
     livePreview: {
       url: ({ data, collectionConfig }) => {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -40,7 +51,7 @@ export default buildConfig({
           return `${baseUrl}/achievements/${data.slug}`
         }
         else if (collectionConfig?.slug === 'news') {
-           return `${baseUrl}/news/${data.slug}`
+          return `${baseUrl}/news/${data.slug}`
         }
 
         return baseUrl;
